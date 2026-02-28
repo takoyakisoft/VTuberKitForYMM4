@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <!-- YMM4のパス（必要に応じて変更） -->
+    <YMM4DirPath>D:\YMM4\</YMM4DirPath>
+
+    <!-- Cubism SDK バージョン（CI やドキュメントで参照） -->
+    <CubismSdkVersion>5-r.4.1</CubismSdkVersion>
+
+    <!-- Cubism SDKのパス（環境変数から取得、未設定の場合はデフォルト） -->
+    <CubismSdkPath Condition="'$(CUBISM_SDK_PATH)' != ''">$(CUBISM_SDK_PATH)\</CubismSdkPath>
+    <CubismSdkPath Condition="'$(CUBISM_SDK_PATH)' == ''">$(MSBuildThisFileDirectory)CubismSdkForNative\</CubismSdkPath>
+  </PropertyGroup>
+</Project>

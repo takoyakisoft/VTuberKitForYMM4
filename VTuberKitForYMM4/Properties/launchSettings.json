@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "VTuberKitForYMM4": {
+      "commandName": "Executable",
+      "executablePath": "$(YMM4DirPath)YukkuriMovieMaker.exe",
+      "nativeDebugging": true
+    }
+  }
+}

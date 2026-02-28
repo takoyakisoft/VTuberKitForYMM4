@@ -1,0 +1,99 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: windows-2025-vs2026
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download YMM4
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/manju-summoner/YukkuriMovieMaker4/releases/download/v4.49.0.2/YukkuriMovieMaker_v4.49.0.2.zip" -OutFile "YMM4.zip"
+          Expand-Archive -Path "YMM4.zip" -DestinationPath "YMM4"
+
+      - name: Download Cubism SDK
+        run: |
+          $sdkVersion = "5-r.4.1"
+          $archiveName = "CubismSdkForNative-${sdkVersion}.7z"
+          # 暗号化 7z は本リポジトリの "sdk" タグの Release アセットとして配置
+          $downloadUrl = "https://github.com/takoyakisoft/VTuberKitForYMM4/releases/download/sdk/${archiveName}"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $archiveName
+          # Secrets に保存したパスワードで解凍
+          7z x $archiveName "-p$env:CUBISM_SDK_PASSWORD" -o"_sdk_temp" -y
+          $inner = "_sdk_temp/CubismSdkForNative-${sdkVersion}.zip"
+          Expand-Archive -Path $inner -DestinationPath "_sdk_extracted"
+          $extracted = "_sdk_extracted/CubismSdkForNative-${sdkVersion}"
+          Copy-Item -Path $extracted -Destination "CubismSdkForNative" -Recurse -Force
+          Remove-Item -Recurse -Force "_sdk_temp", "_sdk_extracted", $archiveName
+        env:
+          CUBISM_SDK_PASSWORD: ${{ secrets.CUBISM_SDK_PASSWORD }}
+
+      - name: Setup Directory.Build.props
+        run: |
+          $ymm4Path = (Resolve-Path .\YMM4).Path
+          $cubismPath = (Resolve-Path .\CubismSdkForNative).Path
+          $content = @"
+          <Project>
+            <PropertyGroup>
+              <YMM4DirPath>$ymm4Path\</YMM4DirPath>
+              <CubismSdkPath>$cubismPath\</CubismSdkPath>
+            </PropertyGroup>
+          </Project>
+          "@
+          Set-Content -Path "Directory.Build.props" -Value $content
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: dotnet restore VTuberKitForYMM4/VTuberKitForYMM4.csproj
+
+      - name: Build Native
+        working-directory: VTuberKitForNative
+        run: msbuild VTuberKitForNative.vcxproj /p:Configuration=Release /p:Platform=x64
+
+      - name: Build Managed
+        working-directory: VTuberKitForYMM4
+        run: msbuild VTuberKitForYMM4.csproj /p:Configuration=Release /p:Platform=x64
+
+      - name: Create Release Package
+        shell: pwsh
+        run: |
+          $pluginPath = "YMM4/user/plugin/VTuberKitForYMM4"
+          if (-not (Test-Path $pluginPath)) {
+            Write-Error "Plugin output directory not found at $pluginPath"
+            exit 1
+          }
+
+          # Shaders をプラグインフォルダにコピー
+          $shadersSource = "VTuberKitForNative/Shaders"
+          $shadersDest = "$pluginPath/Shaders"
+          if (Test-Path $shadersSource) {
+            New-Item -ItemType Directory -Path $shadersDest -Force | Out-Null
+            Copy-Item -Path "$shadersSource/*.fx" -Destination $shadersDest -Force
+          }
+
+          Copy-Item -Path "README.md" -Destination "$pluginPath/Readme.txt"
+          Compress-Archive -Path "$pluginPath" -DestinationPath "VTuberKitForYMM4.ymme"
+          Compress-Archive -Path "$pluginPath" -DestinationPath "VTuberKitForYMM4.zip"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            VTuberKitForYMM4.ymme
+            VTuberKitForYMM4.zip
+          generate_release_notes: true

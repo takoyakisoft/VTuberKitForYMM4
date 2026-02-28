@@ -1,0 +1,723 @@
+#include "Live2DModel_Internal.h"
+#include "Live2DPal.h"
+#include <Rendering/D3D11/CubismRenderer_D3D11.hpp>
+#include <CubismModelSettingJson.hpp>
+#include <CubismDefaultParameterId.hpp>
+#include <Id/CubismIdManager.hpp>
+#include <d3d11.h>
+#include <map>
+#include <vector>
+#include <wincodec.h>
+#include <wrl/client.h>
+#include <Motion/CubismMotionQueueEntry.hpp>
+#include <cmath>
+
+#pragma comment(lib, "Windowscodecs.lib")
+
+#pragma unmanaged
+
+using namespace Live2D::Cubism::Framework::Rendering;
+using namespace Live2D::Cubism::Framework::DefaultParameterId;
+
+// Defined in Live2DManager.cpp
+extern ID3D11Device* g_d3d11Device;
+extern ID3D11DeviceContext* g_d3d11Context;
+
+namespace VTuberKitForNative {
+
+NativeModel::NativeModel()
+    : _modelSetting(nullptr)
+    , _lastMotionPriority(0.0f) {
+}
+
+NativeModel::~NativeModel() {
+    ReleaseTextures();
+    StopAllMotions();
+
+    for (auto& group : _motions) {
+        for (auto& motion : group.second) {
+            ACubismMotion::Delete(motion.second);
+        }
+    }
+    _motions.clear();
+
+    for (auto& expression : _expressions) {
+        ACubismMotion::Delete(expression.second);
+    }
+    _expressions.clear();
+
+    if (_eyeBlink) {
+        CubismEyeBlink::Delete(_eyeBlink);
+        _eyeBlink = nullptr;
+    }
+
+    if (_breath) {
+        CubismBreath::Delete(_breath);
+        _breath = nullptr;
+    }
+
+    DeleteRenderer();
+
+    if (_modelSetting) {
+        delete _modelSetting;
+        _modelSetting = nullptr;
+    }
+}
+
+void NativeModel::ReleaseTextures() {
+    for (auto view : _textureViews) {
+        if (view) {
+            view->Release();
+        }
+    }
+    _textureViews.clear();
+}
+
+void NativeModel::LoadAssets(const char* dir, const char* fileName) {
+    if (_modelSetting) {
+        delete _modelSetting;
+        _modelSetting = nullptr;
+    }
+
+    _modelHomeDir = dir;
+
+    const csmString path = csmString(dir) + fileName;
+    unsigned int rawSize = 0;
+    csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+
+    if (!buffer) {
+        Live2DPal::PrintLogLn("Failed to load model setting file: %s", path.GetRawString());
+        return;
+    }
+
+    ICubismModelSetting* setting = new CubismModelSettingJson(buffer, static_cast<csmSizeInt>(rawSize));
+    Live2DPal::ReleaseBytes(buffer);
+
+    SetupModel(setting);
+}
+
+void NativeModel::SetupModel(ICubismModelSetting* setting) {
+    _updating = true;
+    _initialized = false;
+    _modelSetting = setting;
+
+    if (strcmp(setting->GetModelFileName(), "") != 0) {
+        csmString path = _modelHomeDir + setting->GetModelFileName();
+        unsigned int rawSize = 0;
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        if (buffer) {
+            LoadModel(buffer, static_cast<csmSizeType>(rawSize));
+            Live2DPal::ReleaseBytes(buffer);
+        } else {
+            Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.GetRawString());
+        }
+    }
+
+    for (auto& expression : _expressions) {
+        ACubismMotion::Delete(expression.second);
+    }
+    _expressions.clear();
+
+    if (setting->GetExpressionCount() > 0) {
+        for (csmInt32 i = 0; i < setting->GetExpressionCount(); ++i) {
+            csmString expressionName = setting->GetExpressionName(i);
+            csmString expressionPath = _modelHomeDir + setting->GetExpressionFileName(i);
+            unsigned int rawSize = 0;
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath.GetRawString(), &rawSize);
+            if (!buffer) {
+                continue;
+            }
+
+            ACubismMotion* expressionMotion = LoadExpression(buffer, static_cast<csmSizeInt>(rawSize), expressionName.GetRawString());
+            Live2DPal::ReleaseBytes(buffer);
+            if (expressionMotion) {
+                _expressions[expressionName.GetRawString()] = expressionMotion;
+            }
+        }
+    }
+
+    if (strcmp(setting->GetPhysicsFileName(), "") != 0) {
+        csmString path = _modelHomeDir + setting->GetPhysicsFileName();
+        unsigned int rawSize = 0;
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        if (buffer) {
+            LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
+            Live2DPal::ReleaseBytes(buffer);
+        }
+    }
+
+    if (strcmp(setting->GetPoseFileName(), "") != 0) {
+        csmString path = _modelHomeDir + setting->GetPoseFileName();
+        unsigned int rawSize = 0;
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        if (buffer) {
+            LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
+            Live2DPal::ReleaseBytes(buffer);
+        }
+    }
+
+    if (strcmp(setting->GetUserDataFile(), "") != 0) {
+        csmString path = _modelHomeDir + setting->GetUserDataFile();
+        unsigned int rawSize = 0;
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        if (buffer) {
+            LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
+            Live2DPal::ReleaseBytes(buffer);
+        }
+    }
+
+    _eyeBlinkIds.Clear();
+    _lipSyncIds.Clear();
+    for (csmInt32 i = 0; i < setting->GetEyeBlinkParameterCount(); ++i) {
+        _eyeBlinkIds.PushBack(setting->GetEyeBlinkParameterId(i));
+    }
+    for (csmInt32 i = 0; i < setting->GetLipSyncParameterCount(); ++i) {
+        _lipSyncIds.PushBack(setting->GetLipSyncParameterId(i));
+    }
+
+    if (_eyeBlink) {
+        CubismEyeBlink::Delete(_eyeBlink);
+        _eyeBlink = nullptr;
+    }
+    if (setting->GetEyeBlinkParameterCount() > 0) {
+        _eyeBlink = CubismEyeBlink::Create(setting);
+    }
+
+    if (_breath) {
+        CubismBreath::Delete(_breath);
+        _breath = nullptr;
+    }
+    _breath = CubismBreath::Create();
+    if (_breath) {
+        csmVector<CubismBreath::BreathParameterData> breathParameters;
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleX), 0.0f, 15.0f, 6.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleY), 0.0f, 8.0f, 3.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleZ), 0.0f, 10.0f, 5.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), 0.0f, 4.0f, 15.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBreath), 0.5f, 0.5f, 3.2345f, 0.5f));
+        _breath->SetParameters(breathParameters);
+    }
+
+    csmMap<csmString, csmFloat32> layout;
+    setting->GetLayoutMap(layout);
+    if (_modelMatrix) {
+        _modelMatrix->SetupFromLayout(layout);
+    }
+
+    if (_model) {
+        _model->SaveParameters();
+    }
+
+    LoadMotions();
+    if (_motionManager) {
+        _motionManager->StopAllMotions();
+    }
+
+    CreateRenderer();
+    SetupTextures();
+
+    _updating = false;
+    _initialized = true;
+}
+
+void NativeModel::SetupTextures() {
+    if (!g_d3d11Device) {
+        Live2DPal::PrintLogLn("D3D11 Device not initialized. Skipping texture load.");
+        return;
+    }
+
+    ReleaseTextures();
+
+    Microsoft::WRL::ComPtr<IWICImagingFactory> wicFactory;
+    HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicFactory));
+    if (FAILED(hr)) {
+        Live2DPal::PrintLogLn("Failed to create WIC Imaging Factory: 0x%08X", hr);
+        return;
+    }
+
+    _textureWidth = 0;
+    _textureHeight = 0;
+
+    csmInt32 textureCount = _modelSetting->GetTextureCount();
+    for (csmInt32 i = 0; i < textureCount; i++) {
+        const csmChar* fileName = _modelSetting->GetTextureFileName(i);
+        csmString path = _modelHomeDir + fileName;
+        std::wstring widePath = Live2DPal::StringToWString(path.GetRawString());
+
+        Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
+        hr = wicFactory->CreateDecoderFromFilename(widePath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        if (FAILED(hr)) {
+            Live2DPal::PrintLogLn("Failed to create decoder for: %s, 0x%08X", path.GetRawString(), hr);
+            continue;
+        }
+
+        Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
+        hr = decoder->GetFrame(0, &frame);
+        if (FAILED(hr)) continue;
+
+        Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
+        hr = wicFactory->CreateFormatConverter(&converter);
+        if (FAILED(hr)) continue;
+
+        hr = converter->Initialize(frame.Get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0.0f, WICBitmapPaletteTypeCustom);
+        if (FAILED(hr)) continue;
+
+        UINT width = 0;
+        UINT height = 0;
+        converter->GetSize(&width, &height);
+
+        std::vector<uint8_t> buffer(width * height * 4);
+        hr = converter->CopyPixels(nullptr, width * 4, static_cast<UINT>(buffer.size()), buffer.data());
+        if (FAILED(hr)) continue;
+
+        D3D11_TEXTURE2D_DESC desc = {};
+        desc.Width = width;
+        desc.Height = height;
+        desc.MipLevels = 0;
+        desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> tex2D;
+        hr = g_d3d11Device->CreateTexture2D(&desc, nullptr, &tex2D);
+        if (SUCCEEDED(hr)) {
+            ID3D11ShaderResourceView* textureView = nullptr;
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+            srvDesc.Format = desc.Format;
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Texture2D.MostDetailedMip = 0;
+            srvDesc.Texture2D.MipLevels = static_cast<UINT>(-1);
+
+            hr = g_d3d11Device->CreateShaderResourceView(tex2D.Get(), &srvDesc, &textureView);
+            if (SUCCEEDED(hr) && textureView) {
+                g_d3d11Context->UpdateSubresource(tex2D.Get(), 0, nullptr, buffer.data(), width * 4, 0);
+                g_d3d11Context->GenerateMips(textureView);
+
+                CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+                if (renderer) {
+                    renderer->BindTexture(i, textureView);
+                    renderer->IsPremultipliedAlpha(false);
+                }
+                _textureViews.push_back(textureView);
+
+                if (_textureWidth == 0 && _textureHeight == 0) {
+                    _textureWidth = static_cast<int>(width);
+                    _textureHeight = static_cast<int>(height);
+                }
+            }
+        } else {
+            Live2DPal::PrintLogLn("Failed to create D3D11 texture: 0x%08X", hr);
+        }
+    }
+
+    CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+    if (renderer) {
+        renderer->UseHighPrecisionMask(true);
+        Live2DPal::PrintLogLn("Renderer quality settings: highPrecisionMask=true, clippingMask=high");
+    }
+}
+
+void NativeModel::ReloadRenderer() {
+    DeleteRenderer();
+    CreateRenderer();
+    SetupTextures();
+}
+
+void NativeModel::LoadMotions() {
+    if (!_modelSetting) return;
+
+    for (auto& group : _motions) {
+        for (auto& motion : group.second) {
+            ACubismMotion::Delete(motion.second);
+        }
+    }
+    _motions.clear();
+
+    _lastMotionPriority = 0;
+
+    csmInt32 motionGroupCount = _modelSetting->GetMotionGroupCount();
+
+    for (csmInt32 i = 0; i < motionGroupCount; i++) {
+        const csmChar* groupName = _modelSetting->GetMotionGroupName(i);
+        csmInt32 motionCount = _modelSetting->GetMotionCount(groupName);
+
+        for (csmInt32 j = 0; j < motionCount; j++) {
+            csmString fileName = _modelSetting->GetMotionFileName(groupName, j);
+            if (strcmp(fileName.GetRawString(), "") == 0) {
+                continue;
+            }
+
+            csmString path = _modelHomeDir + fileName;
+            unsigned int rawSize = 0;
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+
+            if (buffer) {
+                ACubismMotion* motion = LoadMotion(
+                    buffer,
+                    static_cast<csmSizeInt>(rawSize),
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    _modelSetting,
+                    groupName,
+                    j);
+                Live2DPal::ReleaseBytes(buffer);
+
+                if (motion) {
+                    CubismMotion* cubismMotion = static_cast<CubismMotion*>(motion);
+                    if (cubismMotion) {
+                        cubismMotion->SetEffectIds(_eyeBlinkIds, _lipSyncIds);
+                    }
+                    _motions[groupName][j] = motion;
+                } else {
+                    Live2DPal::PrintLogLn("Failed to create motion: %s", path.GetRawString());
+                }
+            } else {
+                Live2DPal::PrintLogLn("Failed to load motion file: %s", path.GetRawString());
+            }
+        }
+    }
+}
+
+void NativeModel::StartMotion(const char* group, int no, int priority) {
+    if (!_modelSetting || !_motionManager) return;
+
+    _manualMotionActive = false;
+
+    if (priority == 3) {
+        _motionManager->SetReservePriority(priority);
+    } else if (!_motionManager->ReserveMotion(priority)) {
+        return;
+    }
+
+    auto groupIt = _motions.find(group);
+    if (groupIt == _motions.end()) return;
+
+    auto motionIt = groupIt->second.find(no);
+    if (motionIt == groupIt->second.end()) return;
+
+    ACubismMotion* motion = motionIt->second;
+    if (!motion) return;
+
+    _lastMotionPriority = static_cast<float>(priority);
+    _motionManager->StartMotionPriority(motion, false, priority);
+}
+
+void NativeModel::StartRandomMotion(const char* group, int priority) {
+    if (!_modelSetting) return;
+
+    csmInt32 count = _modelSetting->GetMotionCount(group);
+    if (count <= 0) return;
+
+    int no = rand() % count;
+    StartMotion(group, no, priority);
+}
+
+void NativeModel::StopAllMotions() {
+    if (_motionManager) {
+        _motionManager->StopAllMotions();
+    }
+    _manualMotionActive = false;
+    _manualMotion = nullptr;
+    _manualMotionGroup.clear();
+    _manualMotionIndex = -1;
+    _manualMotionQueueEntry = CubismMotionQueueEntry();
+}
+
+bool NativeModel::IsMotionFinished() {
+    if (_manualMotionActive) {
+        return false;
+    }
+    if (!_motionManager) return true;
+    return _motionManager->IsFinished();
+}
+
+void NativeModel::Update(float deltaTime) {
+    if (!_model) {
+        return;
+    }
+
+    if (deltaTime < 0.0f) {
+        deltaTime = 0.0f;
+    }
+
+    csmBool motionUpdated = false;
+
+    _model->LoadParameters();
+
+    if (_manualMotionActive && _manualMotion) {
+        _manualMotion->UpdateParameters(_model, &_manualMotionQueueEntry, _manualMotionTimeSeconds);
+        motionUpdated = true;
+    } else if (_motionManager) {
+        motionUpdated = _motionManager->UpdateMotion(_model, deltaTime);
+    }
+
+    _model->SaveParameters();
+
+    if (!motionUpdated && _eyeBlinkEnabled && _eyeBlink) {
+        _eyeBlink->UpdateParameters(_model, deltaTime);
+    }
+
+    if (_expressionManager) {
+        _expressionManager->UpdateMotion(_model, deltaTime);
+    }
+
+    if (_breathEnabled && _breath) {
+        _breath->UpdateParameters(_model, deltaTime);
+    }
+
+    if (_physicsEnabled && _physics) {
+        _physics->Evaluate(_model, deltaTime);
+    }
+
+    if (_lipSyncEnabled && _lipSyncIds.GetSize() > 0) {
+        for (csmUint32 i = 0; i < _lipSyncIds.GetSize(); ++i) {
+            _model->AddParameterValue(_lipSyncIds[i], _lipSyncValue, 0.8f);
+        }
+    }
+
+    if (_pose) {
+        _pose->UpdateParameters(_model, deltaTime);
+    }
+
+    _model->Update();
+}
+
+void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds) {
+    if (!group) {
+        return;
+    }
+
+    auto groupIt = _motions.find(group);
+    if (groupIt == _motions.end()) {
+        Live2DPal::PrintLogLn("EvaluateMotion: group not found '%s'", group);
+        return;
+    }
+
+    auto motionIt = groupIt->second.find(no);
+    if (motionIt == groupIt->second.end()) {
+        Live2DPal::PrintLogLn("EvaluateMotion: motion index not found group='%s' index=%d", group, no);
+        return;
+    }
+
+    _manualMotion = static_cast<CubismMotion*>(motionIt->second);
+    _manualMotionTimeSeconds = timeSeconds < 0.0f ? 0.0f : timeSeconds;
+    _manualMotionActive = (_manualMotion != nullptr);
+
+    if (_manualMotionActive) {
+        const bool changed = (_manualMotionGroup != group) || (_manualMotionIndex != no);
+        if (changed) {
+            _manualMotionQueueEntry = CubismMotionQueueEntry();
+            _manualMotionGroup = group;
+            _manualMotionIndex = no;
+            Live2DPal::PrintLogLn("EvaluateMotion: switched to group='%s' index=%d", group, no);
+        }
+    }
+}
+
+void NativeModel::Draw(CubismMatrix44& matrix) {
+    if (_model == nullptr) return;
+
+    CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+    if (!renderer) return;
+
+    matrix.MultiplyByMatrix(_modelMatrix);
+
+    const float rad = _viewRotationDegrees * 3.14159265359f / 180.0f;
+    const float cosValue = std::cos(rad) * _viewScale;
+    const float sinValue = std::sin(rad) * _viewScale;
+    csmFloat32 tr[16] = {
+        cosValue,  sinValue,  0.0f, 0.0f,
+       -sinValue,  cosValue,  0.0f, 0.0f,
+        0.0f,      0.0f,      1.0f, 0.0f,
+        _viewPositionX, _viewPositionY, 0.0f, 1.0f
+    };
+    CubismMatrix44 transformMatrix;
+    transformMatrix.SetMatrix(tr);
+    matrix.MultiplyByMatrix(&transformMatrix);
+
+    renderer->SetMvpMatrix(&matrix);
+    renderer->DrawModel();
+}
+
+void NativeModel::DoDraw() {
+}
+
+void NativeModel::SetParameterValue(const char* paramId, float value) {
+    if (_model) _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(paramId), value);
+}
+
+void NativeModel::SetParameterValue(const char* paramId, float value, float weight) {
+    if (_model) _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(paramId), value, weight);
+}
+
+void NativeModel::AddParameterValue(const char* paramId, float value) {
+    if (_model) _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(paramId), value);
+}
+
+void NativeModel::AddParameterValue(const char* paramId, float value, float weight) {
+    if (_model) _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(paramId), value, weight);
+}
+
+void NativeModel::MultiplyParameterValue(const char* paramId, float value) {
+    if (_model) _model->MultiplyParameterValue(CubismFramework::GetIdManager()->GetId(paramId), value);
+}
+
+float NativeModel::GetParameterValue(const char* paramId) {
+    if (_model) return _model->GetParameterValue(CubismFramework::GetIdManager()->GetId(paramId));
+    return 0.0f;
+}
+
+void NativeModel::SetPartOpacity(const char* partId, float opacity) {
+    if (_model) _model->SetPartOpacity(CubismFramework::GetIdManager()->GetId(partId), opacity);
+}
+
+float NativeModel::GetPartOpacity(const char* partId) {
+    if (_model) return _model->GetPartOpacity(CubismFramework::GetIdManager()->GetId(partId));
+    return 1.0f;
+}
+
+void NativeModel::SetEyeBlinkEnabled(bool enabled) { _eyeBlinkEnabled = enabled; }
+bool NativeModel::GetEyeBlinkEnabled() { return _eyeBlinkEnabled; }
+void NativeModel::SetEyeBlinkInterval(float interval) {
+    if (_eyeBlink) {
+        _eyeBlink->SetBlinkingInterval(interval);
+    }
+}
+void NativeModel::SetEyeBlinkSettings(float closing, float closed, float opening) {
+    if (_eyeBlink) {
+        _eyeBlink->SetBlinkingSettings(closing, closed, opening);
+    }
+}
+
+void NativeModel::SetLipSyncEnabled(bool enabled) { _lipSyncEnabled = enabled; }
+bool NativeModel::GetLipSyncEnabled() { return _lipSyncEnabled; }
+void NativeModel::SetLipSyncValue(float value) { _lipSyncValue = value; }
+void NativeModel::SetPhysicsEnabled(bool enabled) { _physicsEnabled = enabled; }
+bool NativeModel::GetPhysicsEnabled() { return _physicsEnabled; }
+void NativeModel::SetBreathEnabled(bool enabled) { _breathEnabled = enabled; }
+bool NativeModel::GetBreathEnabled() { return _breathEnabled; }
+
+void NativeModel::SetExpression(const char* expressionId) {
+    if (!_expressionManager || !expressionId) {
+        return;
+    }
+
+    auto expressionIt = _expressions.find(expressionId);
+    if (expressionIt == _expressions.end() || !expressionIt->second) {
+        return;
+    }
+
+    _expressionManager->StartMotion(expressionIt->second, false);
+}
+
+void NativeModel::ClearExpression() {
+    if (_expressionManager) {
+        _expressionManager->StopAllMotions();
+    }
+}
+
+void NativeModel::SetRandomExpression() {
+    if (_expressions.empty()) {
+        return;
+    }
+
+    const int randomIndex = rand() % static_cast<int>(_expressions.size());
+    int current = 0;
+    for (auto& expression : _expressions) {
+        if (current == randomIndex) {
+            SetExpression(expression.first.c_str());
+            return;
+        }
+        ++current;
+    }
+}
+
+csmBool NativeModel::HitTest(const char* hitAreaName, csmFloat32 x, csmFloat32 y) {
+    if (!_modelSetting || !hitAreaName) {
+        return false;
+    }
+
+    const csmInt32 count = _modelSetting->GetHitAreasCount();
+    for (csmInt32 i = 0; i < count; i++) {
+        if (strcmp(_modelSetting->GetHitAreaName(i), hitAreaName) == 0) {
+            return IsHit(_modelSetting->GetHitAreaId(i), x, y);
+        }
+    }
+    return false;
+}
+
+void NativeModel::SetMultiplyColor(float r, float g, float b, float a) {
+    CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+    if (renderer) {
+        renderer->SetModelColor(r, g, b, a);
+    }
+}
+void NativeModel::SetScreenColor(float r, float g, float b, float a) {}
+void NativeModel::SetOpacity(float opacity) {
+    _opacity = opacity;
+}
+float NativeModel::GetOpacity() { return _opacity; }
+void NativeModel::ApplyStandardParameters(
+    float eyeLOpen,
+    float eyeROpen,
+    float mouthOpenY,
+    float mouthForm,
+    float angleX,
+    float angleY,
+    float angleZ,
+    float bodyAngleX,
+    float eyeBallX,
+    float eyeBallY,
+    float cheek,
+    float armLA,
+    float armRA) {
+    if (!_model) {
+        return;
+    }
+
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeLOpen), eyeLOpen);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeROpen), eyeROpen);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthOpenY), mouthOpenY);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthForm), mouthForm);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), angleX);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), angleY);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), angleZ);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), bodyAngleX);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), eyeBallX);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), eyeBallY);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamCheek), cheek);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmLA), armLA);
+    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmRA), armRA);
+}
+
+void NativeModel::ApplyItemParameters(float opacity, float multiplyR, float multiplyG, float multiplyB, float multiplyA) {
+    SetOpacity(opacity);
+    SetMultiplyColor(multiplyR, multiplyG, multiplyB, multiplyA);
+}
+
+void NativeModel::CommitParameters() {
+    if (_model) {
+        _model->Update();
+    }
+}
+
+void NativeModel::SetPosition(float x, float y) {
+    _viewPositionX = x;
+    _viewPositionY = y;
+}
+void NativeModel::SetScale(float scale) {
+    _viewScale = scale > 0.0f ? scale : 0.01f;
+}
+void NativeModel::SetRotation(float rotation) {
+    _viewRotationDegrees = rotation;
+}
+void NativeModel::SetDragging(float x, float y) { _dragX = x; _dragY = y; }
+
+float NativeModel::GetCanvasWidth() { return _model ? _model->GetCanvasWidth() : 0.0f; }
+float NativeModel::GetCanvasHeight() { return _model ? _model->GetCanvasHeight() : 0.0f; }
+
+} // namespace VTuberKitForNative

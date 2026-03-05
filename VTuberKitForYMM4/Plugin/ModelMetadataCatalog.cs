@@ -86,7 +86,9 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                if (string.IsNullOrWhiteSpace(modelPath) || !File.Exists(modelPath))
+                if (string.IsNullOrWhiteSpace(modelPath) || 
+                    !modelPath.EndsWith(".model3.json", StringComparison.OrdinalIgnoreCase) || 
+                    !File.Exists(modelPath))
                 {
                     currentModelPath = string.Empty;
                     expressions = [];

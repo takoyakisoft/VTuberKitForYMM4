@@ -2,11 +2,9 @@
 #include "Live2DManager.h"
 #include "Live2DModel_Internal.h"
 #include "Live2DPal.h"
+#include "ManagedStringUtils.h"
 #include "Live2DRenderer.h"
 #include <Model/CubismModel.hpp>
-#include <msclr/marshal_cppstd.h>
-
-using namespace msclr::interop;
 using namespace Live2D::Cubism::Framework;
 
 namespace VTuberKitForNative {
@@ -50,11 +48,8 @@ bool Live2DModelWrapper::LoadModel(System::String^ modelPath) {
         _nativeModel = new NativeModel();
     }
 
-    marshal_context context;
-    const char* path = context.marshal_as<const char*>(modelPath);
-    
     // model3.jsonのパスを解析
-    std::string modelPathStr(path);
+    std::string modelPathStr = ManagedStringToUtf8(modelPath);
     size_t lastSlash = modelPathStr.find_last_of("/\\");
     if (lastSlash == std::string::npos) {
         return false;
@@ -110,49 +105,43 @@ void Live2DModelWrapper::Draw(int screenWidth, int screenHeight) {
 
 void Live2DModelWrapper::SetParameterValue(System::String^ paramId, float value) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        _nativeModel->SetParameterValue(id, value);
+        const std::string id = ManagedStringToUtf8(paramId);
+        _nativeModel->SetParameterValue(id.c_str(), value);
     }
 }
 
 void Live2DModelWrapper::SetParameterValue(System::String^ paramId, float value, float weight) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        _nativeModel->SetParameterValue(id, value, weight);
+        const std::string id = ManagedStringToUtf8(paramId);
+        _nativeModel->SetParameterValue(id.c_str(), value, weight);
     }
 }
 
 void Live2DModelWrapper::AddParameterValue(System::String^ paramId, float value) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        _nativeModel->AddParameterValue(id, value);
+        const std::string id = ManagedStringToUtf8(paramId);
+        _nativeModel->AddParameterValue(id.c_str(), value);
     }
 }
 
 void Live2DModelWrapper::AddParameterValue(System::String^ paramId, float value, float weight) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        _nativeModel->AddParameterValue(id, value, weight);
+        const std::string id = ManagedStringToUtf8(paramId);
+        _nativeModel->AddParameterValue(id.c_str(), value, weight);
     }
 }
 
 void Live2DModelWrapper::MultiplyParameterValue(System::String^ paramId, float value) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        _nativeModel->MultiplyParameterValue(id, value);
+        const std::string id = ManagedStringToUtf8(paramId);
+        _nativeModel->MultiplyParameterValue(id.c_str(), value);
     }
 }
 
 float Live2DModelWrapper::GetParameterValue(System::String^ paramId) {
     if (_nativeModel != nullptr && paramId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(paramId);
-        return _nativeModel->GetParameterValue(id);
+        const std::string id = ManagedStringToUtf8(paramId);
+        return _nativeModel->GetParameterValue(id.c_str());
     }
     return 0.0f;
 }
@@ -176,8 +165,8 @@ array<Live2DParameter^>^ Live2DModelWrapper::GetParameters() {
         const char* name = id; // ICubismModelSetting does not provide names in SDK 5
 
         result[i] = gcnew Live2DParameter();
-        result[i]->Id = gcnew System::String(id);
-        result[i]->Name = gcnew System::String(name);
+        result[i]->Id = Utf8ToManagedString(id);
+        result[i]->Name = Utf8ToManagedString(name);
         result[i]->Value = model->GetParameterValue(i);
         result[i]->Default = model->GetParameterDefaultValue(i);
         result[i]->Min = model->GetParameterMinimumValue(i);
@@ -189,17 +178,15 @@ array<Live2DParameter^>^ Live2DModelWrapper::GetParameters() {
 
 void Live2DModelWrapper::SetPartOpacity(System::String^ partId, float opacity) {
     if (_nativeModel != nullptr && partId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(partId);
-        _nativeModel->SetPartOpacity(id, opacity);
+        const std::string id = ManagedStringToUtf8(partId);
+        _nativeModel->SetPartOpacity(id.c_str(), opacity);
     }
 }
 
 float Live2DModelWrapper::GetPartOpacity(System::String^ partId) {
     if (_nativeModel != nullptr && partId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(partId);
-        return _nativeModel->GetPartOpacity(id);
+        const std::string id = ManagedStringToUtf8(partId);
+        return _nativeModel->GetPartOpacity(id.c_str());
     }
     return 1.0f;
 }
@@ -223,8 +210,8 @@ array<Live2DPart^>^ Live2DModelWrapper::GetParts() {
         const char* name = id; // ICubismModelSetting does not provide names in SDK 5
 
         result[i] = gcnew Live2DPart();
-        result[i]->Id = gcnew System::String(id);
-        result[i]->Name = gcnew System::String(name);
+        result[i]->Id = Utf8ToManagedString(id);
+        result[i]->Name = Utf8ToManagedString(name);
         result[i]->Opacity = model->GetPartOpacity(i);
     }
 
@@ -303,9 +290,8 @@ bool Live2DModelWrapper::GetBreathEnabled() {
 
 void Live2DModelWrapper::SetExpression(System::String^ expressionId) {
     if (_nativeModel != nullptr && expressionId != nullptr) {
-        marshal_context context;
-        const char* id = context.marshal_as<const char*>(expressionId);
-        _nativeModel->SetExpression(id);
+        const std::string id = ManagedStringToUtf8(expressionId);
+        _nativeModel->SetExpression(id.c_str());
     }
 }
 
@@ -332,8 +318,8 @@ array<Live2DExpression^>^ Live2DModelWrapper::GetExpressions() {
 
     for (csmInt32 i = 0; i < count; ++i) {
         result[i] = gcnew Live2DExpression();
-        result[i]->Id = gcnew System::String(setting->GetExpressionName(i));
-        result[i]->Name = gcnew System::String(setting->GetExpressionName(i));
+        result[i]->Id = Utf8ToManagedString(setting->GetExpressionName(i));
+        result[i]->Name = Utf8ToManagedString(setting->GetExpressionName(i));
     }
 
     return result;
@@ -341,25 +327,22 @@ array<Live2DExpression^>^ Live2DModelWrapper::GetExpressions() {
 
 void Live2DModelWrapper::StartMotion(System::String^ group, int index, int priority) {
     if (_nativeModel != nullptr && group != nullptr) {
-        marshal_context context;
-        const char* groupStr = context.marshal_as<const char*>(group);
-        _nativeModel->StartMotion(groupStr, index, priority);
+        const std::string groupStr = ManagedStringToUtf8(group);
+        _nativeModel->StartMotion(groupStr.c_str(), index, priority);
     }
 }
 
 void Live2DModelWrapper::StartRandomMotion(System::String^ group, int priority) {
     if (_nativeModel != nullptr && group != nullptr) {
-        marshal_context context;
-        const char* groupStr = context.marshal_as<const char*>(group);
-        _nativeModel->StartRandomMotion(groupStr, priority);
+        const std::string groupStr = ManagedStringToUtf8(group);
+        _nativeModel->StartRandomMotion(groupStr.c_str(), priority);
     }
 }
 
 void Live2DModelWrapper::EvaluateMotion(System::String^ group, int index, float timeSeconds) {
     if (_nativeModel != nullptr && group != nullptr) {
-        marshal_context context;
-        const char* groupStr = context.marshal_as<const char*>(group);
-        _nativeModel->EvaluateMotion(groupStr, index, timeSeconds);
+        const std::string groupStr = ManagedStringToUtf8(group);
+        _nativeModel->EvaluateMotion(groupStr.c_str(), index, timeSeconds);
     }
 }
 
@@ -398,9 +381,9 @@ array<Live2DMotion^>^ Live2DModelWrapper::GetMotions() {
         csmInt32 count = setting->GetMotionCount(group);
         for (csmInt32 m = 0; m < count; ++m, ++idx) {
             motions[idx] = gcnew Live2DMotion();
-            motions[idx]->Group = gcnew System::String(group);
+            motions[idx]->Group = Utf8ToManagedString(group);
             motions[idx]->Index = m;
-            motions[idx]->Name = gcnew System::String(setting->GetMotionFileName(group, m));
+            motions[idx]->Name = Utf8ToManagedString(setting->GetMotionFileName(group, m));
         }
     }
 
@@ -409,9 +392,8 @@ array<Live2DMotion^>^ Live2DModelWrapper::GetMotions() {
 
 bool Live2DModelWrapper::HitTest(System::String^ hitAreaName, float x, float y) {
     if (_nativeModel != nullptr && hitAreaName != nullptr) {
-        marshal_context context;
-        const char* name = context.marshal_as<const char*>(hitAreaName);
-        return _nativeModel->HitTest(name, x, y);
+        const std::string name = ManagedStringToUtf8(hitAreaName);
+        return _nativeModel->HitTest(name.c_str(), x, y);
     }
     return false;
 }
@@ -427,8 +409,8 @@ array<Live2DHitArea^>^ Live2DModelWrapper::GetHitAreas() {
 
     for (csmInt32 i = 0; i < count; ++i) {
         areas[i] = gcnew Live2DHitArea();
-        areas[i]->Id = gcnew System::String(setting->GetHitAreaId(i)->GetString().GetRawString());
-        areas[i]->Name = gcnew System::String(setting->GetHitAreaName(i));
+        areas[i]->Id = Utf8ToManagedString(setting->GetHitAreaId(i)->GetString().GetRawString());
+        areas[i]->Name = Utf8ToManagedString(setting->GetHitAreaName(i));
         areas[i]->X = 0.0f;
         areas[i]->Y = 0.0f;
         areas[i]->Width = 0.0f;

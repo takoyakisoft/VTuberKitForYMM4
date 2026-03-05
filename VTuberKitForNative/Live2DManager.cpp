@@ -1,6 +1,7 @@
 #include "Live2DManager.h"
 #include "Live2DPal.h"
 #include "Live2DModel.h"
+#include "ManagedStringUtils.h"
 #include <CubismFramework.hpp>
 #include <CubismDefaultParameterId.hpp>
 #include <Rendering/D3D11/CubismRenderer_D3D11.hpp>
@@ -177,7 +178,7 @@ void Live2DManager::Update(float deltaTime) {
 // 静的変数を関数内で定義してキャッシュする
 #define CACHED_STRING_PROP(PropName, NativeId) \
     System::String^ Live2DManager::PropName::get() { \
-        return gcnew System::String((const char*)NativeId); \
+        return Utf8ToManagedString((const char*)NativeId); \
     }
 
 CACHED_STRING_PROP(ParamAngleX, Live2D::Cubism::Framework::DefaultParameterId::ParamAngleX)

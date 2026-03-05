@@ -24,9 +24,12 @@ namespace VTuberKitForYMM4.Plugin
             get => file;
             set
             {
-                if (Set(ref file, value))
+                if (string.IsNullOrEmpty(value) || value.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    ModelMetadataCatalog.UpdateFromModelPath(value);
+                    if (Set(ref file, value))
+                    {
+                        ModelMetadataCatalog.UpdateFromModelPath(value);
+                    }
                 }
             }
         }

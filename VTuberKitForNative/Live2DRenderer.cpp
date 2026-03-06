@@ -9,6 +9,11 @@ using namespace System;
 
 namespace VTuberKitForNative {
 
+namespace
+{
+    volatile LONG g_rendererInstanceCount = 0;
+}
+
 Live2DRenderer::Live2DRenderer() 
     : _initialized(false)
     , _viewportWidth(0)
@@ -48,19 +53,21 @@ bool Live2DRenderer::Initialize(IntPtr d3d11Device, IntPtr d3d11Context) {
     _device->AddRef();
     _context->AddRef();
 
-    // Cubism SDKのD3D11レンダラー設定を初期化
-    const csmUint32 bufferSetNum = 1; // バックバッファ枚数
+    const auto instanceCount = InterlockedIncrement(&g_rendererInstanceCount);
+
+    // Cubism SDKのD3D11レンダラー設定は共有状態なので、初回のみ構築する。
+    const csmUint32 bufferSetNum = 1;
     Rendering::CubismRenderer_D3D11::InitializeConstantSettings(bufferSetNum, _device);
+    if (instanceCount == 1)
+    {
+        Rendering::CubismRenderer_D3D11::GenerateShader(_device);
+    }
     
-    // 重要: シェーダーを生成する。これを忘れると何も描画されない。
-    // シェーダーファイルの読み込みは Live2DPal::LoadFileAsBytes で処理される
-    Rendering::CubismRenderer_D3D11::GenerateShader(_device);
-    
-    // 深度ステンシル状態の作成（深度テスト有効）
+    // Live2D is 2D rendering; keep depth test disabled to avoid state-dependent full cull.
     D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-    dsDesc.DepthEnable = TRUE;
-    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+    dsDesc.DepthEnable = FALSE;
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
     dsDesc.StencilEnable = FALSE;
     
     ID3D11DepthStencilState* tempState = nullptr;
@@ -101,9 +108,13 @@ bool Live2DRenderer::Initialize(IntPtr d3d11Device, IntPtr d3d11Context) {
 
 void Live2DRenderer::Release() {
     if (_initialized) {
-        Rendering::CubismRenderer_D3D11::DeleteShaderManager();
-        Rendering::CubismRenderer_D3D11::DeleteRenderStateManager();
-        
+        const auto instanceCount = InterlockedDecrement(&g_rendererInstanceCount);
+        if (instanceCount <= 0) {
+            Rendering::CubismRenderer_D3D11::DeleteShaderManager();
+            Rendering::CubismRenderer_D3D11::DeleteRenderStateManager();
+            g_rendererInstanceCount = 0;
+        }
+
         if (_depthStencilState) {
             _depthStencilState->Release();
             _depthStencilState = nullptr;

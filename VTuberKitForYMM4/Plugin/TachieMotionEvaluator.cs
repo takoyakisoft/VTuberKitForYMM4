@@ -1,16 +1,12 @@
-using System;
 using VTuberKitForNative;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Player.Video;
-using YukkuriMovieMaker.Plugin.Tachie;
 using YukkuriMovieMaker.Plugin.Voice;
 
 namespace VTuberKitForYMM4.Plugin
 {
     public static class TachieMotionEvaluator
     {
-        static DateTime lastLogAt = DateTime.MinValue;
-
         public static void UpdateMotionToCurrentTime(
             Live2DModelWrapper nativeModel,
             TachieSourceDescription description,
@@ -18,29 +14,25 @@ namespace VTuberKitForYMM4.Plugin
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
             float lipSyncGain,
-            bool autoLipSync)
+            bool autoLipSync,
+            float? itemTimeSecondsOverride = null)
         {
             if (nativeModel == null || description == null)
             {
                 return;
             }
 
-            var motionApplied = false;
-            string resolvedMotion = "off";
             if (activeFace?.UseMotion == true &&
                 TryResolveMotionSelection(nativeModel, activeFace, out var motionGroup, out var motionIndex))
             {
-                nativeModel.EvaluateMotion(motionGroup, motionIndex, Math.Max(0, activeFaceTimeSeconds));
-                resolvedMotion = $"{(string.IsNullOrEmpty(motionGroup) ? "(Default)" : motionGroup)}[{motionIndex}]";
-                motionApplied = true;
+                nativeModel.EvaluateMotion(motionGroup, motionIndex, Math.Max(0, activeFaceTimeSeconds), activeFace.MotionLoop);
             }
-            else if (TryResolveIdleMotionSelection(nativeModel, itemParam, out var idleGroup, out var idleIndex))
+            else if (TryResolveItemMotionSelection(nativeModel, itemParam, out var itemGroup, out var itemIndex))
             {
-                nativeModel.EvaluateMotion(idleGroup, idleIndex, Math.Max(0, (float)Math.Max(0.0, description.ItemPosition.Time.TotalSeconds)));
-                resolvedMotion = $"{(string.IsNullOrEmpty(idleGroup) ? "(Default)" : idleGroup)}[{idleIndex}]";
-                motionApplied = true;
+                var itemTimeSeconds = itemTimeSecondsOverride ?? (float)Math.Max(0.0, description.ItemPosition.Time.TotalSeconds);
+                nativeModel.EvaluateMotion(itemGroup, itemIndex, Math.Max(0, itemTimeSeconds), itemParam?.MotionLoop ?? true);
             }
-            else if (activeFace != null)
+            else if (activeFace?.UseMotion == true)
             {
                 nativeModel.StopAllMotions();
             }
@@ -49,15 +41,8 @@ namespace VTuberKitForYMM4.Plugin
             if (activeFace == null)
             {
                 nativeModel.SetLipSyncValue(lipValue);
-                nativeModel.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
-                nativeModel.SetParameterValue(Live2DManager.ParamMouthForm, mouthForm);
-            }
-
-            if ((DateTime.UtcNow - lastLogAt).TotalSeconds >= 1.0)
-            {
-                lastLogAt = DateTime.UtcNow;
-                Commons.ConsoleManager.Debug(
-                    $"motion={(activeFace?.UseMotion == true ? $"{activeFace.MotionGroup}[{activeFace.MotionIndex}]=>{(motionApplied ? resolvedMotion : "off")} t={activeFaceTimeSeconds:F3}" : "off")}, mouthShape={description.MouthShape}, voiceVolume={description.VoiceVolume:F4}, lip={lipValue:F3}, lipSyncGain={lipSyncGain:F3}, autoLipSync={autoLipSync}");
+                nativeModel.AddParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
+                nativeModel.AddParameterValue(Live2DManager.ParamMouthForm, mouthForm);
             }
         }
 
@@ -90,7 +75,9 @@ namespace VTuberKitForYMM4.Plugin
 
             if (applyManualFaceParameters)
             {
-                model.ApplyStandardParameters(
+                ApplyStandardFaceParameters(
+                    model,
+                    activeFace.AdditiveParameters,
                     (float)eyeLOpen,
                     (float)eyeROpen,
                     (float)mouthOpen,
@@ -108,8 +95,8 @@ namespace VTuberKitForYMM4.Plugin
 
             var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
             model.SetLipSyncValue(lipValue);
-            model.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
-            model.SetParameterValue(Live2DManager.ParamMouthForm, mouthFormValue);
+            ApplyParameterValue(model, Live2DManager.ParamMouthOpenY, lipValue, activeFace.AdditiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamMouthForm, mouthFormValue, activeFace.AdditiveParameters);
 
             ApplyCustomFaceParts(model, activeFace, frame, length, fps);
             ApplyCustomFaceParameters(model, activeFace, frame, length, fps);
@@ -152,9 +139,9 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            ApplyCustomFaceParameter(model, activeFace.CustomParam1Id, activeFace.CustomParam1Value, frame, length, fps);
-            ApplyCustomFaceParameter(model, activeFace.CustomParam2Id, activeFace.CustomParam2Value, frame, length, fps);
-            ApplyCustomFaceParameter(model, activeFace.CustomParam3Id, activeFace.CustomParam3Value, frame, length, fps);
+            ApplyCustomFaceParameter(model, activeFace.CustomParam1Id, activeFace.CustomParam1Value, frame, length, fps, activeFace.AdditiveParameters);
+            ApplyCustomFaceParameter(model, activeFace.CustomParam2Id, activeFace.CustomParam2Value, frame, length, fps, activeFace.AdditiveParameters);
+            ApplyCustomFaceParameter(model, activeFace.CustomParam3Id, activeFace.CustomParam3Value, frame, length, fps, activeFace.AdditiveParameters);
         }
 
         private static void ApplyCustomFaceParameter(
@@ -163,7 +150,8 @@ namespace VTuberKitForYMM4.Plugin
             Animation animation,
             long frame,
             long length,
-            int fps)
+            int fps,
+            bool additiveParameters)
         {
             if (string.IsNullOrWhiteSpace(paramId))
             {
@@ -171,7 +159,51 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             var value = (float)animation.GetValue(frame, length, fps);
-            model.SetParameterValue(paramId, value);
+            ApplyParameterValue(model, paramId, value, additiveParameters);
+        }
+
+        private static void ApplyStandardFaceParameters(
+            Live2DModelWrapper model,
+            bool additiveParameters,
+            float eyeLOpen,
+            float eyeROpen,
+            float mouthOpenY,
+            float mouthForm,
+            float angleX,
+            float angleY,
+            float angleZ,
+            float bodyAngleX,
+            float eyeBallX,
+            float eyeBallY,
+            float cheek,
+            float armLA,
+            float armRA)
+        {
+            ApplyParameterValue(model, Live2DManager.ParamEyeLOpen, eyeLOpen, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamEyeROpen, eyeROpen, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamMouthOpenY, mouthOpenY, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamMouthForm, mouthForm, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamAngleX, angleX, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamAngleY, angleY, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamAngleZ, angleZ, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamBodyAngleX, bodyAngleX, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamEyeBallX, eyeBallX, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamEyeBallY, eyeBallY, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamCheek, cheek, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamArmLA, armLA, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamArmRA, armRA, additiveParameters);
+        }
+
+        private static void ApplyParameterValue(Live2DModelWrapper model, string parameterId, float value, bool additiveParameters)
+        {
+            if (additiveParameters)
+            {
+                model.AddParameterValue(parameterId, value);
+            }
+            else
+            {
+                model.SetParameterValue(parameterId, value);
+            }
         }
 
         public static bool ShouldApplyManualFaceParameters(Live2DFaceParameter activeFace)
@@ -219,7 +251,7 @@ namespace VTuberKitForYMM4.Plugin
             return false;
         }
 
-        private static bool TryResolveIdleMotionSelection(Live2DModelWrapper nativeModel, Live2DItemParameter? itemParam, out string group, out int index)
+        private static bool TryResolveItemMotionSelection(Live2DModelWrapper nativeModel, Live2DItemParameter? itemParam, out string group, out int index)
         {
             group = string.Empty;
             index = -1;
@@ -237,16 +269,22 @@ namespace VTuberKitForYMM4.Plugin
                 return true;
             }
 
+            var catalog = ModelMetadataCatalog.Motions;
+            if (motionIndex >= 0 && motionIndex < catalog.Count)
+            {
+                var motion = catalog[motionIndex];
+                group = motion.Group ?? string.Empty;
+                index = Math.Max(0, motion.Index);
+                return true;
+            }
+
             var motions = nativeModel.GetMotions();
             if (motionIndex >= 0 && motionIndex < motions.Length)
             {
-                var candidate = motions[motionIndex];
-                if (string.Equals(candidate.Group, "Idle", StringComparison.OrdinalIgnoreCase))
-                {
-                    group = candidate.Group ?? string.Empty;
-                    index = Math.Max(0, candidate.Index);
-                    return true;
-                }
+                var motion = motions[motionIndex];
+                group = motion.Group ?? string.Empty;
+                index = Math.Max(0, motion.Index);
+                return true;
             }
 
             return false;

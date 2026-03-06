@@ -1,18 +1,31 @@
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using VTuberKitForYMM4.Commons.CustomPropertyEditor;
+using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Controls;
 using YukkuriMovieMaker.Plugin.Tachie;
-using VTuberKitForYMM4.Commons.CustomPropertyEditor;
-using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 
 namespace VTuberKitForYMM4.Plugin
 {
     public class Live2DItemParameter : TachieItemParameterBase
     {
-        [Display(Name = "待機モーション", Description = "Idleグループのモーションから選択")]
+        [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
         [CustomComboBox]
-        public MotionViewModel Motion { get; set; } = new("Idle", onlyIdle: true);
+        public ExpressionViewModel Expression { get; set; } = new("exp");
+
+        [System.ComponentModel.Browsable(false)]
+        public string ExpressionId => Expression?.SelectedExpressionId ?? string.Empty;
+
+        [Display(Name = "モーション", Description = "モデル表示中に継続再生するモーションを選択（Idle含む）")]
+        [CustomComboBox]
+        public MotionViewModel Motion { get; set; } = new("Idle");
+
+        [Display(Name = "モーションループ", Description = "ONでモーションを繰り返し再生します")]
+        [ToggleSlider]
+        [DefaultValue(true)]
+        public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
+        bool motionLoop = true;
 
         [System.ComponentModel.Browsable(false)]
         public string MotionGroup => Motion?.SelectedGroup ?? string.Empty;

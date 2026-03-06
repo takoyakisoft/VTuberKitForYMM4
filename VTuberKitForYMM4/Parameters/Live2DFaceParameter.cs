@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using VTuberKitForYMM4.Commons.CustomPropertyEditor;
+using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Controls;
 using YukkuriMovieMaker.Plugin.Tachie;
-using VTuberKitForYMM4.Commons.CustomPropertyEditor;
-using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 
 namespace VTuberKitForYMM4.Plugin
 {
@@ -31,6 +30,18 @@ namespace VTuberKitForYMM4.Plugin
         [Display(Name = "モーション再生", Description = "有効時は指定モーションをクリップ時間で評価します")]
         public bool UseMotion { get => useMotion; set => Set(ref useMotion, value); }
         bool useMotion = false;
+
+        [Display(Name = "モーションループ", Description = "ONで face モーションを繰り返し再生します")]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
+        bool motionLoop = false;
+
+        [Display(Name = "パラメータ加算", Description = "ONで既存モーションへ加算、OFFで絶対値として適用します")]
+        [ToggleSlider]
+        [DefaultValue(true)]
+        public bool AdditiveParameters { get => additiveParameters; set => Set(ref additiveParameters, value); }
+        bool additiveParameters = true;
 
         [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
         [AnimationSlider("F2", "", 0.0, 1.0)]

@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace VTuberKitForYMM4.Plugin
 {
@@ -86,8 +84,8 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                if (string.IsNullOrWhiteSpace(modelPath) || 
-                    !modelPath.EndsWith(".model3.json", StringComparison.OrdinalIgnoreCase) || 
+                if (string.IsNullOrWhiteSpace(modelPath) ||
+                    !modelPath.EndsWith(".model3.json", StringComparison.OrdinalIgnoreCase) ||
                     !File.Exists(modelPath))
                 {
                     currentModelPath = string.Empty;

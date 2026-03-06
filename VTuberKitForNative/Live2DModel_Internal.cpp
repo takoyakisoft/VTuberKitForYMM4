@@ -11,6 +11,7 @@
 #include <wrl/client.h>
 #include <Motion/CubismMotionQueueEntry.hpp>
 #include <cmath>
+#include <mutex>
 
 #pragma comment(lib, "Windowscodecs.lib")
 
@@ -25,9 +26,53 @@ extern ID3D11DeviceContext* g_d3d11Context;
 
 namespace VTuberKitForNative {
 
+namespace
+{
+    std::mutex g_nativeDrawMutex;
+
+    bool TryDrawModelWithSehGuard(CubismRenderer_D3D11* renderer)
+    {
+        __try
+        {
+            renderer->DrawModel();
+            return true;
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            Live2DPal::PrintLogLn("Native Draw: DrawModel aborted by SEH. code=0x%08X", GetExceptionCode());
+            return false;
+        }
+    }
+}
+
 NativeModel::NativeModel()
     : _modelSetting(nullptr)
     , _lastMotionPriority(0.0f) {
+}
+
+void NativeModel::InitializeBlinkAndBreath() {
+    if (_eyeBlink) {
+        CubismEyeBlink::Delete(_eyeBlink);
+        _eyeBlink = nullptr;
+    }
+    if (_modelSetting && _modelSetting->GetEyeBlinkParameterCount() > 0) {
+        _eyeBlink = CubismEyeBlink::Create(_modelSetting);
+    }
+
+    if (_breath) {
+        CubismBreath::Delete(_breath);
+        _breath = nullptr;
+    }
+    _breath = CubismBreath::Create();
+    if (_breath) {
+        csmVector<CubismBreath::BreathParameterData> breathParameters;
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleX), 0.0f, 15.0f, 6.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleY), 0.0f, 8.0f, 3.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleZ), 0.0f, 10.0f, 5.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), 0.0f, 4.0f, 15.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBreath), 0.5f, 0.5f, 3.2345f, 0.5f));
+        _breath->SetParameters(breathParameters);
+    }
 }
 
 NativeModel::~NativeModel() {
@@ -73,7 +118,9 @@ void NativeModel::ReleaseTextures() {
     _textureViews.clear();
 }
 
-void NativeModel::LoadAssets(const char* dir, const char* fileName) {
+bool NativeModel::LoadAssets(const char* dir, const char* fileName) {
+    _lastErrorMessage.clear();
+
     if (_modelSetting) {
         delete _modelSetting;
         _modelSetting = nullptr;
@@ -87,16 +134,17 @@ void NativeModel::LoadAssets(const char* dir, const char* fileName) {
 
     if (!buffer) {
         Live2DPal::PrintLogLn("Failed to load model setting file: %s", path.GetRawString());
-        return;
+        _lastErrorMessage = std::string("モデル設定ファイルの読み込みに失敗しました: ") + path.GetRawString();
+        return false;
     }
 
     ICubismModelSetting* setting = new CubismModelSettingJson(buffer, static_cast<csmSizeInt>(rawSize));
     Live2DPal::ReleaseBytes(buffer);
 
-    SetupModel(setting);
+    return SetupModel(setting);
 }
 
-void NativeModel::SetupModel(ICubismModelSetting* setting) {
+bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     _updating = true;
     _initialized = false;
     _modelSetting = setting;
@@ -108,8 +156,21 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
         if (buffer) {
             LoadModel(buffer, static_cast<csmSizeType>(rawSize));
             Live2DPal::ReleaseBytes(buffer);
+
+            if (!_model) {
+                _lastErrorMessage = std::string("モデル本体(moc3)の読み込みに失敗しました: ") + path.GetRawString()
+                    + "。moc3のバージョンとCubism Coreの互換性を確認してください。";
+                Live2DPal::PrintLogLn("%s", _lastErrorMessage.c_str());
+                _updating = false;
+                _initialized = false;
+                return false;
+            }
         } else {
             Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.GetRawString());
+            _lastErrorMessage = std::string("モデル本体(moc3)ファイルが見つかりません: ") + path.GetRawString();
+            _updating = false;
+            _initialized = false;
+            return false;
         }
     }
 
@@ -175,28 +236,7 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
         _lipSyncIds.PushBack(setting->GetLipSyncParameterId(i));
     }
 
-    if (_eyeBlink) {
-        CubismEyeBlink::Delete(_eyeBlink);
-        _eyeBlink = nullptr;
-    }
-    if (setting->GetEyeBlinkParameterCount() > 0) {
-        _eyeBlink = CubismEyeBlink::Create(setting);
-    }
-
-    if (_breath) {
-        CubismBreath::Delete(_breath);
-        _breath = nullptr;
-    }
-    _breath = CubismBreath::Create();
-    if (_breath) {
-        csmVector<CubismBreath::BreathParameterData> breathParameters;
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleX), 0.0f, 15.0f, 6.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleY), 0.0f, 8.0f, 3.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleZ), 0.0f, 10.0f, 5.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), 0.0f, 4.0f, 15.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBreath), 0.5f, 0.5f, 3.2345f, 0.5f));
-        _breath->SetParameters(breathParameters);
-    }
+    InitializeBlinkAndBreath();
 
     csmMap<csmString, csmFloat32> layout;
     setting->GetLayoutMap(layout);
@@ -213,16 +253,34 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
         _motionManager->StopAllMotions();
     }
 
+    if (!_model)
+    {
+        _lastErrorMessage = "モデルの初期化に失敗したためレンダラーを作成できません。";
+        _updating = false;
+        _initialized = false;
+        return false;
+    }
+
     CreateRenderer();
     SetupTextures();
 
     _updating = false;
     _initialized = true;
+    _lastErrorMessage.clear();
+    return true;
 }
 
 void NativeModel::SetupTextures() {
     if (!g_d3d11Device) {
         Live2DPal::PrintLogLn("D3D11 Device not initialized. Skipping texture load.");
+        return;
+    }
+
+    const HRESULT coInitHr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    const bool shouldUninitializeCom = SUCCEEDED(coInitHr);
+    if (FAILED(coInitHr) && coInitHr != RPC_E_CHANGED_MODE)
+    {
+        Live2DPal::PrintLogLn("SetupTextures: CoInitializeEx failed: 0x%08X", coInitHr);
         return;
     }
 
@@ -300,6 +358,9 @@ void NativeModel::SetupTextures() {
                 if (renderer) {
                     renderer->BindTexture(i, textureView);
                     renderer->IsPremultipliedAlpha(false);
+                    // Keep render state deterministic across fresh instances.
+                    renderer->IsCulling(false);
+                    renderer->SetModelColor(1.0f, 1.0f, 1.0f, 1.0f);
                 }
                 _textureViews.push_back(textureView);
 
@@ -315,8 +376,14 @@ void NativeModel::SetupTextures() {
 
     CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
     if (renderer) {
+        renderer->IsCulling(false);
+        renderer->SetModelColor(1.0f, 1.0f, 1.0f, 1.0f);
         renderer->UseHighPrecisionMask(true);
-        Live2DPal::PrintLogLn("Renderer quality settings: highPrecisionMask=true, clippingMask=high");
+    }
+
+    if (shouldUninitializeCom)
+    {
+        CoUninitialize();
     }
 }
 
@@ -324,6 +391,36 @@ void NativeModel::ReloadRenderer() {
     DeleteRenderer();
     CreateRenderer();
     SetupTextures();
+}
+
+void NativeModel::ResetAnimationState() {
+    if (!_model) {
+        return;
+    }
+
+    StopAllMotions();
+
+    if (_expressionManager) {
+        _expressionManager->StopAllMotions();
+    }
+
+    if (_physics) {
+        _physics->Reset();
+    }
+
+    if (_pose) {
+        _pose->Reset(_model);
+    }
+
+    InitializeBlinkAndBreath();
+
+    _lipSyncValue = 0.0f;
+    _dragX = 0.0f;
+    _dragY = 0.0f;
+
+    _model->LoadParameters();
+    _model->Update();
+    _model->SaveParameters();
 }
 
 void NativeModel::LoadMotions() {
@@ -424,6 +521,7 @@ void NativeModel::StopAllMotions() {
     _manualMotion = nullptr;
     _manualMotionGroup.clear();
     _manualMotionIndex = -1;
+    _manualMotionLoop = false;
     _manualMotionQueueEntry = CubismMotionQueueEntry();
 }
 
@@ -486,7 +584,7 @@ void NativeModel::Update(float deltaTime) {
     _model->Update();
 }
 
-void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds) {
+void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds, bool loop) {
     if (!group) {
         return;
     }
@@ -504,22 +602,37 @@ void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds) {
     }
 
     _manualMotion = static_cast<CubismMotion*>(motionIt->second);
+    if (!_manualMotion) {
+        return;
+    }
+
+    _manualMotion->SetLoop(loop);
     _manualMotionTimeSeconds = timeSeconds < 0.0f ? 0.0f : timeSeconds;
-    _manualMotionActive = (_manualMotion != nullptr);
+    _manualMotionActive = true;
 
     if (_manualMotionActive) {
-        const bool changed = (_manualMotionGroup != group) || (_manualMotionIndex != no);
+        const bool changed = (_manualMotionGroup != group) || (_manualMotionIndex != no) || (_manualMotionLoop != loop);
         if (changed) {
             _manualMotionQueueEntry = CubismMotionQueueEntry();
             _manualMotionGroup = group;
             _manualMotionIndex = no;
-            Live2DPal::PrintLogLn("EvaluateMotion: switched to group='%s' index=%d", group, no);
+            _manualMotionLoop = loop;
         }
     }
 }
 
 void NativeModel::Draw(CubismMatrix44& matrix) {
+    std::lock_guard<std::mutex> lock(g_nativeDrawMutex);
+
     if (_model == nullptr) return;
+    if (_textureViews.empty()) {
+        Live2DPal::PrintLogLn("Native Draw: skipped because no textures are bound.");
+        return;
+    }
+    if (!g_d3d11Device || !g_d3d11Context) {
+        Live2DPal::PrintLogLn("Native Draw: skipped because D3D11 device/context is null.");
+        return;
+    }
 
     CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
     if (!renderer) return;
@@ -540,8 +653,59 @@ void NativeModel::Draw(CubismMatrix44& matrix) {
     matrix.MultiplyByMatrix(&transformMatrix);
 
     renderer->SetMvpMatrix(&matrix);
-    renderer->DrawModel();
+    if (!TryDrawModelWithSehGuard(renderer)) {
+        return;
+    }
 }
+
+void NativeModel::DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix) {
+    // Acquire the global native draw mutex BEFORE calling StartFrame so that:
+    //  - s_device / s_context / s_viewportWidth / s_viewportHeight are set atomically
+    //    relative to the actual DrawModel call (no other instance can overwrite them
+    //    between our StartFrame and our DrawModel).
+    std::lock_guard<std::mutex> lock(g_nativeDrawMutex);
+
+    if (_model == nullptr) return;
+    if (_textureViews.empty()) {
+        Live2DPal::PrintLogLn("DrawWithFrame: skipped because no textures are bound.");
+        return;
+    }
+    if (!device || !context) {
+        Live2DPal::PrintLogLn("DrawWithFrame: skipped because D3D11 device/context is null.");
+        return;
+    }
+
+    CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+    if (!renderer) return;
+
+    // Call StartFrame here, under the lock, to atomically update the Cubism statics.
+    CubismRenderer_D3D11::StartFrame(
+        device,
+        context,
+        static_cast<csmUint32>(viewportWidth),
+        static_cast<csmUint32>(viewportHeight));
+
+    matrix.MultiplyByMatrix(_modelMatrix);
+
+    const float rad = _viewRotationDegrees * 3.14159265359f / 180.0f;
+    const float cosValue = std::cos(rad) * _viewScale;
+    const float sinValue = std::sin(rad) * _viewScale;
+    csmFloat32 tr[16] = {
+        cosValue,  sinValue,  0.0f, 0.0f,
+       -sinValue,  cosValue,  0.0f, 0.0f,
+        0.0f,      0.0f,      1.0f, 0.0f,
+        _viewPositionX, _viewPositionY, 0.0f, 1.0f
+    };
+    CubismMatrix44 transformMatrix;
+    transformMatrix.SetMatrix(tr);
+    matrix.MultiplyByMatrix(&transformMatrix);
+
+    renderer->SetMvpMatrix(&matrix);
+    if (!TryDrawModelWithSehGuard(renderer)) {
+        return;
+    }
+}
+
 
 void NativeModel::DoDraw() {
 }
@@ -679,19 +843,19 @@ void NativeModel::ApplyStandardParameters(
         return;
     }
 
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeLOpen), eyeLOpen);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeROpen), eyeROpen);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthOpenY), mouthOpenY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthForm), mouthForm);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), angleX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), angleY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), angleZ);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), bodyAngleX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), eyeBallX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), eyeBallY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamCheek), cheek);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmLA), armLA);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmRA), armRA);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeLOpen), eyeLOpen);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeROpen), eyeROpen);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthOpenY), mouthOpenY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthForm), mouthForm);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), angleX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), angleY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), angleZ);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), bodyAngleX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), eyeBallX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), eyeBallY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamCheek), cheek);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmLA), armLA);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmRA), armRA);
 }
 
 void NativeModel::ApplyItemParameters(float opacity, float multiplyR, float multiplyG, float multiplyB, float multiplyA) {

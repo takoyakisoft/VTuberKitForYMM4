@@ -126,6 +126,13 @@ void Live2DManager::Release() {
         ReleaseAllModels();
         CubismFramework::Dispose();
         
+        if (g_d3d11Context) {
+            g_d3d11Context = nullptr;
+        }
+        if (g_d3d11Device) {
+            g_d3d11Device = nullptr;
+        }
+
         if (_allocator) {
             delete _allocator;
             _allocator = nullptr;
@@ -149,8 +156,7 @@ bool Live2DManager::IsInitialized() {
 void Live2DManager::SetD3D11Device(IntPtr device, IntPtr context) {
     g_d3d11Device = static_cast<ID3D11Device*>(device.ToPointer());
     g_d3d11Context = static_cast<ID3D11DeviceContext*>(context.ToPointer());
-
-    // 追加: レンダラーの静的設定（モデルロード前に一度だけ必要）
+    // レンダラーの静的設定（モデルロード前に一度だけ必要）
     if (g_d3d11Device) {
         Live2D::Cubism::Framework::Rendering::CubismRenderer_D3D11::InitializeConstantSettings(1, g_d3d11Device);
     }

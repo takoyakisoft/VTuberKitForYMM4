@@ -12,6 +12,7 @@ namespace VTuberKitForNative {
 Live2DModelWrapper::Live2DModelWrapper() {
     _nativeModel = new NativeModel();
     _isLoaded = false;
+    _lastErrorMessage = nullptr;
 }
 
 Live2DModelWrapper::~Live2DModelWrapper() {
@@ -24,7 +25,6 @@ Live2DModelWrapper::!Live2DModelWrapper() {
         _nativeModel = nullptr;
     }
 
-    // 修正: マネージャーの管理リストから自身を削除し、リークを防ぐ
     Live2DManager::GetInstance()->ReleaseModel(this);
 }
 
@@ -40,7 +40,11 @@ void Live2DModelWrapper::Release() {
 }
 
 bool Live2DModelWrapper::LoadModel(System::String^ modelPath) {
+    _lastErrorMessage = nullptr;
+
     if (modelPath == nullptr || modelPath->Length == 0) {
+        _isLoaded = false;
+        _lastErrorMessage = "モデルパスが空です。";
         return false;
     }
 
@@ -52,22 +56,44 @@ bool Live2DModelWrapper::LoadModel(System::String^ modelPath) {
     std::string modelPathStr = ManagedStringToUtf8(modelPath);
     size_t lastSlash = modelPathStr.find_last_of("/\\");
     if (lastSlash == std::string::npos) {
+        _isLoaded = false;
+        _lastErrorMessage = "モデルパスの形式が不正です。";
         return false;
     }
 
     std::string dir = modelPathStr.substr(0, lastSlash + 1);
     std::string fileName = modelPathStr.substr(lastSlash + 1);
 
-    _nativeModel->LoadAssets(dir.c_str(), fileName.c_str());
-    _isLoaded = (_nativeModel->GetModelSetting() != nullptr);
+    const bool loadSucceeded = _nativeModel->LoadAssets(dir.c_str(), fileName.c_str());
+    _isLoaded = loadSucceeded && (_nativeModel->GetModelSetting() != nullptr) && (_nativeModel->GetModel() != nullptr);
+
+    if (!_isLoaded) {
+        const std::string& nativeError = _nativeModel->GetLastErrorMessage();
+        if (!nativeError.empty()) {
+            _lastErrorMessage = Utf8ToManagedString(nativeError.c_str());
+        } else {
+            _lastErrorMessage = "モデルの読み込みに失敗しました。moc3とCubism Coreの互換性を確認してください。";
+        }
+    }
+
     _modelPath = modelPath;
 
     return _isLoaded;
 }
 
+System::String^ Live2DModelWrapper::LastErrorMessage::get() {
+    return _lastErrorMessage;
+}
+
 void Live2DModelWrapper::ReloadRenderer() {
     if (_nativeModel != nullptr) {
         _nativeModel->ReloadRenderer();
+    }
+}
+
+void Live2DModelWrapper::ResetAnimationState() {
+    if (_nativeModel != nullptr) {
+        _nativeModel->ResetAnimationState();
     }
 }
 
@@ -102,6 +128,25 @@ void Live2DModelWrapper::Draw(int screenWidth, int screenHeight) {
         _nativeModel->Draw(matrix);
     }
 }
+
+void Live2DModelWrapper::DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight) {
+    if (_nativeModel != nullptr && _isLoaded && screenWidth > 0 && screenHeight > 0) {
+        CubismMatrix44 matrix;
+        matrix.LoadIdentity();
+
+        const float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
+        if (screenAspect > 1.0f) {
+            matrix.Scale(1.0f / screenAspect, 1.0f);
+        } else {
+            matrix.Scale(1.0f, screenAspect);
+        }
+        
+        auto pDevice = static_cast<ID3D11Device*>(device.ToPointer());
+        auto pContext = static_cast<ID3D11DeviceContext*>(context.ToPointer());
+        _nativeModel->DrawWithFrame(pDevice, pContext, screenWidth, screenHeight, matrix);
+    }
+}
+
 
 void Live2DModelWrapper::SetParameterValue(System::String^ paramId, float value) {
     if (_nativeModel != nullptr && paramId != nullptr) {
@@ -339,10 +384,10 @@ void Live2DModelWrapper::StartRandomMotion(System::String^ group, int priority) 
     }
 }
 
-void Live2DModelWrapper::EvaluateMotion(System::String^ group, int index, float timeSeconds) {
+void Live2DModelWrapper::EvaluateMotion(System::String^ group, int index, float timeSeconds, bool loop) {
     if (_nativeModel != nullptr && group != nullptr) {
         const std::string groupStr = ManagedStringToUtf8(group);
-        _nativeModel->EvaluateMotion(groupStr.c_str(), index, timeSeconds);
+        _nativeModel->EvaluateMotion(groupStr.c_str(), index, timeSeconds, loop);
     }
 }
 

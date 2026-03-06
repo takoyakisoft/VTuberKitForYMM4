@@ -1,4 +1,3 @@
-using System.Linq;
 using VTuberKitForYMM4.Commons.CustomPropertyEditor;
 
 namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor

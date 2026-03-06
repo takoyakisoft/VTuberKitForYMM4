@@ -126,7 +126,6 @@ void Live2DPal::ConvertMultiByteToWide(const char* multiByteStr, wchar_t* dest, 
     MultiByteToWideChar(CP_UTF8, 0, multiByteStr, -1, dest, destSize);
 }
 
-// 追加: 安全な変換
 std::wstring Live2DPal::StringToWString(const std::string& str) {
     if (str.empty()) return std::wstring();
     int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);

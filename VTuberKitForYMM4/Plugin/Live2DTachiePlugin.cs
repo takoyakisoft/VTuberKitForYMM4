@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using YukkuriMovieMaker.Commons;
-using YukkuriMovieMaker.Plugin;
-using YukkuriMovieMaker.Plugin.Tachie;
 using VTuberKitForNative;
+using YukkuriMovieMaker.Commons;
+using YukkuriMovieMaker.Plugin.Tachie;
 
 namespace VTuberKitForYMM4.Plugin
 {
@@ -19,7 +15,7 @@ namespace VTuberKitForYMM4.Plugin
 
         public Live2DTachiePlugin()
         {
-            try 
+            try
             {
                 var manager = Live2DManager.GetInstance();
                 if (manager != null)

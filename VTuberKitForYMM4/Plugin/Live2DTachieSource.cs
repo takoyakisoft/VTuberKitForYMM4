@@ -52,6 +52,7 @@ namespace VTuberKitForYMM4.Plugin
         private int _msaaSampleCount = 1;
         private ID2D1Bitmap1? _d2dBitmap;
         private ID2D1Bitmap1? _outputBitmap;
+        private ID2D1Bitmap1? _fallbackOutputBitmap;
         private ID2D1Effect? _transformEffect;
         private ID2D1Image? _outputImage;
         private double _lastItemFrame;
@@ -106,8 +107,10 @@ namespace VTuberKitForYMM4.Plugin
                     _renderer = _sharedRenderer;
                 }
 
+                EnsureFallbackOutputBitmap();
                 _transformEffect = (ID2D1Effect)_devices.DeviceContext.CreateEffect(EffectGuids.AffineTransform2D);
                 _outputImage = _transformEffect.Output;
+                ClearTransformEffectInput();
             }
             catch (Exception ex)
             {
@@ -884,6 +887,8 @@ namespace VTuberKitForYMM4.Plugin
                             return true;
                         }
 
+                        ClearTransformEffectInput();
+
                         _d3dTexture?.Dispose();
                         _rtv?.Dispose();
                         _depthStencilTexture?.Dispose();
@@ -1152,8 +1157,47 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
+        private void EnsureFallbackOutputBitmap()
+        {
+            if (_fallbackOutputBitmap != null)
+            {
+                return;
+            }
+
+            var props = new BitmapProperties1(
+                new Vortice.DCommon.PixelFormat(Format.R8G8B8A8_UNorm, Vortice.DCommon.AlphaMode.Premultiplied),
+                96,
+                96,
+                BitmapOptions.None);
+            _fallbackOutputBitmap = _devices.DeviceContext.CreateBitmap(
+                new Vortice.Mathematics.SizeI(1, 1),
+                IntPtr.Zero,
+                0,
+                props);
+        }
+
+        private void ClearTransformEffectInput()
+        {
+            if (_transformEffect == null)
+            {
+                return;
+            }
+
+            try
+            {
+                EnsureFallbackOutputBitmap();
+                _transformEffect.SetInput(0, _fallbackOutputBitmap, true);
+            }
+            catch (Exception ex)
+            {
+                Commons.ConsoleManager.Debug($"[{GetLogPrefix()}] Failed to clear transform effect input: {ex.Message}");
+            }
+        }
+
         private void ResetRenderResources()
         {
+            ClearTransformEffectInput();
+
             _d3dTexture?.Dispose();
             _d3dTexture = null;
             _rtv?.Dispose();
@@ -1197,8 +1241,11 @@ namespace VTuberKitForYMM4.Plugin
                 _msaaDsv?.Dispose();
                 _d2dBitmap?.Dispose();
                 _outputBitmap?.Dispose();
+                ClearTransformEffectInput();
                 _outputImage?.Dispose();
                 _outputImage = null;
+                _fallbackOutputBitmap?.Dispose();
+                _fallbackOutputBitmap = null;
                 _transformEffect?.Dispose();
                 _transformEffect = null;
 

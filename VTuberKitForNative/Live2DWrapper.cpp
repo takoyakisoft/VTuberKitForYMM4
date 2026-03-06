@@ -22,7 +22,7 @@ void Live2DPlugin::ReleasePlugin() {
 }
 
 String^ Live2DPlugin::GetVersion() {
-    return gcnew String("1.1.0.0");
+    return gcnew String("1.1.1.0");
 }
 
 String^ Live2DPlugin::GetCubismVersion() {

@@ -133,7 +133,7 @@ namespace VTuberKitForYMM4.Plugin
             var currentOpacity = model.GetPartOpacity(partId);
             var opacity = additiveParameters
                 ? (float)Math.Clamp(currentOpacity + value, 0.0, 1.0)
-                : (float)Math.Clamp(currentOpacity * value, 0.0, 1.0);
+                : (float)Math.Clamp(currentOpacity * (1.0f + value), 0.0, 1.0);
             model.SetPartOpacity(partId, opacity);
         }
 
@@ -184,8 +184,8 @@ namespace VTuberKitForYMM4.Plugin
             float armLA,
             float armRA)
         {
-            ApplyParameterValue(model, Live2DManager.ParamEyeLOpen, eyeLOpen, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamEyeROpen, eyeROpen, additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamEyeLOpen, NormalizeAbsoluteValue(eyeLOpen, additiveParameters, 1.0f), additiveParameters);
+            ApplyParameterValue(model, Live2DManager.ParamEyeROpen, NormalizeAbsoluteValue(eyeROpen, additiveParameters, 1.0f), additiveParameters);
             ApplyParameterValue(model, Live2DManager.ParamMouthOpenY, mouthOpenY, additiveParameters);
             ApplyParameterValue(model, Live2DManager.ParamMouthForm, mouthForm, additiveParameters);
             ApplyParameterValue(model, Live2DManager.ParamAngleX, angleX, additiveParameters);
@@ -197,6 +197,11 @@ namespace VTuberKitForYMM4.Plugin
             ApplyParameterValue(model, Live2DManager.ParamCheek, cheek, additiveParameters);
             ApplyParameterValue(model, Live2DManager.ParamArmLA, armLA, additiveParameters);
             ApplyParameterValue(model, Live2DManager.ParamArmRA, armRA, additiveParameters);
+        }
+
+        private static float NormalizeAbsoluteValue(float value, bool additiveParameters, float neutralValue)
+        {
+            return additiveParameters ? value : neutralValue + value;
         }
 
         private static void ApplyParameterValue(Live2DModelWrapper model, string parameterId, float value, bool additiveParameters)

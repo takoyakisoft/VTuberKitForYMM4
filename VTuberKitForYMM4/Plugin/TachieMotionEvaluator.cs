@@ -110,9 +110,9 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart1Id, activeFace.CustomPart1Opacity, frame, length, fps);
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart2Id, activeFace.CustomPart2Opacity, frame, length, fps);
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart3Id, activeFace.CustomPart3Opacity, frame, length, fps);
+            ApplyCustomFacePartOpacity(model, activeFace.CustomPart1Id, activeFace.CustomPart1Opacity, frame, length, fps, activeFace.AdditiveParameters);
+            ApplyCustomFacePartOpacity(model, activeFace.CustomPart2Id, activeFace.CustomPart2Opacity, frame, length, fps, activeFace.AdditiveParameters);
+            ApplyCustomFacePartOpacity(model, activeFace.CustomPart3Id, activeFace.CustomPart3Opacity, frame, length, fps, activeFace.AdditiveParameters);
         }
 
         private static void ApplyCustomFacePartOpacity(
@@ -121,14 +121,19 @@ namespace VTuberKitForYMM4.Plugin
             Animation animation,
             long frame,
             long length,
-            int fps)
+            int fps,
+            bool additiveParameters)
         {
             if (string.IsNullOrWhiteSpace(partId))
             {
                 return;
             }
 
-            var opacity = (float)Math.Clamp(animation.GetValue(frame, length, fps), 0.0, 1.0);
+            var value = (float)animation.GetValue(frame, length, fps);
+            var currentOpacity = model.GetPartOpacity(partId);
+            var opacity = additiveParameters
+                ? (float)Math.Clamp(currentOpacity + value, 0.0, 1.0)
+                : (float)Math.Clamp(currentOpacity * value, 0.0, 1.0);
             model.SetPartOpacity(partId, opacity);
         }
 

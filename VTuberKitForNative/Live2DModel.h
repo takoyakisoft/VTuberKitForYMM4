@@ -81,13 +81,19 @@ public:
 
     // モデルファイルロード
     bool LoadModel(System::String^ modelPath);
+    property System::String^ LastErrorMessage
+    {
+        System::String^ get();
+    }
     void ReloadRenderer();
+    void ResetAnimationState();
 
     // 更新と描画
     void Update(float deltaTime);
     void Draw(CubismMatrix44& matrix);
     void Draw(); // デフォルト描画（画面にフィット）
-    void Draw(int screenWidth, int screenHeight); // 画面サイズを考慮した描画
+    void Draw(int screenWidth, int screenHeight); // 画面サイズを考慮した描画（BeginFrame別途呼ぶ旧方式）
+    bool DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight); // StartFrame込みアトミック描画（推奨）
 
     // パラメータ制御
     void SetParameterValue(System::String^ paramId, float value);
@@ -127,7 +133,7 @@ public:
     // モーション制御
     void StartMotion(System::String^ group, int index, int priority);
     void StartRandomMotion(System::String^ group, int priority);
-    void EvaluateMotion(System::String^ group, int index, float timeSeconds);
+    void EvaluateMotion(System::String^ group, int index, float timeSeconds, bool loop);
     void StopAllMotions();
     bool IsMotionFinished();
     array<Live2DMotion^>^ GetMotions();
@@ -179,6 +185,7 @@ private:
     NativeModel* _nativeModel;
     bool _isLoaded;
     System::String^ _modelPath;
+    System::String^ _lastErrorMessage;
 };
 
 } // namespace VTuberKitForNative

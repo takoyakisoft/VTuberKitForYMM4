@@ -26,11 +26,14 @@ public:
     NativeModel();
     virtual ~NativeModel();
 
-    void LoadAssets(const char* dir, const char* fileName);
+    bool LoadAssets(const char* dir, const char* fileName);
     void ReloadRenderer();
+    void ResetAnimationState();
     void Update(float deltaTime);
-    void EvaluateMotion(const char* group, int no, float timeSeconds);
-    void Draw(CubismMatrix44& matrix);
+    void EvaluateMotion(const char* group, int no, float timeSeconds, bool loop);
+    void Draw(CubismMatrix44& matrix);                                     // 後方互換
+    bool DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix); // StartFrame込み
+    const std::string& GetLastErrorMessage() const { return _lastErrorMessage; }
 
     // パラメータ制御
     void SetParameterValue(const char* paramId, float value);
@@ -96,7 +99,8 @@ protected:
     void DoDraw();
 
 private:
-    void SetupModel(ICubismModelSetting* setting);
+    void InitializeBlinkAndBreath();
+    bool SetupModel(ICubismModelSetting* setting);
     void SetupTextures();
     void ReleaseTextures(); // 追加
     void LoadMotions(); // モーション読み込み
@@ -104,7 +108,6 @@ private:
     ICubismModelSetting* _modelSetting;
     csmString _modelHomeDir;
 
-    // 修正: グローバル変数ではなくメンバ変数で管理
     std::vector<ID3D11ShaderResourceView*> _textureViews;
     
     // テクスチャサイズを記録
@@ -135,6 +138,8 @@ private:
     CubismMotionQueueEntry _manualMotionQueueEntry;
     std::string _manualMotionGroup;
     int _manualMotionIndex = -1;
+    bool _manualMotionLoop = false;
+    std::string _lastErrorMessage;
 };
 
 } // namespace VTuberKitForNative

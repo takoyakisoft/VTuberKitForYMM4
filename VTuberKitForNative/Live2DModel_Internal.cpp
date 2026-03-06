@@ -5,14 +5,18 @@
 #include <CubismDefaultParameterId.hpp>
 #include <Id/CubismIdManager.hpp>
 #include <d3d11.h>
+#include <Shlwapi.h>
 #include <map>
 #include <vector>
 #include <wincodec.h>
 #include <wrl/client.h>
 #include <Motion/CubismMotionQueueEntry.hpp>
 #include <cmath>
+#include <cwchar>
+#include <mutex>
 
 #pragma comment(lib, "Windowscodecs.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 #pragma unmanaged
 
@@ -25,9 +29,161 @@ extern ID3D11DeviceContext* g_d3d11Context;
 
 namespace VTuberKitForNative {
 
+namespace
+{
+    std::mutex g_nativeDrawMutex;
+
+    std::string WideToUtf8(const std::wstring& value)
+    {
+        if (value.empty())
+        {
+            return std::string();
+        }
+
+        const int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        if (sizeNeeded <= 1)
+        {
+            return std::string();
+        }
+
+        std::string utf8(sizeNeeded, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, &utf8[0], sizeNeeded, nullptr, nullptr);
+        utf8.resize(sizeNeeded - 1);
+        return utf8;
+    }
+
+    std::wstring NormalizeAbsolutePath(const std::wstring& path)
+    {
+        if (path.empty())
+        {
+            return std::wstring();
+        }
+
+        const DWORD requiredLength = GetFullPathNameW(path.c_str(), 0, nullptr, nullptr);
+        if (requiredLength == 0)
+        {
+            return std::wstring();
+        }
+
+        std::wstring normalized(requiredLength, L'\0');
+        const DWORD writtenLength = GetFullPathNameW(path.c_str(), requiredLength, &normalized[0], nullptr);
+        if (writtenLength == 0)
+        {
+            return std::wstring();
+        }
+
+        normalized.resize(wcslen(normalized.c_str()));
+        return normalized;
+    }
+
+    bool TryResolveModelAssetPath(const csmString& modelHomeDir, const char* relativePath, std::string& resolvedPath, std::string& errorMessage)
+    {
+        if (!relativePath || relativePath[0] == '\0')
+        {
+            errorMessage = "asset path is empty";
+            return false;
+        }
+
+        try
+        {
+            std::wstring baseDir = NormalizeAbsolutePath(Live2DPal::StringToWString(modelHomeDir.GetRawString()));
+            if (baseDir.empty())
+            {
+                errorMessage = std::string("failed to normalize model directory: ") + modelHomeDir.GetRawString();
+                return false;
+            }
+
+            const std::wstring assetRelativePath = Live2DPal::StringToWString(relativePath);
+            if (assetRelativePath.empty())
+            {
+                errorMessage = std::string("asset path conversion failed: ") + relativePath;
+                return false;
+            }
+
+            if (!PathIsRelativeW(assetRelativePath.c_str()))
+            {
+                errorMessage = std::string("absolute asset path is not allowed: ") + relativePath;
+                return false;
+            }
+
+            if (!baseDir.empty() && baseDir.back() != L'\\' && baseDir.back() != L'/')
+            {
+                baseDir += L'\\';
+            }
+
+            const std::wstring combinedPath = baseDir + assetRelativePath;
+            const std::wstring candidate = NormalizeAbsolutePath(combinedPath);
+            if (candidate.empty())
+            {
+                errorMessage = std::string("failed to normalize asset path: ") + relativePath;
+                return false;
+            }
+
+            if (_wcsnicmp(candidate.c_str(), baseDir.c_str(), baseDir.size()) != 0)
+            {
+                errorMessage = std::string("asset path escapes model directory: ") + relativePath;
+                return false;
+            }
+
+            resolvedPath = WideToUtf8(candidate);
+            if (resolvedPath.empty())
+            {
+                errorMessage = std::string("failed to normalize asset path: ") + relativePath;
+                return false;
+            }
+
+            return true;
+        }
+        catch (const std::exception& ex)
+        {
+            errorMessage = std::string("asset path validation failed for '") + relativePath + "': " + ex.what();
+            return false;
+        }
+    }
+
+    bool TryDrawModelWithSehGuard(CubismRenderer_D3D11* renderer)
+    {
+        __try
+        {
+            renderer->DrawModel();
+            return true;
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            Live2DPal::PrintLogLn("Native Draw: DrawModel aborted by SEH. code=0x%08X", GetExceptionCode());
+            return false;
+        }
+    }
+}
+
 NativeModel::NativeModel()
     : _modelSetting(nullptr)
     , _lastMotionPriority(0.0f) {
+}
+
+void NativeModel::InitializeBlinkAndBreath() {
+    if (_eyeBlink) {
+        CubismEyeBlink::Delete(_eyeBlink);
+        _eyeBlink = nullptr;
+    }
+    if (_modelSetting && _modelSetting->GetEyeBlinkParameterCount() > 0) {
+        _eyeBlink = CubismEyeBlink::Create(_modelSetting);
+    }
+
+    if (_breath) {
+        CubismBreath::Delete(_breath);
+        _breath = nullptr;
+    }
+    _breath = CubismBreath::Create();
+    if (_breath) {
+        csmVector<CubismBreath::BreathParameterData> breathParameters;
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleX), 0.0f, 15.0f, 6.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleY), 0.0f, 8.0f, 3.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleZ), 0.0f, 10.0f, 5.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), 0.0f, 4.0f, 15.5345f, 0.5f));
+        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBreath), 0.5f, 0.5f, 3.2345f, 0.5f));
+        _breath->SetParameters(breathParameters);
+    }
 }
 
 NativeModel::~NativeModel() {
@@ -73,7 +229,9 @@ void NativeModel::ReleaseTextures() {
     _textureViews.clear();
 }
 
-void NativeModel::LoadAssets(const char* dir, const char* fileName) {
+bool NativeModel::LoadAssets(const char* dir, const char* fileName) {
+    _lastErrorMessage.clear();
+
     if (_modelSetting) {
         delete _modelSetting;
         _modelSetting = nullptr;
@@ -87,29 +245,51 @@ void NativeModel::LoadAssets(const char* dir, const char* fileName) {
 
     if (!buffer) {
         Live2DPal::PrintLogLn("Failed to load model setting file: %s", path.GetRawString());
-        return;
+        _lastErrorMessage = std::string("モデル設定ファイルの読み込みに失敗しました: ") + path.GetRawString();
+        return false;
     }
 
     ICubismModelSetting* setting = new CubismModelSettingJson(buffer, static_cast<csmSizeInt>(rawSize));
     Live2DPal::ReleaseBytes(buffer);
 
-    SetupModel(setting);
+    return SetupModel(setting);
 }
 
-void NativeModel::SetupModel(ICubismModelSetting* setting) {
+bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     _updating = true;
     _initialized = false;
     _modelSetting = setting;
 
     if (strcmp(setting->GetModelFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetModelFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetModelFileName(), path, pathError)) {
+            _lastErrorMessage = std::string("モデル本体(moc3)のパスが不正です: ") + pathError;
+            Live2DPal::PrintLogLn("%s", _lastErrorMessage.c_str());
+            _updating = false;
+            _initialized = false;
+            return false;
+        }
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
         if (buffer) {
             LoadModel(buffer, static_cast<csmSizeType>(rawSize));
             Live2DPal::ReleaseBytes(buffer);
+
+            if (!_model) {
+                _lastErrorMessage = std::string("モデル本体(moc3)の読み込みに失敗しました: ") + path
+                    + "。moc3のバージョンとCubism Coreの互換性を確認してください。";
+                Live2DPal::PrintLogLn("%s", _lastErrorMessage.c_str());
+                _updating = false;
+                _initialized = false;
+                return false;
+            }
         } else {
-            Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.GetRawString());
+            Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.c_str());
+            _lastErrorMessage = std::string("モデル本体(moc3)ファイルが見つかりません: ") + path;
+            _updating = false;
+            _initialized = false;
+            return false;
         }
     }
 
@@ -121,9 +301,14 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
     if (setting->GetExpressionCount() > 0) {
         for (csmInt32 i = 0; i < setting->GetExpressionCount(); ++i) {
             csmString expressionName = setting->GetExpressionName(i);
-            csmString expressionPath = _modelHomeDir + setting->GetExpressionFileName(i);
+            std::string expressionPath;
+            std::string pathError;
+            if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetExpressionFileName(i), expressionPath, pathError)) {
+                Live2DPal::PrintLogLn("Skipped expression '%s': %s", expressionName.GetRawString(), pathError.c_str());
+                continue;
+            }
             unsigned int rawSize = 0;
-            csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath.GetRawString(), &rawSize);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath, &rawSize);
             if (!buffer) {
                 continue;
             }
@@ -137,32 +322,47 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
     }
 
     if (strcmp(setting->GetPhysicsFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetPhysicsFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPhysicsFileName(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped physics file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
     if (strcmp(setting->GetPoseFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetPoseFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPoseFileName(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped pose file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
     if (strcmp(setting->GetUserDataFile(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetUserDataFile();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetUserDataFile(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped user data file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
@@ -175,28 +375,7 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
         _lipSyncIds.PushBack(setting->GetLipSyncParameterId(i));
     }
 
-    if (_eyeBlink) {
-        CubismEyeBlink::Delete(_eyeBlink);
-        _eyeBlink = nullptr;
-    }
-    if (setting->GetEyeBlinkParameterCount() > 0) {
-        _eyeBlink = CubismEyeBlink::Create(setting);
-    }
-
-    if (_breath) {
-        CubismBreath::Delete(_breath);
-        _breath = nullptr;
-    }
-    _breath = CubismBreath::Create();
-    if (_breath) {
-        csmVector<CubismBreath::BreathParameterData> breathParameters;
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleX), 0.0f, 15.0f, 6.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleY), 0.0f, 8.0f, 3.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamAngleZ), 0.0f, 10.0f, 5.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), 0.0f, 4.0f, 15.5345f, 0.5f));
-        breathParameters.PushBack(CubismBreath::BreathParameterData(CubismFramework::GetIdManager()->GetId(ParamBreath), 0.5f, 0.5f, 3.2345f, 0.5f));
-        _breath->SetParameters(breathParameters);
-    }
+    InitializeBlinkAndBreath();
 
     csmMap<csmString, csmFloat32> layout;
     setting->GetLayoutMap(layout);
@@ -213,16 +392,34 @@ void NativeModel::SetupModel(ICubismModelSetting* setting) {
         _motionManager->StopAllMotions();
     }
 
+    if (!_model)
+    {
+        _lastErrorMessage = "モデルの初期化に失敗したためレンダラーを作成できません。";
+        _updating = false;
+        _initialized = false;
+        return false;
+    }
+
     CreateRenderer();
     SetupTextures();
 
     _updating = false;
     _initialized = true;
+    _lastErrorMessage.clear();
+    return true;
 }
 
 void NativeModel::SetupTextures() {
     if (!g_d3d11Device) {
         Live2DPal::PrintLogLn("D3D11 Device not initialized. Skipping texture load.");
+        return;
+    }
+
+    const HRESULT coInitHr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    const bool shouldUninitializeCom = SUCCEEDED(coInitHr);
+    if (FAILED(coInitHr) && coInitHr != RPC_E_CHANGED_MODE)
+    {
+        Live2DPal::PrintLogLn("SetupTextures: CoInitializeEx failed: 0x%08X", coInitHr);
         return;
     }
 
@@ -241,13 +438,18 @@ void NativeModel::SetupTextures() {
     csmInt32 textureCount = _modelSetting->GetTextureCount();
     for (csmInt32 i = 0; i < textureCount; i++) {
         const csmChar* fileName = _modelSetting->GetTextureFileName(i);
-        csmString path = _modelHomeDir + fileName;
-        std::wstring widePath = Live2DPal::StringToWString(path.GetRawString());
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, fileName, path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped texture %d: %s", i, pathError.c_str());
+            continue;
+        }
+        std::wstring widePath = Live2DPal::StringToWString(path);
 
         Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
         hr = wicFactory->CreateDecoderFromFilename(widePath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
         if (FAILED(hr)) {
-            Live2DPal::PrintLogLn("Failed to create decoder for: %s, 0x%08X", path.GetRawString(), hr);
+            Live2DPal::PrintLogLn("Failed to create decoder for: %s, 0x%08X", path.c_str(), hr);
             continue;
         }
 
@@ -300,6 +502,9 @@ void NativeModel::SetupTextures() {
                 if (renderer) {
                     renderer->BindTexture(i, textureView);
                     renderer->IsPremultipliedAlpha(false);
+                    // Keep render state deterministic across fresh instances.
+                    renderer->IsCulling(false);
+                    renderer->SetModelColor(1.0f, 1.0f, 1.0f, 1.0f);
                 }
                 _textureViews.push_back(textureView);
 
@@ -315,8 +520,14 @@ void NativeModel::SetupTextures() {
 
     CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
     if (renderer) {
+        renderer->IsCulling(false);
+        renderer->SetModelColor(1.0f, 1.0f, 1.0f, 1.0f);
         renderer->UseHighPrecisionMask(true);
-        Live2DPal::PrintLogLn("Renderer quality settings: highPrecisionMask=true, clippingMask=high");
+    }
+
+    if (shouldUninitializeCom)
+    {
+        CoUninitialize();
     }
 }
 
@@ -324,6 +535,36 @@ void NativeModel::ReloadRenderer() {
     DeleteRenderer();
     CreateRenderer();
     SetupTextures();
+}
+
+void NativeModel::ResetAnimationState() {
+    if (!_model) {
+        return;
+    }
+
+    StopAllMotions();
+
+    if (_expressionManager) {
+        _expressionManager->StopAllMotions();
+    }
+
+    if (_physics) {
+        _physics->Reset();
+    }
+
+    if (_pose) {
+        _pose->Reset(_model);
+    }
+
+    InitializeBlinkAndBreath();
+
+    _lipSyncValue = 0.0f;
+    _dragX = 0.0f;
+    _dragY = 0.0f;
+
+    _model->LoadParameters();
+    _model->Update();
+    _model->SaveParameters();
 }
 
 void NativeModel::LoadMotions() {
@@ -350,9 +591,14 @@ void NativeModel::LoadMotions() {
                 continue;
             }
 
-            csmString path = _modelHomeDir + fileName;
+            std::string path;
+            std::string pathError;
+            if (!TryResolveModelAssetPath(_modelHomeDir, fileName.GetRawString(), path, pathError)) {
+                Live2DPal::PrintLogLn("Skipped motion '%s'[%d]: %s", groupName, j, pathError.c_str());
+                continue;
+            }
             unsigned int rawSize = 0;
-            csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
 
             if (buffer) {
                 ACubismMotion* motion = LoadMotion(
@@ -373,10 +619,10 @@ void NativeModel::LoadMotions() {
                     }
                     _motions[groupName][j] = motion;
                 } else {
-                    Live2DPal::PrintLogLn("Failed to create motion: %s", path.GetRawString());
+                    Live2DPal::PrintLogLn("Failed to create motion: %s", path.c_str());
                 }
             } else {
-                Live2DPal::PrintLogLn("Failed to load motion file: %s", path.GetRawString());
+                Live2DPal::PrintLogLn("Failed to load motion file: %s", path.c_str());
             }
         }
     }
@@ -424,6 +670,7 @@ void NativeModel::StopAllMotions() {
     _manualMotion = nullptr;
     _manualMotionGroup.clear();
     _manualMotionIndex = -1;
+    _manualMotionLoop = false;
     _manualMotionQueueEntry = CubismMotionQueueEntry();
 }
 
@@ -486,7 +733,7 @@ void NativeModel::Update(float deltaTime) {
     _model->Update();
 }
 
-void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds) {
+void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds, bool loop) {
     if (!group) {
         return;
     }
@@ -504,22 +751,37 @@ void NativeModel::EvaluateMotion(const char* group, int no, float timeSeconds) {
     }
 
     _manualMotion = static_cast<CubismMotion*>(motionIt->second);
+    if (!_manualMotion) {
+        return;
+    }
+
+    _manualMotion->SetLoop(loop);
     _manualMotionTimeSeconds = timeSeconds < 0.0f ? 0.0f : timeSeconds;
-    _manualMotionActive = (_manualMotion != nullptr);
+    _manualMotionActive = true;
 
     if (_manualMotionActive) {
-        const bool changed = (_manualMotionGroup != group) || (_manualMotionIndex != no);
+        const bool changed = (_manualMotionGroup != group) || (_manualMotionIndex != no) || (_manualMotionLoop != loop);
         if (changed) {
             _manualMotionQueueEntry = CubismMotionQueueEntry();
             _manualMotionGroup = group;
             _manualMotionIndex = no;
-            Live2DPal::PrintLogLn("EvaluateMotion: switched to group='%s' index=%d", group, no);
+            _manualMotionLoop = loop;
         }
     }
 }
 
 void NativeModel::Draw(CubismMatrix44& matrix) {
+    std::lock_guard<std::mutex> lock(g_nativeDrawMutex);
+
     if (_model == nullptr) return;
+    if (_textureViews.empty()) {
+        Live2DPal::PrintLogLn("Native Draw: skipped because no textures are bound.");
+        return;
+    }
+    if (!g_d3d11Device || !g_d3d11Context) {
+        Live2DPal::PrintLogLn("Native Draw: skipped because D3D11 device/context is null.");
+        return;
+    }
 
     CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
     if (!renderer) return;
@@ -540,8 +802,61 @@ void NativeModel::Draw(CubismMatrix44& matrix) {
     matrix.MultiplyByMatrix(&transformMatrix);
 
     renderer->SetMvpMatrix(&matrix);
-    renderer->DrawModel();
+    if (!TryDrawModelWithSehGuard(renderer)) {
+        return;
+    }
 }
+
+bool NativeModel::DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix) {
+    // Acquire the global native draw mutex BEFORE calling StartFrame so that:
+    //  - s_device / s_context / s_viewportWidth / s_viewportHeight are set atomically
+    //    relative to the actual DrawModel call (no other instance can overwrite them
+    //    between our StartFrame and our DrawModel).
+    std::lock_guard<std::mutex> lock(g_nativeDrawMutex);
+
+    if (_model == nullptr) return false;
+    if (_textureViews.empty()) {
+        Live2DPal::PrintLogLn("DrawWithFrame: skipped because no textures are bound.");
+        return false;
+    }
+    if (!device || !context) {
+        Live2DPal::PrintLogLn("DrawWithFrame: skipped because D3D11 device/context is null.");
+        return false;
+    }
+
+    CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
+    if (!renderer) return false;
+
+    // Call StartFrame here, under the lock, to atomically update the Cubism statics.
+    CubismRenderer_D3D11::StartFrame(
+        device,
+        context,
+        static_cast<csmUint32>(viewportWidth),
+        static_cast<csmUint32>(viewportHeight));
+
+    matrix.MultiplyByMatrix(_modelMatrix);
+
+    const float rad = _viewRotationDegrees * 3.14159265359f / 180.0f;
+    const float cosValue = std::cos(rad) * _viewScale;
+    const float sinValue = std::sin(rad) * _viewScale;
+    csmFloat32 tr[16] = {
+        cosValue,  sinValue,  0.0f, 0.0f,
+       -sinValue,  cosValue,  0.0f, 0.0f,
+        0.0f,      0.0f,      1.0f, 0.0f,
+        _viewPositionX, _viewPositionY, 0.0f, 1.0f
+    };
+    CubismMatrix44 transformMatrix;
+    transformMatrix.SetMatrix(tr);
+    matrix.MultiplyByMatrix(&transformMatrix);
+
+    renderer->SetMvpMatrix(&matrix);
+    if (!TryDrawModelWithSehGuard(renderer)) {
+        return false;
+    }
+
+    return true;
+}
+
 
 void NativeModel::DoDraw() {
 }
@@ -679,19 +994,19 @@ void NativeModel::ApplyStandardParameters(
         return;
     }
 
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeLOpen), eyeLOpen);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeROpen), eyeROpen);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthOpenY), mouthOpenY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthForm), mouthForm);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), angleX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), angleY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), angleZ);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), bodyAngleX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), eyeBallX);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), eyeBallY);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamCheek), cheek);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmLA), armLA);
-    _model->SetParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmRA), armRA);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeLOpen), eyeLOpen);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeROpen), eyeROpen);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthOpenY), mouthOpenY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamMouthForm), mouthForm);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), angleX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), angleY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), angleZ);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), bodyAngleX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), eyeBallX);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), eyeBallY);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamCheek), cheek);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmLA), armLA);
+    _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamArmRA), armRA);
 }
 
 void NativeModel::ApplyItemParameters(float opacity, float multiplyR, float multiplyG, float multiplyB, float multiplyA) {

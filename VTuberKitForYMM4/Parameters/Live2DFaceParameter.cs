@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using VTuberKitForYMM4.Commons.CustomPropertyEditor;
+using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Controls;
 using YukkuriMovieMaker.Plugin.Tachie;
-using VTuberKitForYMM4.Commons.CustomPropertyEditor;
-using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 
 namespace VTuberKitForYMM4.Plugin
 {
@@ -32,21 +31,33 @@ namespace VTuberKitForYMM4.Plugin
         public bool UseMotion { get => useMotion; set => Set(ref useMotion, value); }
         bool useMotion = false;
 
+        [Display(Name = "モーションループ", Description = "ONで face モーションを繰り返し再生します")]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
+        bool motionLoop = false;
+
+        [Display(Name = "パラメータ加算", Description = "ONで既存モーションへ加算、OFFで絶対値として適用します")]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool AdditiveParameters { get => additiveParameters; set => Set(ref additiveParameters, value); }
+        bool additiveParameters = false;
+
         [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation Opacity { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation Opacity { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "目の開きL", Description = "ParamEyeLOpen")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation EyeLOpen { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation EyeLOpen { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "目の開きR", Description = "ParamEyeROpen")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation EyeROpen { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation EyeROpen { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "口の開き", Description = "ParamMouthOpenY")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation MouthOpen { get; } = new Animation(0, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation MouthOpen { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "口の形", Description = "ParamMouthForm")]
         [AnimationSlider("F2", "", -1.0, 1.0)]
@@ -77,8 +88,8 @@ namespace VTuberKitForYMM4.Plugin
         public Animation EyeBallY { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "頬", Description = "ParamCheek")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation Cheek { get; } = new Animation(0, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation Cheek { get; } = new Animation(0, -1, 1);
 
         [Display(Name = "腕L", Description = "ParamArmLA")]
         [AnimationSlider("F2", "", -1.0, 1.0)]
@@ -197,8 +208,8 @@ namespace VTuberKitForYMM4.Plugin
         string customPart1Id = string.Empty;
 
         [Display(GroupName = "カスタムPart", Name = "カスタムPart1 不透明度", Description = "カスタムPart1 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation CustomPart1Opacity { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation CustomPart1Opacity { get; } = new Animation(0, -1, 1);
 
         [Display(GroupName = "カスタムPart", Name = "カスタムPart2 ID", Description = "Part IDを選択（未選択で無効）")]
         [CustomComboBox]
@@ -221,8 +232,8 @@ namespace VTuberKitForYMM4.Plugin
         string customPart2Id = string.Empty;
 
         [Display(GroupName = "カスタムPart", Name = "カスタムPart2 不透明度", Description = "カスタムPart2 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation CustomPart2Opacity { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation CustomPart2Opacity { get; } = new Animation(0, -1, 1);
 
         [Display(GroupName = "カスタムPart", Name = "カスタムPart3 ID", Description = "Part IDを選択（未選択で無効）")]
         [CustomComboBox]
@@ -245,8 +256,8 @@ namespace VTuberKitForYMM4.Plugin
         string customPart3Id = string.Empty;
 
         [Display(GroupName = "カスタムPart", Name = "カスタムPart3 不透明度", Description = "カスタムPart3 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", 0.0, 1.0)]
-        public Animation CustomPart3Opacity { get; } = new Animation(1, 0, 1);
+        [AnimationSlider("F2", "", -1.0, 1.0)]
+        public Animation CustomPart3Opacity { get; } = new Animation(0, -1, 1);
 
         protected override IEnumerable<IAnimatable> GetAnimatables() => [Opacity, EyeLOpen, EyeROpen, MouthOpen, MouthForm, AngleX, AngleY, AngleZ, BodyAngleX, EyeBallX, EyeBallY, Cheek, ArmLA, ArmRA, OffsetPositionX, OffsetPositionY, OffsetScale, OffsetRotation, CustomPart1Opacity, CustomPart2Opacity, CustomPart3Opacity, CustomParam1Value, CustomParam2Value, CustomParam3Value];
     }

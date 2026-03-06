@@ -1,8 +1,6 @@
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 {

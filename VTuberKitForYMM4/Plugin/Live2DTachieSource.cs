@@ -1,14 +1,13 @@
-using System;
+using SharpGen.Runtime;
 using System.IO;
+using System.Runtime.InteropServices;
 using Vortice.Direct2D1;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using VTuberKitForNative;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Player.Video;
-using YukkuriMovieMaker.Plugin;
 using YukkuriMovieMaker.Plugin.Tachie;
-
-using VTuberKitForNative;
 
 namespace VTuberKitForYMM4.Plugin
 {
@@ -21,9 +20,21 @@ namespace VTuberKitForYMM4.Plugin
         private const float MinInternalRenderScale = 1.0f;
         private const float MaxInternalRenderScale = 4.0f;
         private const float DefaultInternalRenderScale = 2.0f;
+        private static readonly bool EnableDebugOverlay = false;
+        private const int MaxConsecutiveRenderFailures = 3;
+        private const int MaxReplaySteps = 600;
+        private static readonly TimeSpan RenderRecoveryCooldown = TimeSpan.FromSeconds(2);
 
         private static readonly object _drawLock = new object();
+        private static readonly object _sharedRendererLock = new object();
+        private static Live2DRenderer? _sharedRenderer;
+        private static IntPtr _sharedDevicePtr = IntPtr.Zero;
+        private static IntPtr _sharedContextPtr = IntPtr.Zero;
+        private static int _sharedDeviceGeneration;
+        private static int _activeSourceCount;
+        private static int _nextInstanceId;
         private readonly IGraphicsDevicesAndContext _devices;
+        private readonly int _instanceId;
         private bool _disposed;
         private bool _d3d11Initialized;
         private string _currentModelPath = string.Empty;
@@ -40,13 +51,13 @@ namespace VTuberKitForYMM4.Plugin
         private ID3D11DepthStencilView? _msaaDsv;
         private int _msaaSampleCount = 1;
         private ID2D1Bitmap1? _d2dBitmap;
+        private ID2D1Bitmap1? _outputBitmap;
         private ID2D1Effect? _transformEffect;
         private ID2D1Image? _outputImage;
         private double _lastItemFrame;
         private bool _hasLastItemFrame;
         private bool _needsInitialFrameUpdate = true;
         private string _appliedExpressionId = string.Empty;
-        private DateTime _lastDebugLogAt = DateTime.MinValue;
         private bool _hasCachedCharacterSettings;
         private bool _cachedAutoEyeBlink;
         private float _cachedEyeBlinkInterval;
@@ -64,10 +75,16 @@ namespace VTuberKitForYMM4.Plugin
         private bool _cachedEnableMsaa = true;
         private int _cachedPreferredMsaaSampleCount = 4;
         private bool _canSetAffineInterpolationMode = true;
+        private bool _needsWarmupRender = true;
+        private int _consecutiveRenderFailures;
+        private DateTime _renderDisabledUntilUtc = DateTime.MinValue;
+        private int _localDeviceGeneration = -1;
 
         public Live2DTachieSource(IGraphicsDevicesAndContext devices)
         {
             _devices = devices ?? throw new ArgumentNullException(nameof(devices));
+            _instanceId = System.Threading.Interlocked.Increment(ref _nextInstanceId);
+            System.Threading.Interlocked.Increment(ref _activeSourceCount);
             Initialize();
         }
 
@@ -83,7 +100,11 @@ namespace VTuberKitForYMM4.Plugin
                 }
 
                 manager.Initialize();
-                _renderer = new Live2DRenderer();
+                lock (_sharedRendererLock)
+                {
+                    _sharedRenderer ??= new Live2DRenderer();
+                    _renderer = _sharedRenderer;
+                }
 
                 _transformEffect = (ID2D1Effect)_devices.DeviceContext.CreateEffect(EffectGuids.AffineTransform2D);
                 _outputImage = _transformEffect.Output;
@@ -96,16 +117,59 @@ namespace VTuberKitForYMM4.Plugin
 
         private bool TryInitializeD3D11Device()
         {
-            if (_d3d11Initialized)
-                return true;
-
             try
             {
                 var d3d11Device = _devices.D3D.Device;
                 var d3d11Context = d3d11Device.ImmediateContext;
-                
-                Live2DManager.GetInstance().SetD3D11Device(d3d11Device.NativePointer, d3d11Context.NativePointer);
-                _renderer?.Initialize(d3d11Device.NativePointer, d3d11Context.NativePointer);
+                var devicePtr = d3d11Device.NativePointer;
+                var contextPtr = d3d11Context.NativePointer;
+
+                if (_d3d11Initialized &&
+                    _localDeviceGeneration == _sharedDeviceGeneration &&
+                    _sharedDevicePtr == devicePtr &&
+                    _sharedContextPtr == contextPtr &&
+                    _renderer != null)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    using var multithread = d3d11Context.QueryInterface<Vortice.Direct3D11.ID3D11Multithread>();
+                    multithread.SetMultithreadProtected(true);
+                }
+                catch (Exception ex)
+                {
+                    Commons.ConsoleManager.Debug($"[{GetLogPrefix()}] ID3D11Multithread unavailable: {ex.Message}");
+                }
+
+                lock (_drawLock)
+                {
+                    if (_sharedDevicePtr != devicePtr || _sharedContextPtr != contextPtr)
+                    {
+                        ResetSharedNativeResources();
+                        _sharedDevicePtr = devicePtr;
+                        _sharedContextPtr = contextPtr;
+                        _sharedDeviceGeneration++;
+                    }
+
+                    if (_localDeviceGeneration != _sharedDeviceGeneration)
+                    {
+                        ResetRenderResources();
+                        _model?.Dispose();
+                        _model = null;
+                        _currentModelPath = string.Empty;
+                        _localDeviceGeneration = _sharedDeviceGeneration;
+                    }
+
+                    Live2DManager.GetInstance().SetD3D11Device(devicePtr, contextPtr);
+                    lock (_sharedRendererLock)
+                    {
+                        _sharedRenderer ??= new Live2DRenderer();
+                        _sharedRenderer.Initialize(devicePtr, contextPtr);
+                        _renderer = _sharedRenderer;
+                    }
+                }
 
                 _d3d11Initialized = true;
                 return true;
@@ -120,7 +184,7 @@ namespace VTuberKitForYMM4.Plugin
         public void Update(TachieSourceDescription desc)
         {
             if (_disposed) return;
-            
+
             try
             {
                 if (!TryInitializeD3D11Device())
@@ -128,108 +192,136 @@ namespace VTuberKitForYMM4.Plugin
                     return;
                 }
 
-                var charParam = desc.Tachie?.CharacterParameter as Live2DCharacterParameter;
-                var itemParam = desc.Tachie?.ItemParameter as Live2DItemParameter;
-                var activeFace = GetActiveFace(desc);
-                var faceParam = activeFace.Face;
-
-                if (charParam != null && !string.IsNullOrEmpty(charParam.File))
+                lock (_drawLock)
                 {
-                    if (_currentModelPath != charParam.File)
+                    var charParam = desc.Tachie?.CharacterParameter as Live2DCharacterParameter;
+                    var itemParam = desc.Tachie?.ItemParameter as Live2DItemParameter;
+                    var activeFace = GetActiveFace(desc);
+                    var faceParam = activeFace.Face;
+
+                    if (charParam != null && !string.IsNullOrEmpty(charParam.File))
                     {
-                        if (File.Exists(charParam.File))
+                        if (_currentModelPath != charParam.File)
                         {
-                            _currentModelPath = charParam.File;
-                            _model?.Dispose();
-                            _model = Live2DManager.GetInstance().CreateModel();
-                            if (!_model.LoadModel(_currentModelPath))
+                            if (File.Exists(charParam.File))
                             {
-                                Commons.ConsoleManager.Error($"Failed to load model: {_currentModelPath}");
-                            }
-                            else
-                            {
-                                Commons.ConsoleManager.Debug($"Model loaded: {_currentModelPath}");
+                                _model?.Dispose();
+                                _model = null;
+                                _currentModelPath = charParam.File;
+                                var loadedModel = Live2DManager.GetInstance().CreateModel();
+                                if (!loadedModel.LoadModel(_currentModelPath))
+                                {
+                                    var detail = loadedModel.LastErrorMessage;
+                                    if (string.IsNullOrWhiteSpace(detail))
+                                    {
+                                        detail = "原因を特定できませんでした。moc3ファイルとCubism Coreの互換性を確認してください。";
+                                    }
+
+                                    Commons.ConsoleManager.Error($"Failed to load model: {_currentModelPath}. {detail}");
+
+                                    loadedModel.Dispose();
+                                    _currentModelPath = string.Empty;
+                                }
+                                else
+                                {
+                                    loadedModel.ResetAnimationState();
+                                    loadedModel.Update(1.0f / 60.0f);
+                                    loadedModel.CommitParameters();
+                                    _model = loadedModel;
+                                }
                                 _hasLastItemFrame = false;
                                 _needsInitialFrameUpdate = true;
+                                _needsWarmupRender = true;
                                 _appliedExpressionId = string.Empty;
                                 _hasCachedCharacterSettings = false;
                                 _hasCachedItemSettings = false;
                             }
+                            else
+                            {
+                                _model?.Dispose();
+                                _model = null;
+                                _currentModelPath = string.Empty;
+                                Commons.ConsoleManager.Error($"Model file not found: {charParam.File}");
+                            }
+                        }
+                    }
+
+                    if (_model != null)
+                    {
+                        var deltaSeconds = GetDeltaSeconds(desc, out var requiresReplay);
+                        if (requiresReplay)
+                        {
+                            _model.ResetAnimationState();
+                            _model.ClearExpression();
+                            _appliedExpressionId = string.Empty;
+                            _hasCachedCharacterSettings = false;
+                            _hasCachedItemSettings = false;
+                        }
+
+                        if (charParam != null)
+                        {
+                            var autoEyeBlink = charParam.AutoEyeBlink;
+                            var eyeBlinkInterval = (float)charParam.EyeBlinkInterval;
+                            var enablePhysics = charParam.EnablePhysics;
+                            var enableBreath = charParam.EnableBreath;
+
+                            if (!_hasCachedCharacterSettings || _cachedAutoEyeBlink != autoEyeBlink)
+                            {
+                                _model.SetEyeBlinkEnabled(autoEyeBlink);
+                                _cachedAutoEyeBlink = autoEyeBlink;
+                            }
+                            if (!_hasCachedCharacterSettings || !NearlyEqual(_cachedEyeBlinkInterval, eyeBlinkInterval))
+                            {
+                                _model.SetEyeBlinkInterval(eyeBlinkInterval);
+                                _cachedEyeBlinkInterval = eyeBlinkInterval;
+                            }
+                            _model.SetLipSyncEnabled(true);
+                            if (!_hasCachedCharacterSettings || _cachedEnablePhysics != enablePhysics)
+                            {
+                                _model.SetPhysicsEnabled(enablePhysics);
+                                _cachedEnablePhysics = enablePhysics;
+                            }
+                            if (!_hasCachedCharacterSettings || _cachedEnableBreath != enableBreath)
+                            {
+                                _model.SetBreathEnabled(enableBreath);
+                                _cachedEnableBreath = enableBreath;
+                            }
+
+                            _cachedRenderTargetMaxSize = Math.Clamp(
+                                charParam.RenderTargetMaxSize,
+                                MinAllowedRenderTargetMaxSize,
+                                MaxAllowedRenderTargetMaxSize);
+                            _cachedInternalRenderScale = (float)Math.Clamp(
+                                charParam.InternalRenderScale,
+                                MinInternalRenderScale,
+                                MaxInternalRenderScale);
+                            _cachedEnableFxaa = charParam.EnableFxaa;
+                            _cachedEnableMsaa = charParam.EnableMsaa;
+                            _cachedPreferredMsaaSampleCount = charParam.MsaaSamplePreset switch
+                            {
+                                Live2DMsaaSamplePreset.X2 => 2,
+                                Live2DMsaaSamplePreset.X4 => 4,
+                                _ => 4,
+                            };
+
+                            _hasCachedCharacterSettings = true;
                         }
                         else
                         {
-                            Commons.ConsoleManager.Error($"Model file not found: {charParam.File}");
-                        }
-                    }
-                }
-
-                if (_model != null)
-                {
-                    if (charParam != null)
-                    {
-                        var autoEyeBlink = charParam.AutoEyeBlink;
-                        var eyeBlinkInterval = (float)charParam.EyeBlinkInterval;
-                        var enablePhysics = charParam.EnablePhysics;
-                        var enableBreath = charParam.EnableBreath;
-
-                        if (!_hasCachedCharacterSettings || _cachedAutoEyeBlink != autoEyeBlink)
-                        {
-                            _model.SetEyeBlinkEnabled(autoEyeBlink);
-                            _cachedAutoEyeBlink = autoEyeBlink;
-                        }
-                        if (!_hasCachedCharacterSettings || !NearlyEqual(_cachedEyeBlinkInterval, eyeBlinkInterval))
-                        {
-                            _model.SetEyeBlinkInterval(eyeBlinkInterval);
-                            _cachedEyeBlinkInterval = eyeBlinkInterval;
-                        }
-                        _model.SetLipSyncEnabled(true);
-                        if (!_hasCachedCharacterSettings || _cachedEnablePhysics != enablePhysics)
-                        {
-                            _model.SetPhysicsEnabled(enablePhysics);
-                            _cachedEnablePhysics = enablePhysics;
-                        }
-                        if (!_hasCachedCharacterSettings || _cachedEnableBreath != enableBreath)
-                        {
-                            _model.SetBreathEnabled(enableBreath);
-                            _cachedEnableBreath = enableBreath;
+                            _cachedRenderTargetMaxSize = DefaultMaxRenderTargetSize;
+                            _cachedInternalRenderScale = DefaultInternalRenderScale;
+                            _cachedEnableFxaa = true;
+                            _cachedEnableMsaa = true;
+                            _cachedPreferredMsaaSampleCount = 4;
                         }
 
-                        _cachedRenderTargetMaxSize = Math.Clamp(
-                            charParam.RenderTargetMaxSize,
-                            MinAllowedRenderTargetMaxSize,
-                            MaxAllowedRenderTargetMaxSize);
-                        _cachedInternalRenderScale = (float)Math.Clamp(
-                            charParam.InternalRenderScale,
-                            MinInternalRenderScale,
-                            MaxInternalRenderScale);
-                        _cachedEnableFxaa = charParam.EnableFxaa;
-                        _cachedEnableMsaa = charParam.EnableMsaa;
-                        _cachedPreferredMsaaSampleCount = charParam.MsaaSamplePreset switch
+                        var resolvedExpressionId = ResolveExpressionId(itemParam, faceParam);
+                        if (!string.IsNullOrWhiteSpace(resolvedExpressionId))
                         {
-                            Live2DMsaaSamplePreset.X2 => 2,
-                            Live2DMsaaSamplePreset.X4 => 4,
-                            _ => 4,
-                        };
-
-                        _hasCachedCharacterSettings = true;
-                    }
-                    else
-                    {
-                        _cachedRenderTargetMaxSize = DefaultMaxRenderTargetSize;
-                        _cachedInternalRenderScale = DefaultInternalRenderScale;
-                        _cachedEnableFxaa = true;
-                        _cachedEnableMsaa = true;
-                        _cachedPreferredMsaaSampleCount = 4;
-                    }
-
-                    if (faceParam != null)
-                    {
-                        if (!string.IsNullOrWhiteSpace(faceParam.ExpressionId))
-                        {
-                            if (!string.Equals(_appliedExpressionId, faceParam.ExpressionId, StringComparison.Ordinal))
+                            if (!string.Equals(_appliedExpressionId, resolvedExpressionId, StringComparison.Ordinal))
                             {
-                                _model.SetExpression(faceParam.ExpressionId);
-                                _appliedExpressionId = faceParam.ExpressionId;
+                                _model.SetExpression(resolvedExpressionId);
+                                _appliedExpressionId = resolvedExpressionId;
                             }
                         }
                         else if (!string.IsNullOrEmpty(_appliedExpressionId))
@@ -237,143 +329,130 @@ namespace VTuberKitForYMM4.Plugin
                             _model.ClearExpression();
                             _appliedExpressionId = string.Empty;
                         }
-                    }
 
-                    TachieMotionEvaluator.UpdateMotionToCurrentTime(
-                        _model,
-                        desc,
-                        faceParam,
-                        itemParam,
-                        Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
-                        (float)(charParam?.LipSyncGain ?? 1.0),
-                        true);
-
-                    var transformPositionX = 0.0f;
-                    var transformPositionY = 0.0f;
-                    var transformScale = 1.0f;
-                    var transformRotation = 0.0f;
-
-                    float finalOpacity = 1.0f;
-                    if (itemParam != null)
-                    {
-                        var frame = desc.ItemPosition.Frame;
-                        var length = desc.ItemDuration.Frame;
-                        var fps = desc.FPS;
-                        var opacity = itemParam.Opacity.GetValue(frame, length, fps);
-                        var multiplyR = itemParam.MultiplyR.GetValue(frame, length, fps);
-                        var multiplyG = itemParam.MultiplyG.GetValue(frame, length, fps);
-                        var multiplyB = itemParam.MultiplyB.GetValue(frame, length, fps);
-                        var multiplyA = itemParam.MultiplyA.GetValue(frame, length, fps);
-                        var faceOpacity = faceParam?.Opacity?.GetValue(frame, length, fps) ?? 1.0;
-                        finalOpacity = (float)Math.Clamp(opacity * faceOpacity, 0.0, 1.0);
-                        var mR = (float)multiplyR;
-                        var mG = (float)multiplyG;
-                        var mB = (float)multiplyB;
-                        var mA = (float)multiplyA;
-
-                        if (!_hasCachedItemSettings ||
-                            !NearlyEqual(_cachedOpacity, finalOpacity) ||
-                            !NearlyEqual(_cachedMultiplyR, mR) ||
-                            !NearlyEqual(_cachedMultiplyG, mG) ||
-                            !NearlyEqual(_cachedMultiplyB, mB) ||
-                            !NearlyEqual(_cachedMultiplyA, mA))
-                        {
-                            _model.ApplyItemParameters(finalOpacity, mR, mG, mB, mA);
-                            _cachedOpacity = finalOpacity;
-                            _cachedMultiplyR = mR;
-                            _cachedMultiplyG = mG;
-                            _cachedMultiplyB = mB;
-                            _cachedMultiplyA = mA;
-                            _hasCachedItemSettings = true;
-                        }
-
-                        transformPositionX = (float)itemParam.PositionX.GetValue(frame, length, fps);
-                        transformPositionY = (float)itemParam.PositionY.GetValue(frame, length, fps);
-                        transformScale = (float)itemParam.Scale.GetValue(frame, length, fps);
-                        transformRotation = (float)itemParam.Rotation.GetValue(frame, length, fps);
-                    }
-
-                    if (faceParam != null)
-                    {
-                        var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
-                        var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
-                        var fpsForFace = desc.FPS;
-
-                        transformPositionX += (float)faceParam.OffsetPositionX.GetValue(faceFrame, faceLength, fpsForFace);
-                        transformPositionY += (float)faceParam.OffsetPositionY.GetValue(faceFrame, faceLength, fpsForFace);
-                        transformScale += (float)faceParam.OffsetScale.GetValue(faceFrame, faceLength, fpsForFace);
-                        transformRotation += (float)faceParam.OffsetRotation.GetValue(faceFrame, faceLength, fpsForFace);
-                    }
-
-                    _model.SetPosition(transformPositionX, transformPositionY);
-                    _model.SetScale(Math.Max(0.01f, transformScale));
-                    _model.SetRotation(transformRotation);
-
-                    var deltaSeconds = GetDeltaSeconds(desc, out var rewound);
-                    if (rewound)
-                    {
-                        _model.StopAllMotions();
-                        _appliedExpressionId = string.Empty;
-                        _hasCachedItemSettings = false;
-                    }
-                    if (charParam != null)
-                    {
-                        var windStrength = Math.Max(0.0, charParam.WindStrength);
-                        if (windStrength > 0.0)
-                        {
-                            var t = (float)desc.ItemPosition.Time.TotalSeconds;
-                            var dragX = (float)(Math.Sin(t * 0.7f) * windStrength * 0.6f);
-                            var dragY = (float)(Math.Cos(t * 0.45f) * windStrength * 0.15f);
-                            _model.SetDragging(dragX, dragY);
-                        }
-                        else
-                        {
-                            _model.SetDragging(0.0f, 0.0f);
-                        }
-                    }
-                    _model.Update(deltaSeconds);
-                    if (faceParam != null)
-                    {
-                        var applyManualFaceParameters = TachieMotionEvaluator.ShouldApplyManualFaceParameters(faceParam);
-                        TachieMotionEvaluator.ApplyFaceAndLipSync(
+                        TachieMotionEvaluator.UpdateMotionToCurrentTime(
                             _model,
                             desc,
                             faceParam,
-                            activeFace.LocalFrame,
-                            activeFace.DurationFrame,
+                            itemParam,
+                            Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
                             (float)(charParam?.LipSyncGain ?? 1.0),
-                            applyManualFaceParameters);
-                        _model.CommitParameters();
-                    }
+                            true);
 
-                    if ((DateTime.UtcNow - _lastDebugLogAt).TotalSeconds >= 1.0)
-                    {
-                        _lastDebugLogAt = DateTime.UtcNow;
-                        var canvasW = _model.GetCanvasWidth();
-                        var canvasH = _model.GetCanvasHeight();
-                        var texW = _model.GetTextureWidth();
-                        var texH = _model.GetTextureHeight();
-                        var rtSize = CalculateRenderTargetSize(
+                        var transformPositionX = 0.0f;
+                        var transformPositionY = 0.0f;
+                        var transformScale = 1.0f;
+                        var transformRotation = 0.0f;
+
+                        float finalOpacity = 1.0f;
+                        if (itemParam != null)
+                        {
+                            var frame = desc.ItemPosition.Frame;
+                            var length = desc.ItemDuration.Frame;
+                            var fps = desc.FPS;
+                            var opacity = itemParam.Opacity.GetValue(frame, length, fps);
+                            var multiplyR = itemParam.MultiplyR.GetValue(frame, length, fps);
+                            var multiplyG = itemParam.MultiplyG.GetValue(frame, length, fps);
+                            var multiplyB = itemParam.MultiplyB.GetValue(frame, length, fps);
+                            var multiplyA = itemParam.MultiplyA.GetValue(frame, length, fps);
+                            var faceOpacity = faceParam?.Opacity?.GetValue(frame, length, fps) ?? 0.0;
+                            finalOpacity = faceParam?.AdditiveParameters == true
+                                ? (float)Math.Clamp(opacity + faceOpacity, 0.0, 1.0)
+                                : (float)Math.Clamp(opacity * (1.0 + faceOpacity), 0.0, 1.0);
+                            var mR = (float)multiplyR;
+                            var mG = (float)multiplyG;
+                            var mB = (float)multiplyB;
+                            var mA = (float)multiplyA;
+
+                            if (!_hasCachedItemSettings ||
+                                !NearlyEqual(_cachedOpacity, finalOpacity) ||
+                                !NearlyEqual(_cachedMultiplyR, mR) ||
+                                !NearlyEqual(_cachedMultiplyG, mG) ||
+                                !NearlyEqual(_cachedMultiplyB, mB) ||
+                                !NearlyEqual(_cachedMultiplyA, mA))
+                            {
+                                _model.ApplyItemParameters(finalOpacity, mR, mG, mB, mA);
+                                _cachedOpacity = finalOpacity;
+                                _cachedMultiplyR = mR;
+                                _cachedMultiplyG = mG;
+                                _cachedMultiplyB = mB;
+                                _cachedMultiplyA = mA;
+                                _hasCachedItemSettings = true;
+                            }
+
+                            transformPositionX = (float)itemParam.PositionX.GetValue(frame, length, fps);
+                            transformPositionY = (float)itemParam.PositionY.GetValue(frame, length, fps);
+                            transformScale = (float)itemParam.Scale.GetValue(frame, length, fps);
+                            transformRotation = (float)itemParam.Rotation.GetValue(frame, length, fps);
+                        }
+
+                        if (faceParam != null)
+                        {
+                            var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
+                            var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
+                            var fpsForFace = desc.FPS;
+
+                            transformPositionX += (float)faceParam.OffsetPositionX.GetValue(faceFrame, faceLength, fpsForFace);
+                            transformPositionY += (float)faceParam.OffsetPositionY.GetValue(faceFrame, faceLength, fpsForFace);
+                            transformScale += (float)faceParam.OffsetScale.GetValue(faceFrame, faceLength, fpsForFace);
+                            transformRotation += (float)faceParam.OffsetRotation.GetValue(faceFrame, faceLength, fpsForFace);
+                        }
+
+                        _model.SetPosition(transformPositionX, transformPositionY);
+                        _model.SetScale(Math.Max(0.01f, transformScale));
+                        _model.SetRotation(transformRotation);
+
+                        if (charParam != null)
+                        {
+                            var windStrength = Math.Max(0.0, charParam.WindStrength);
+                            ApplyDragging(_model, windStrength, (float)desc.ItemPosition.Time.TotalSeconds);
+                        }
+
+                        if (requiresReplay)
+                        {
+                            ReplayModelToCurrentTime(
+                                _model,
+                                desc,
+                                faceParam,
+                                itemParam,
+                                Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
+                                (float)(charParam?.LipSyncGain ?? 1.0),
+                                (float)(charParam?.WindStrength ?? 0.0));
+                        }
+                        else
+                        {
+                            _model.Update(deltaSeconds);
+                        }
+                        if (faceParam != null)
+                        {
+                            var applyManualFaceParameters = TachieMotionEvaluator.ShouldApplyManualFaceParameters(faceParam);
+                            TachieMotionEvaluator.ApplyFaceAndLipSync(
+                                _model,
+                                desc,
+                                faceParam,
+                                activeFace.LocalFrame,
+                                activeFace.DurationFrame,
+                                (float)(charParam?.LipSyncGain ?? 1.0),
+                                applyManualFaceParameters);
+                        }
+                        _model.CommitParameters();
+
+                        var canDraw = desc.ScreenSize.Width > 0 &&
+                                      desc.ScreenSize.Height > 0 &&
+                                      finalOpacity > 0.001f;
+                        if (Render(
                             desc.ScreenSize.Width,
                             desc.ScreenSize.Height,
+                            canDraw,
                             _cachedRenderTargetMaxSize,
-                            _cachedInternalRenderScale);
-                        Commons.ConsoleManager.Debug(
-                            $"delta={deltaSeconds:F4}, itemTime={desc.ItemPosition.Time.TotalSeconds:F3}, face={(faceParam != null ? $"{faceParam.MotionGroup}[{faceParam.MotionIndex}] use={faceParam.UseMotion}" : "null")}, mouthShape={desc.MouthShape}, voiceVolume={desc.VoiceVolume:F4}, screen={desc.ScreenSize.Width}x{desc.ScreenSize.Height}, rt={rtSize.Width}x{rtSize.Height}, rtMax={_cachedRenderTargetMaxSize}, scale={_cachedInternalRenderScale:F2}, fxaa={_cachedEnableFxaa}, msaa={_cachedEnableMsaa}, msaaPref={_cachedPreferredMsaaSampleCount}x, canvas={canvasW:F3}x{canvasH:F3}, tex={texW}x{texH}");
+                            _cachedInternalRenderScale,
+                            _cachedEnableFxaa,
+                            _cachedEnableMsaa,
+                            _cachedPreferredMsaaSampleCount))
+                        {
+                            return;
+                        }
                     }
-
-                    var canDraw = desc.ScreenSize.Width > 0 &&
-                                  desc.ScreenSize.Height > 0 &&
-                                  finalOpacity > 0.001f;
-                    Render(
-                        desc.ScreenSize.Width,
-                        desc.ScreenSize.Height,
-                        canDraw,
-                        _cachedRenderTargetMaxSize,
-                        _cachedInternalRenderScale,
-                        _cachedEnableFxaa,
-                        _cachedEnableMsaa,
-                        _cachedPreferredMsaaSampleCount);
                 }
             }
             catch (Exception ex)
@@ -461,6 +540,21 @@ namespace VTuberKitForYMM4.Plugin
             return (earliestFace, 0.0f, 0.0, earliestDurationFrame);
         }
 
+        private static string ResolveExpressionId(Live2DItemParameter? itemParam, Live2DFaceParameter? faceParam)
+        {
+            if (!string.IsNullOrWhiteSpace(faceParam?.ExpressionId))
+            {
+                return faceParam.ExpressionId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(itemParam?.ExpressionId))
+            {
+                return itemParam.ExpressionId;
+            }
+
+            return string.Empty;
+        }
+
         private float GetDeltaSeconds(TachieSourceDescription desc, out bool rewound)
         {
             rewound = false;
@@ -501,6 +595,61 @@ namespace VTuberKitForYMM4.Plugin
             return (float)Math.Min(deltaSeconds, 0.25);
         }
 
+        private static void ApplyDragging(Live2DModelWrapper model, double windStrength, float timeSeconds)
+        {
+            if (windStrength > 0.0)
+            {
+                var dragX = (float)(Math.Sin(timeSeconds * 0.7f) * windStrength * 0.6f);
+                var dragY = (float)(Math.Cos(timeSeconds * 0.45f) * windStrength * 0.15f);
+                model.SetDragging(dragX, dragY);
+            }
+            else
+            {
+                model.SetDragging(0.0f, 0.0f);
+            }
+        }
+
+        private static void ReplayModelToCurrentTime(
+            Live2DModelWrapper model,
+            TachieSourceDescription desc,
+            Live2DFaceParameter? faceParam,
+            Live2DItemParameter? itemParam,
+            float activeFaceTimeSeconds,
+            float lipSyncGain,
+            float windStrength)
+        {
+            var targetSeconds = (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds);
+            if (targetSeconds <= 0.0f)
+            {
+                return;
+            }
+
+            var replayStep = Math.Max(
+                (float)(1.0 / Math.Max(60.0, desc.FPS)),
+                targetSeconds / MaxReplaySteps);
+            var elapsed = 0.0f;
+
+            while (elapsed < targetSeconds)
+            {
+                var next = Math.Min(targetSeconds, elapsed + replayStep);
+                var delta = next - elapsed;
+
+                TachieMotionEvaluator.UpdateMotionToCurrentTime(
+                    model,
+                    desc,
+                    faceParam,
+                    itemParam,
+                    Math.Min(activeFaceTimeSeconds, next),
+                    lipSyncGain,
+                    true,
+                    next);
+
+                ApplyDragging(model, windStrength, next);
+                model.Update(delta);
+                elapsed = next;
+            }
+        }
+
         private static bool NearlyEqual(float a, float b, float epsilon = 0.0001f)
         {
             return Math.Abs(a - b) <= epsilon;
@@ -517,11 +666,21 @@ namespace VTuberKitForYMM4.Plugin
             return (renderWidth, renderHeight);
         }
 
-        private void Render(int screenWidth, int screenHeight, bool drawModel, int maxRenderTargetSize, float internalRenderScale, bool enableFxaa, bool enableMsaa, int preferredMsaaSampleCount)
+        private bool Render(int screenWidth, int screenHeight, bool drawModel, int maxRenderTargetSize, float internalRenderScale, bool enableFxaa, bool enableMsaa, int preferredMsaaSampleCount)
         {
             if (_renderer == null || _model == null || _transformEffect == null)
             {
-                return;
+                return true;
+            }
+
+            if (screenWidth <= 0 || screenHeight <= 0)
+            {
+                return true;
+            }
+
+            if (!CanAttemptRender())
+            {
+                return true;
             }
 
             var (renderWidth, renderHeight) = CalculateRenderTargetSize(screenWidth, screenHeight, maxRenderTargetSize, internalRenderScale);
@@ -545,6 +704,7 @@ namespace VTuberKitForYMM4.Plugin
                         ID3D11DepthStencilView? newMsaaDsv = null;
                         var newMsaaSampleCount = 1;
                         ID2D1Bitmap1? newBitmap = null;
+                        ID2D1Bitmap1? newOutputBitmap = null;
 
                         while (tryWidth >= MinRenderTargetSize && tryHeight >= MinRenderTargetSize)
                         {
@@ -581,6 +741,15 @@ namespace VTuberKitForYMM4.Plugin
                                             96, 96,
                                             BitmapOptions.Target);
                                         newBitmap = _devices.DeviceContext.CreateBitmapFromDxgiSurface(dxgiSurface, props);
+                                        var outputProps = new BitmapProperties1(
+                                            new Vortice.DCommon.PixelFormat(Format.R8G8B8A8_UNorm, Vortice.DCommon.AlphaMode.Premultiplied),
+                                            96, 96,
+                                            BitmapOptions.Target);
+                                        newOutputBitmap = _devices.DeviceContext.CreateBitmap(
+                                            new Vortice.Mathematics.SizeI(tryWidth, tryHeight),
+                                            IntPtr.Zero,
+                                            0,
+                                            outputProps);
 
                                         var depthSampleCount = sampleCount;
                                         if (sampleCount > 1)
@@ -631,6 +800,14 @@ namespace VTuberKitForYMM4.Plugin
                                     }
                                     catch
                                     {
+                                        newTexture?.Dispose();
+                                        newTexture = null;
+                                        newRtv?.Dispose();
+                                        newRtv = null;
+                                        newBitmap?.Dispose();
+                                        newBitmap = null;
+                                        newOutputBitmap?.Dispose();
+                                        newOutputBitmap = null;
                                         newMsaaTexture?.Dispose();
                                         newMsaaTexture = null;
                                         newMsaaRtv?.Dispose();
@@ -659,7 +836,7 @@ namespace VTuberKitForYMM4.Plugin
                                 allocated = true;
                                 break;
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 newTexture?.Dispose();
                                 newTexture = null;
@@ -679,8 +856,8 @@ namespace VTuberKitForYMM4.Plugin
                                 newMsaaDsv = null;
                                 newBitmap?.Dispose();
                                 newBitmap = null;
-
-                                Commons.ConsoleManager.Debug($"RT allocation retry: {tryWidth}x{tryHeight} failed ({ex.Message})");
+                                newOutputBitmap?.Dispose();
+                                newOutputBitmap = null;
 
                                 if (tryWidth == MinRenderTargetSize && tryHeight == MinRenderTargetSize)
                                 {
@@ -692,19 +869,19 @@ namespace VTuberKitForYMM4.Plugin
                             }
                         }
 
-                        if (!allocated || newTexture == null || newRtv == null || newBitmap == null)
+                        if (!allocated || newTexture == null || newRtv == null || newBitmap == null || newOutputBitmap == null)
                         {
-                            return;
+                            return true;
                         }
 
                         if (newMsaaSampleCount <= 1 && (newDepthTexture == null || newDsv == null))
                         {
-                            return;
+                            return true;
                         }
 
                         if (newMsaaSampleCount > 1 && (newMsaaTexture == null || newMsaaRtv == null || newMsaaDepthTexture == null || newMsaaDsv == null))
                         {
-                            return;
+                            return true;
                         }
 
                         _d3dTexture?.Dispose();
@@ -716,6 +893,7 @@ namespace VTuberKitForYMM4.Plugin
                         _msaaDepthStencilTexture?.Dispose();
                         _msaaDsv?.Dispose();
                         _d2dBitmap?.Dispose();
+                        _outputBitmap?.Dispose();
 
                         _d3dTexture = newTexture;
                         _rtv = newRtv;
@@ -727,19 +905,19 @@ namespace VTuberKitForYMM4.Plugin
                         _msaaDsv = newMsaaDsv;
                         _msaaSampleCount = newMsaaSampleCount;
                         _d2dBitmap = newBitmap;
+                        _outputBitmap = newOutputBitmap;
+                        _needsWarmupRender = true;
 
                         renderWidth = tryWidth;
                         renderHeight = tryHeight;
 
-                        Commons.ConsoleManager.Debug($"Render target allocated: {renderWidth}x{renderHeight}, msaa={_msaaSampleCount}x");
                     }
 
                     if (_d2dBitmap == null)
                     {
-                        return;
+                        return true;
                     }
 
-                    _transformEffect.SetInput(0, _d2dBitmap, true);
                     if (_canSetAffineInterpolationMode)
                     {
                         try
@@ -754,6 +932,7 @@ namespace VTuberKitForYMM4.Plugin
                             Commons.ConsoleManager.Debug($"AffineTransform2D.InterpolationMode unsupported on this environment: {ex.Message}");
                         }
                     }
+
                     var outputWidth = Math.Max(1, screenWidth);
                     var outputHeight = Math.Max(1, screenHeight);
                     var scaleX = (float)outputWidth / renderWidth;
@@ -767,12 +946,11 @@ namespace VTuberKitForYMM4.Plugin
                     var oldRTVs = new ID3D11RenderTargetView[1];
                     context.OMGetRenderTargets(1, oldRTVs, out ID3D11DepthStencilView? oldDSV);
                     var oldRTV = oldRTVs[0];
-                    
+
                     try
                     {
                         var drawRtv = _msaaRtv ?? _rtv;
                         var drawDsv = _msaaDsv ?? _dsv;
-
                         if (drawRtv != null)
                         {
                             context.ClearRenderTargetView(drawRtv, new Vortice.Mathematics.Color4(0, 0, 0, 0));
@@ -787,34 +965,218 @@ namespace VTuberKitForYMM4.Plugin
                             }
                         }
 
-                        // モデルのサイズをそのまま使用
-                        _renderer.BeginFrame(renderWidth, renderHeight);
-                        _renderer.SetViewport(0, 0, renderWidth, renderHeight);
-                        if (drawModel)
+                        var renderFrameCount = _needsWarmupRender ? 2 : 1;
+                        for (var frameIndex = 0; frameIndex < renderFrameCount; frameIndex++)
                         {
-                            _model.Draw(renderWidth, renderHeight);
-                        }
+                            if (drawRtv != null)
+                            {
+                                context.ClearRenderTargetView(drawRtv, new Vortice.Mathematics.Color4(0, 0, 0, 0));
+                                if (drawDsv != null)
+                                {
+                                    context.ClearDepthStencilView(drawDsv, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
+                                    context.OMSetRenderTargets(drawRtv, drawDsv);
+                                }
+                                else
+                                {
+                                    context.OMSetRenderTargets(drawRtv, (ID3D11DepthStencilView?)null);
+                                }
+                            }
 
-                        _renderer.EndFrame();
+                            if (!TryDrawModelFrame(renderWidth, renderHeight, drawModel, drawRtv, drawDsv))
+                            {
+                                return true;
+                            }
+                            // Re-bind our RT: Cubism's OffscreenSurface.EndDraw() restores
+                            // whatever RT was captured at BeginDraw time via the static s_context.
+                            // Force our RT back to guarantee subsequent readback hits the right surface.
+                            if (drawRtv != null)
+                            {
+                                if (drawDsv != null)
+                                    context.OMSetRenderTargets(drawRtv, drawDsv);
+                                else
+                                    context.OMSetRenderTargets(drawRtv, (ID3D11DepthStencilView?)null);
+                            }
+                            context.Flush();
+                        }
+                        _needsWarmupRender = false;
 
                         if (_msaaSampleCount > 1 && _msaaTexture != null && _d3dTexture != null)
                         {
                             context.ResolveSubresource(_d3dTexture, 0, _msaaTexture, 0, Format.R8G8B8A8_UNorm);
                         }
 
-                        context.OMSetRenderTargets(oldRTV, oldDSV);
+                        context.Flush();
+
+                        if (_outputBitmap == null)
+                        {
+                            return true;
+                        }
+
+                        var dc = _devices.DeviceContext;
+                        var oldTarget = dc.Target;
+                        try
+                        {
+                            dc.Target = _outputBitmap;
+                            dc.BeginDraw();
+                            dc.Clear(null);
+                            dc.DrawImage(_d2dBitmap);
+                            if (EnableDebugOverlay)
+                            {
+                                using var brush = dc.CreateSolidColorBrush(new Vortice.Mathematics.Color4(1.0f, 0.0f, 0.0f, 1.0f));
+                                dc.FillRectangle(new Vortice.RawRectF(32, 32, 160, 160), brush);
+                                dc.DrawRectangle(new Vortice.RawRectF(24, 24, 200, 200), brush, 8.0f);
+                            }
+                            dc.EndDraw();
+                        }
+                        finally
+                        {
+                            dc.Target = oldTarget;
+                            oldTarget?.Dispose();
+                        }
+
+                        HandleRenderSuccess();
+                        _transformEffect.SetInput(0, _outputBitmap, true);
+                        return false;
                     }
                     finally
                     {
+                        context.OMSetRenderTargets(oldRTV, oldDSV);
                         oldRTV?.Dispose();
                         oldDSV?.Dispose();
                     }
                 }
                 catch (Exception ex)
                 {
+                    HandleRenderFailure(ex);
                     Commons.ConsoleManager.Error($"Render error: {ex.Message}");
+                    return true;
                 }
             }
+        }
+
+        private bool TryDrawModelFrame(int renderWidth, int renderHeight, bool drawModel,
+            ID3D11RenderTargetView? targetRtv = null, ID3D11DepthStencilView? targetDsv = null)
+        {
+            if (_renderer == null || _model == null)
+            {
+                return false;
+            }
+
+            var context = _devices.D3D.Device.ImmediateContext;
+
+            try
+            {
+                // Re-bind our RT before anything touches the device context.
+                // This ensures Cubism's OffscreenSurface::BeginDraw captures OUR rt as the
+                // backup, so EndDraw returns to OUR rt (not some other instance's rt).
+                if (targetRtv != null)
+                {
+                    if (targetDsv != null)
+                        context.OMSetRenderTargets(targetRtv, targetDsv);
+                    else
+                        context.OMSetRenderTargets(targetRtv, (ID3D11DepthStencilView?)null);
+                }
+
+                if (drawModel)
+                {
+                    // DrawWithFrame calls CubismRenderer_D3D11::StartFrame() inside the
+                    // native g_nativeDrawMutex, then immediately calls DrawModel().
+                    // This ensures StartFrame's static writes (s_device, s_context,
+                    // s_viewportWidth/Height) are consumed by the same DrawModel call
+                    // without any other instance interleaving between them.
+                    return _model.DrawWithFrame(_devices.D3D.Device.NativePointer, context.NativePointer, renderWidth, renderHeight);
+                }
+                else
+                {
+                    // Nothing to draw, but still balance the renderer state.
+                    _renderer.BeginFrame(renderWidth, renderHeight);
+                    _renderer.EndFrame();
+                }
+
+                return true;
+            }
+            catch (SharpGenException ex)
+            {
+                HandleRenderFailure(ex);
+                Commons.ConsoleManager.Error($"[{GetLogPrefix()}] Native draw failed (SharpGen): {ex.Message}");
+                return false;
+            }
+            catch (SEHException ex)
+            {
+                HandleRenderFailure(ex);
+                Commons.ConsoleManager.Error($"[{GetLogPrefix()}] Native draw failed (SEH): {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                HandleRenderFailure(ex);
+                Commons.ConsoleManager.Error($"[{GetLogPrefix()}] Native draw failed: {ex.Message}");
+                return false;
+            }
+        }
+
+
+        private bool CanAttemptRender()
+        {
+            return DateTime.UtcNow >= _renderDisabledUntilUtc;
+        }
+
+        private void HandleRenderSuccess()
+        {
+            _consecutiveRenderFailures = 0;
+            _renderDisabledUntilUtc = DateTime.MinValue;
+        }
+
+        private void HandleRenderFailure(Exception ex)
+        {
+            _consecutiveRenderFailures++;
+
+            ResetRenderResources();
+
+            if (_consecutiveRenderFailures >= MaxConsecutiveRenderFailures)
+            {
+                _renderDisabledUntilUtc = DateTime.UtcNow + RenderRecoveryCooldown;
+                _consecutiveRenderFailures = 0;
+                Commons.ConsoleManager.Error(
+                    $"[{GetLogPrefix()}] Render disabled temporarily after repeated native failures. cooldown={RenderRecoveryCooldown.TotalMilliseconds}ms, reason={ex.GetType().Name}");
+            }
+
+        }
+
+        private static void ResetSharedNativeResources()
+        {
+            lock (_sharedRendererLock)
+            {
+                _sharedRenderer?.Dispose();
+                _sharedRenderer = null;
+            }
+        }
+
+        private void ResetRenderResources()
+        {
+            _d3dTexture?.Dispose();
+            _d3dTexture = null;
+            _rtv?.Dispose();
+            _rtv = null;
+            _depthStencilTexture?.Dispose();
+            _depthStencilTexture = null;
+            _dsv?.Dispose();
+            _dsv = null;
+            _msaaTexture?.Dispose();
+            _msaaTexture = null;
+            _msaaRtv?.Dispose();
+            _msaaRtv = null;
+            _msaaDepthStencilTexture?.Dispose();
+            _msaaDepthStencilTexture = null;
+            _msaaDsv?.Dispose();
+            _msaaDsv = null;
+            _d2dBitmap?.Dispose();
+            _d2dBitmap = null;
+            _outputBitmap?.Dispose();
+            _outputBitmap = null;
+            _msaaSampleCount = 1;
+            _needsWarmupRender = true;
+            _d3d11Initialized = false;
         }
 
         public void Dispose()
@@ -823,7 +1185,6 @@ namespace VTuberKitForYMM4.Plugin
             {
                 _model?.Dispose();
                 _model = null;
-                _renderer?.Dispose();
                 _renderer = null;
 
                 _d3dTexture?.Dispose();
@@ -835,19 +1196,32 @@ namespace VTuberKitForYMM4.Plugin
                 _msaaDepthStencilTexture?.Dispose();
                 _msaaDsv?.Dispose();
                 _d2dBitmap?.Dispose();
+                _outputBitmap?.Dispose();
                 _outputImage?.Dispose();
                 _outputImage = null;
                 _transformEffect?.Dispose();
                 _transformEffect = null;
-                
+
                 Live2DManager.GetInstance().Release();
-                
+
+                if (System.Threading.Interlocked.Decrement(ref _activeSourceCount) == 0)
+                {
+                    ResetSharedNativeResources();
+                    _sharedDevicePtr = IntPtr.Zero;
+                    _sharedContextPtr = IntPtr.Zero;
+                }
+
                 _disposed = true;
             }
         }
 
         // ITachieSource2実装
-        // DeviceContext.Targetを変更せずに描画結果を返すため、エフェクトの出力を提供する
         public ID2D1Image Output => _outputImage ?? _transformEffect!.Output;
+
+        private string GetLogPrefix()
+        {
+            return $"src#{_instanceId}/thr{Environment.CurrentManagedThreadId}";
+        }
+
     }
 }

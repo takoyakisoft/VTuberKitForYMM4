@@ -39,9 +39,9 @@ namespace VTuberKitForYMM4.Plugin
 
         [Display(Name = "パラメータ加算", Description = "ONで既存モーションへ加算、OFFで絶対値として適用します")]
         [ToggleSlider]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool AdditiveParameters { get => additiveParameters; set => Set(ref additiveParameters, value); }
-        bool additiveParameters = true;
+        bool additiveParameters = false;
 
         [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
         [AnimationSlider("F2", "", 0.0, 1.0)]

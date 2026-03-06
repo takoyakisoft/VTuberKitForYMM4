@@ -807,25 +807,25 @@ void NativeModel::Draw(CubismMatrix44& matrix) {
     }
 }
 
-void NativeModel::DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix) {
+bool NativeModel::DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix) {
     // Acquire the global native draw mutex BEFORE calling StartFrame so that:
     //  - s_device / s_context / s_viewportWidth / s_viewportHeight are set atomically
     //    relative to the actual DrawModel call (no other instance can overwrite them
     //    between our StartFrame and our DrawModel).
     std::lock_guard<std::mutex> lock(g_nativeDrawMutex);
 
-    if (_model == nullptr) return;
+    if (_model == nullptr) return false;
     if (_textureViews.empty()) {
         Live2DPal::PrintLogLn("DrawWithFrame: skipped because no textures are bound.");
-        return;
+        return false;
     }
     if (!device || !context) {
         Live2DPal::PrintLogLn("DrawWithFrame: skipped because D3D11 device/context is null.");
-        return;
+        return false;
     }
 
     CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
-    if (!renderer) return;
+    if (!renderer) return false;
 
     // Call StartFrame here, under the lock, to atomically update the Cubism statics.
     CubismRenderer_D3D11::StartFrame(
@@ -851,8 +851,10 @@ void NativeModel::DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* conte
 
     renderer->SetMvpMatrix(&matrix);
     if (!TryDrawModelWithSehGuard(renderer)) {
-        return;
+        return false;
     }
+
+    return true;
 }
 
 

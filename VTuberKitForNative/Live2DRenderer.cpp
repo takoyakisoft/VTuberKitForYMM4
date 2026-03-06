@@ -3,6 +3,7 @@
 #include <Rendering/D3D11/CubismRenderer_D3D11.hpp>
 #include <CubismFramework.hpp>
 #include <Windows.h>
+#include <mutex>
 #include <string>
 
 using namespace System;
@@ -12,6 +13,7 @@ namespace VTuberKitForNative {
 namespace
 {
     volatile LONG g_rendererInstanceCount = 0;
+    std::mutex g_rendererLifecycleMutex;
 }
 
 Live2DRenderer::Live2DRenderer() 
@@ -53,14 +55,17 @@ bool Live2DRenderer::Initialize(IntPtr d3d11Device, IntPtr d3d11Context) {
     _device->AddRef();
     _context->AddRef();
 
-    const auto instanceCount = InterlockedIncrement(&g_rendererInstanceCount);
-
-    // Cubism SDKのD3D11レンダラー設定は共有状態なので、初回のみ構築する。
-    const csmUint32 bufferSetNum = 1;
-    Rendering::CubismRenderer_D3D11::InitializeConstantSettings(bufferSetNum, _device);
-    if (instanceCount == 1)
     {
-        Rendering::CubismRenderer_D3D11::GenerateShader(_device);
+        std::lock_guard<std::mutex> lock(g_rendererLifecycleMutex);
+        const auto instanceCount = InterlockedIncrement(&g_rendererInstanceCount);
+
+        // Cubism SDKのD3D11レンダラー設定は共有状態なので、初回のみ構築する。
+        const csmUint32 bufferSetNum = 1;
+        Rendering::CubismRenderer_D3D11::InitializeConstantSettings(bufferSetNum, _device);
+        if (instanceCount == 1)
+        {
+            Rendering::CubismRenderer_D3D11::GenerateShader(_device);
+        }
     }
     
     // Live2D is 2D rendering; keep depth test disabled to avoid state-dependent full cull.
@@ -108,11 +113,14 @@ bool Live2DRenderer::Initialize(IntPtr d3d11Device, IntPtr d3d11Context) {
 
 void Live2DRenderer::Release() {
     if (_initialized) {
-        const auto instanceCount = InterlockedDecrement(&g_rendererInstanceCount);
-        if (instanceCount <= 0) {
-            Rendering::CubismRenderer_D3D11::DeleteShaderManager();
-            Rendering::CubismRenderer_D3D11::DeleteRenderStateManager();
-            g_rendererInstanceCount = 0;
+        {
+            std::lock_guard<std::mutex> lock(g_rendererLifecycleMutex);
+            const auto instanceCount = InterlockedDecrement(&g_rendererInstanceCount);
+            if (instanceCount <= 0) {
+                Rendering::CubismRenderer_D3D11::DeleteShaderManager();
+                Rendering::CubismRenderer_D3D11::DeleteRenderStateManager();
+                InterlockedExchange(&g_rendererInstanceCount, 0);
+            }
         }
 
         if (_depthStencilState) {

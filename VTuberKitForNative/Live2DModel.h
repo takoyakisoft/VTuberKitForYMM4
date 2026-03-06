@@ -93,7 +93,7 @@ public:
     void Draw(CubismMatrix44& matrix);
     void Draw(); // デフォルト描画（画面にフィット）
     void Draw(int screenWidth, int screenHeight); // 画面サイズを考慮した描画（BeginFrame別途呼ぶ旧方式）
-    void DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight); // StartFrame込みアトミック描画（推奨）
+    bool DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight); // StartFrame込みアトミック描画（推奨）
 
     // パラメータ制御
     void SetParameterValue(System::String^ paramId, float value);

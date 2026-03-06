@@ -129,22 +129,24 @@ void Live2DModelWrapper::Draw(int screenWidth, int screenHeight) {
     }
 }
 
-void Live2DModelWrapper::DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight) {
-    if (_nativeModel != nullptr && _isLoaded && screenWidth > 0 && screenHeight > 0) {
-        CubismMatrix44 matrix;
-        matrix.LoadIdentity();
-
-        const float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
-        if (screenAspect > 1.0f) {
-            matrix.Scale(1.0f / screenAspect, 1.0f);
-        } else {
-            matrix.Scale(1.0f, screenAspect);
-        }
-        
-        auto pDevice = static_cast<ID3D11Device*>(device.ToPointer());
-        auto pContext = static_cast<ID3D11DeviceContext*>(context.ToPointer());
-        _nativeModel->DrawWithFrame(pDevice, pContext, screenWidth, screenHeight, matrix);
+bool Live2DModelWrapper::DrawWithFrame(System::IntPtr device, System::IntPtr context, int screenWidth, int screenHeight) {
+    if (_nativeModel == nullptr || !_isLoaded || screenWidth <= 0 || screenHeight <= 0) {
+        return false;
     }
+
+    CubismMatrix44 matrix;
+    matrix.LoadIdentity();
+
+    const float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
+    if (screenAspect > 1.0f) {
+        matrix.Scale(1.0f / screenAspect, 1.0f);
+    } else {
+        matrix.Scale(1.0f, screenAspect);
+    }
+
+    auto pDevice = static_cast<ID3D11Device*>(device.ToPointer());
+    auto pContext = static_cast<ID3D11DeviceContext*>(context.ToPointer());
+    return _nativeModel->DrawWithFrame(pDevice, pContext, screenWidth, screenHeight, matrix);
 }
 
 

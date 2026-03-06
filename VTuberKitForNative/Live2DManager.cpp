@@ -125,13 +125,6 @@ void Live2DManager::Release() {
         // 最後の参照が解放された
         ReleaseAllModels();
         CubismFramework::Dispose();
-        
-        if (g_d3d11Context) {
-            g_d3d11Context = nullptr;
-        }
-        if (g_d3d11Device) {
-            g_d3d11Device = nullptr;
-        }
 
         if (_allocator) {
             delete _allocator;

@@ -32,7 +32,7 @@ public:
     void Update(float deltaTime);
     void EvaluateMotion(const char* group, int no, float timeSeconds, bool loop);
     void Draw(CubismMatrix44& matrix);                                     // 後方互換
-    void DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix); // StartFrame込み
+    bool DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix); // StartFrame込み
     const std::string& GetLastErrorMessage() const { return _lastErrorMessage; }
 
     // パラメータ制御

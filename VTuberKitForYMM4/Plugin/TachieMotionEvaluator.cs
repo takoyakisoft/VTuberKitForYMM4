@@ -269,19 +269,19 @@ namespace VTuberKitForYMM4.Plugin
                 return true;
             }
 
-            var catalog = ModelMetadataCatalog.Motions;
-            if (motionIndex >= 0 && motionIndex < catalog.Count)
+            var motions = nativeModel.GetMotions();
+            if (motionIndex >= 0 && motionIndex < motions.Length)
             {
-                var motion = catalog[motionIndex];
+                var motion = motions[motionIndex];
                 group = motion.Group ?? string.Empty;
                 index = Math.Max(0, motion.Index);
                 return true;
             }
 
-            var motions = nativeModel.GetMotions();
-            if (motionIndex >= 0 && motionIndex < motions.Length)
+            var catalog = ModelMetadataCatalog.Motions;
+            if (motionIndex >= 0 && motionIndex < catalog.Count)
             {
-                var motion = motions[motionIndex];
+                var motion = catalog[motionIndex];
                 group = motion.Group ?? string.Empty;
                 index = Math.Max(0, motion.Index);
                 return true;

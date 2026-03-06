@@ -798,6 +798,14 @@ namespace VTuberKitForYMM4.Plugin
                                     }
                                     catch
                                     {
+                                        newTexture?.Dispose();
+                                        newTexture = null;
+                                        newRtv?.Dispose();
+                                        newRtv = null;
+                                        newBitmap?.Dispose();
+                                        newBitmap = null;
+                                        newOutputBitmap?.Dispose();
+                                        newOutputBitmap = null;
                                         newMsaaTexture?.Dispose();
                                         newMsaaTexture = null;
                                         newMsaaRtv?.Dispose();
@@ -997,8 +1005,6 @@ namespace VTuberKitForYMM4.Plugin
 
                         context.Flush();
 
-                        context.OMSetRenderTargets(oldRTV, oldDSV);
-
                         if (_outputBitmap == null)
                         {
                             return true;
@@ -1030,6 +1036,7 @@ namespace VTuberKitForYMM4.Plugin
                     }
                     finally
                     {
+                        context.OMSetRenderTargets(oldRTV, oldDSV);
                         oldRTV?.Dispose();
                         oldDSV?.Dispose();
                     }
@@ -1073,7 +1080,7 @@ namespace VTuberKitForYMM4.Plugin
                     // This ensures StartFrame's static writes (s_device, s_context,
                     // s_viewportWidth/Height) are consumed by the same DrawModel call
                     // without any other instance interleaving between them.
-                    _model.DrawWithFrame(_devices.D3D.Device.NativePointer, context.NativePointer, renderWidth, renderHeight);
+                    return _model.DrawWithFrame(_devices.D3D.Device.NativePointer, context.NativePointer, renderWidth, renderHeight);
                 }
                 else
                 {

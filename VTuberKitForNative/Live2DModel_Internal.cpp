@@ -5,15 +5,18 @@
 #include <CubismDefaultParameterId.hpp>
 #include <Id/CubismIdManager.hpp>
 #include <d3d11.h>
+#include <Shlwapi.h>
 #include <map>
 #include <vector>
 #include <wincodec.h>
 #include <wrl/client.h>
 #include <Motion/CubismMotionQueueEntry.hpp>
 #include <cmath>
+#include <cwchar>
 #include <mutex>
 
 #pragma comment(lib, "Windowscodecs.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 #pragma unmanaged
 
@@ -29,6 +32,114 @@ namespace VTuberKitForNative {
 namespace
 {
     std::mutex g_nativeDrawMutex;
+
+    std::string WideToUtf8(const std::wstring& value)
+    {
+        if (value.empty())
+        {
+            return std::string();
+        }
+
+        const int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        if (sizeNeeded <= 1)
+        {
+            return std::string();
+        }
+
+        std::string utf8(sizeNeeded, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, &utf8[0], sizeNeeded, nullptr, nullptr);
+        utf8.resize(sizeNeeded - 1);
+        return utf8;
+    }
+
+    std::wstring NormalizeAbsolutePath(const std::wstring& path)
+    {
+        if (path.empty())
+        {
+            return std::wstring();
+        }
+
+        const DWORD requiredLength = GetFullPathNameW(path.c_str(), 0, nullptr, nullptr);
+        if (requiredLength == 0)
+        {
+            return std::wstring();
+        }
+
+        std::wstring normalized(requiredLength, L'\0');
+        const DWORD writtenLength = GetFullPathNameW(path.c_str(), requiredLength, &normalized[0], nullptr);
+        if (writtenLength == 0)
+        {
+            return std::wstring();
+        }
+
+        normalized.resize(wcslen(normalized.c_str()));
+        return normalized;
+    }
+
+    bool TryResolveModelAssetPath(const csmString& modelHomeDir, const char* relativePath, std::string& resolvedPath, std::string& errorMessage)
+    {
+        if (!relativePath || relativePath[0] == '\0')
+        {
+            errorMessage = "asset path is empty";
+            return false;
+        }
+
+        try
+        {
+            std::wstring baseDir = NormalizeAbsolutePath(Live2DPal::StringToWString(modelHomeDir.GetRawString()));
+            if (baseDir.empty())
+            {
+                errorMessage = std::string("failed to normalize model directory: ") + modelHomeDir.GetRawString();
+                return false;
+            }
+
+            const std::wstring assetRelativePath = Live2DPal::StringToWString(relativePath);
+            if (assetRelativePath.empty())
+            {
+                errorMessage = std::string("asset path conversion failed: ") + relativePath;
+                return false;
+            }
+
+            if (!PathIsRelativeW(assetRelativePath.c_str()))
+            {
+                errorMessage = std::string("absolute asset path is not allowed: ") + relativePath;
+                return false;
+            }
+
+            if (!baseDir.empty() && baseDir.back() != L'\\' && baseDir.back() != L'/')
+            {
+                baseDir += L'\\';
+            }
+
+            const std::wstring combinedPath = baseDir + assetRelativePath;
+            const std::wstring candidate = NormalizeAbsolutePath(combinedPath);
+            if (candidate.empty())
+            {
+                errorMessage = std::string("failed to normalize asset path: ") + relativePath;
+                return false;
+            }
+
+            if (_wcsnicmp(candidate.c_str(), baseDir.c_str(), baseDir.size()) != 0)
+            {
+                errorMessage = std::string("asset path escapes model directory: ") + relativePath;
+                return false;
+            }
+
+            resolvedPath = WideToUtf8(candidate);
+            if (resolvedPath.empty())
+            {
+                errorMessage = std::string("failed to normalize asset path: ") + relativePath;
+                return false;
+            }
+
+            return true;
+        }
+        catch (const std::exception& ex)
+        {
+            errorMessage = std::string("asset path validation failed for '") + relativePath + "': " + ex.what();
+            return false;
+        }
+    }
 
     bool TryDrawModelWithSehGuard(CubismRenderer_D3D11* renderer)
     {
@@ -150,15 +261,23 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     _modelSetting = setting;
 
     if (strcmp(setting->GetModelFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetModelFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetModelFileName(), path, pathError)) {
+            _lastErrorMessage = std::string("モデル本体(moc3)のパスが不正です: ") + pathError;
+            Live2DPal::PrintLogLn("%s", _lastErrorMessage.c_str());
+            _updating = false;
+            _initialized = false;
+            return false;
+        }
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+        csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
         if (buffer) {
             LoadModel(buffer, static_cast<csmSizeType>(rawSize));
             Live2DPal::ReleaseBytes(buffer);
 
             if (!_model) {
-                _lastErrorMessage = std::string("モデル本体(moc3)の読み込みに失敗しました: ") + path.GetRawString()
+                _lastErrorMessage = std::string("モデル本体(moc3)の読み込みに失敗しました: ") + path
                     + "。moc3のバージョンとCubism Coreの互換性を確認してください。";
                 Live2DPal::PrintLogLn("%s", _lastErrorMessage.c_str());
                 _updating = false;
@@ -166,8 +285,8 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
                 return false;
             }
         } else {
-            Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.GetRawString());
-            _lastErrorMessage = std::string("モデル本体(moc3)ファイルが見つかりません: ") + path.GetRawString();
+            Live2DPal::PrintLogLn("Failed to load model moc3: %s", path.c_str());
+            _lastErrorMessage = std::string("モデル本体(moc3)ファイルが見つかりません: ") + path;
             _updating = false;
             _initialized = false;
             return false;
@@ -182,9 +301,14 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     if (setting->GetExpressionCount() > 0) {
         for (csmInt32 i = 0; i < setting->GetExpressionCount(); ++i) {
             csmString expressionName = setting->GetExpressionName(i);
-            csmString expressionPath = _modelHomeDir + setting->GetExpressionFileName(i);
+            std::string expressionPath;
+            std::string pathError;
+            if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetExpressionFileName(i), expressionPath, pathError)) {
+                Live2DPal::PrintLogLn("Skipped expression '%s': %s", expressionName.GetRawString(), pathError.c_str());
+                continue;
+            }
             unsigned int rawSize = 0;
-            csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath.GetRawString(), &rawSize);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath, &rawSize);
             if (!buffer) {
                 continue;
             }
@@ -198,32 +322,47 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     }
 
     if (strcmp(setting->GetPhysicsFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetPhysicsFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPhysicsFileName(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped physics file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
     if (strcmp(setting->GetPoseFileName(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetPoseFileName();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPoseFileName(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped pose file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
     if (strcmp(setting->GetUserDataFile(), "") != 0) {
-        csmString path = _modelHomeDir + setting->GetUserDataFile();
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetUserDataFile(), path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped user data file: %s", pathError.c_str());
+        } else {
         unsigned int rawSize = 0;
-        csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
-        if (buffer) {
-            LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
-            Live2DPal::ReleaseBytes(buffer);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
+            if (buffer) {
+                LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
+                Live2DPal::ReleaseBytes(buffer);
+            }
         }
     }
 
@@ -299,13 +438,18 @@ void NativeModel::SetupTextures() {
     csmInt32 textureCount = _modelSetting->GetTextureCount();
     for (csmInt32 i = 0; i < textureCount; i++) {
         const csmChar* fileName = _modelSetting->GetTextureFileName(i);
-        csmString path = _modelHomeDir + fileName;
-        std::wstring widePath = Live2DPal::StringToWString(path.GetRawString());
+        std::string path;
+        std::string pathError;
+        if (!TryResolveModelAssetPath(_modelHomeDir, fileName, path, pathError)) {
+            Live2DPal::PrintLogLn("Skipped texture %d: %s", i, pathError.c_str());
+            continue;
+        }
+        std::wstring widePath = Live2DPal::StringToWString(path);
 
         Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
         hr = wicFactory->CreateDecoderFromFilename(widePath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
         if (FAILED(hr)) {
-            Live2DPal::PrintLogLn("Failed to create decoder for: %s, 0x%08X", path.GetRawString(), hr);
+            Live2DPal::PrintLogLn("Failed to create decoder for: %s, 0x%08X", path.c_str(), hr);
             continue;
         }
 
@@ -447,9 +591,14 @@ void NativeModel::LoadMotions() {
                 continue;
             }
 
-            csmString path = _modelHomeDir + fileName;
+            std::string path;
+            std::string pathError;
+            if (!TryResolveModelAssetPath(_modelHomeDir, fileName.GetRawString(), path, pathError)) {
+                Live2DPal::PrintLogLn("Skipped motion '%s'[%d]: %s", groupName, j, pathError.c_str());
+                continue;
+            }
             unsigned int rawSize = 0;
-            csmByte* buffer = Live2DPal::LoadFileAsBytes(path.GetRawString(), &rawSize);
+            csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
 
             if (buffer) {
                 ACubismMotion* motion = LoadMotion(
@@ -470,10 +619,10 @@ void NativeModel::LoadMotions() {
                     }
                     _motions[groupName][j] = motion;
                 } else {
-                    Live2DPal::PrintLogLn("Failed to create motion: %s", path.GetRawString());
+                    Live2DPal::PrintLogLn("Failed to create motion: %s", path.c_str());
                 }
             } else {
-                Live2DPal::PrintLogLn("Failed to load motion file: %s", path.GetRawString());
+                Live2DPal::PrintLogLn("Failed to load motion file: %s", path.c_str());
             }
         }
     }

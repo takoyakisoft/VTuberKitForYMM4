@@ -22,14 +22,12 @@ namespace VTuberKitForYMM4.Plugin
         private const float DefaultInternalRenderScale = 2.0f;
         private static readonly bool EnableDebugOverlay = false;
         private const int MaxConsecutiveRenderFailures = 3;
+        private const int MaxReplaySteps = 600;
         private static readonly TimeSpan RenderRecoveryCooldown = TimeSpan.FromSeconds(2);
 
         private static readonly object _drawLock = new object();
         private static readonly object _sharedRendererLock = new object();
-        private static readonly object _sharedModelLock = new object();
         private static Live2DRenderer? _sharedRenderer;
-        private static Live2DModelWrapper? _sharedModel;
-        private static string _sharedModelPath = string.Empty;
         private static IntPtr _sharedDevicePtr = IntPtr.Zero;
         private static IntPtr _sharedContextPtr = IntPtr.Zero;
         private static int _sharedDeviceGeneration;
@@ -158,6 +156,7 @@ namespace VTuberKitForYMM4.Plugin
                     if (_localDeviceGeneration != _sharedDeviceGeneration)
                     {
                         ResetRenderResources();
+                        _model?.Dispose();
                         _model = null;
                         _currentModelPath = string.Empty;
                         _localDeviceGeneration = _sharedDeviceGeneration;
@@ -206,38 +205,29 @@ namespace VTuberKitForYMM4.Plugin
                         {
                             if (File.Exists(charParam.File))
                             {
+                                _model?.Dispose();
+                                _model = null;
                                 _currentModelPath = charParam.File;
-                                lock (_sharedModelLock)
+                                var loadedModel = Live2DManager.GetInstance().CreateModel();
+                                if (!loadedModel.LoadModel(_currentModelPath))
                                 {
-                                    if (_sharedModel == null || !string.Equals(_sharedModelPath, _currentModelPath, StringComparison.Ordinal))
+                                    var detail = loadedModel.LastErrorMessage;
+                                    if (string.IsNullOrWhiteSpace(detail))
                                     {
-                                        _sharedModel?.Dispose();
-                                        _sharedModel = Live2DManager.GetInstance().CreateModel();
-                                        _sharedModelPath = _currentModelPath;
-
-                                        if (!_sharedModel.LoadModel(_currentModelPath))
-                                        {
-                                            var detail = _sharedModel.LastErrorMessage;
-                                            if (string.IsNullOrWhiteSpace(detail))
-                                            {
-                                                detail = "原因を特定できませんでした。moc3ファイルとCubism Coreの互換性を確認してください。";
-                                            }
-
-                                            Commons.ConsoleManager.Error($"Failed to load model: {_currentModelPath}. {detail}");
-
-                                            _sharedModel.Dispose();
-                                            _sharedModel = null;
-                                            _sharedModelPath = string.Empty;
-                                        }
-                                        else
-                                        {
-                                            _sharedModel.ResetAnimationState();
-                                            _sharedModel.Update(1.0f / 60.0f);
-                                            _sharedModel.CommitParameters();
-                                        }
+                                        detail = "原因を特定できませんでした。moc3ファイルとCubism Coreの互換性を確認してください。";
                                     }
 
-                                    _model = _sharedModel;
+                                    Commons.ConsoleManager.Error($"Failed to load model: {_currentModelPath}. {detail}");
+
+                                    loadedModel.Dispose();
+                                    _currentModelPath = string.Empty;
+                                }
+                                else
+                                {
+                                    loadedModel.ResetAnimationState();
+                                    loadedModel.Update(1.0f / 60.0f);
+                                    loadedModel.CommitParameters();
+                                    _model = loadedModel;
                                 }
                                 _hasLastItemFrame = false;
                                 _needsInitialFrameUpdate = true;
@@ -248,6 +238,9 @@ namespace VTuberKitForYMM4.Plugin
                             }
                             else
                             {
+                                _model?.Dispose();
+                                _model = null;
+                                _currentModelPath = string.Empty;
                                 Commons.ConsoleManager.Error($"Model file not found: {charParam.File}");
                             }
                         }
@@ -442,8 +435,10 @@ namespace VTuberKitForYMM4.Plugin
                         }
                         _model.CommitParameters();
 
-                        var canDraw = finalOpacity > 0.001f;
-                        Render(
+                        var canDraw = desc.ScreenSize.Width > 0 &&
+                                      desc.ScreenSize.Height > 0 &&
+                                      finalOpacity > 0.001f;
+                        if (Render(
                             desc.ScreenSize.Width,
                             desc.ScreenSize.Height,
                             canDraw,
@@ -451,7 +446,10 @@ namespace VTuberKitForYMM4.Plugin
                             _cachedInternalRenderScale,
                             _cachedEnableFxaa,
                             _cachedEnableMsaa,
-                            _cachedPreferredMsaaSampleCount);
+                            _cachedPreferredMsaaSampleCount))
+                        {
+                            return;
+                        }
                     }
                 }
             }
@@ -624,7 +622,9 @@ namespace VTuberKitForYMM4.Plugin
                 return;
             }
 
-            var replayStep = (float)(1.0 / Math.Max(60.0, desc.FPS));
+            var replayStep = Math.Max(
+                (float)(1.0 / Math.Max(60.0, desc.FPS)),
+                targetSeconds / MaxReplaySteps);
             var elapsed = 0.0f;
 
             while (elapsed < targetSeconds)
@@ -667,6 +667,11 @@ namespace VTuberKitForYMM4.Plugin
         private bool Render(int screenWidth, int screenHeight, bool drawModel, int maxRenderTargetSize, float internalRenderScale, bool enableFxaa, bool enableMsaa, int preferredMsaaSampleCount)
         {
             if (_renderer == null || _model == null || _transformEffect == null)
+            {
+                return true;
+            }
+
+            if (screenWidth <= 0 || screenHeight <= 0)
             {
                 return true;
             }
@@ -1129,13 +1134,6 @@ namespace VTuberKitForYMM4.Plugin
 
         private static void ResetSharedNativeResources()
         {
-            lock (_sharedModelLock)
-            {
-                _sharedModel?.Dispose();
-                _sharedModel = null;
-                _sharedModelPath = string.Empty;
-            }
-
             lock (_sharedRendererLock)
             {
                 _sharedRenderer?.Dispose();
@@ -1174,6 +1172,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             if (!_disposed)
             {
+                _model?.Dispose();
                 _model = null;
                 _renderer = null;
 

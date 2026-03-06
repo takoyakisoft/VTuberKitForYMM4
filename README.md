@@ -1,5 +1,11 @@
 # VTuberKitForYMM4
 
+> [!CAUTION]
+> このプラグインに興味を持っていただきありがとうございます。
+> Live2Dの[拡張性アプリケーション](https://www.live2d.com/sdk/license/expandable/)に審査と契約が必要なことを確認していなかったため、一旦リリースビルドを削除しました。
+> 完全無料でも契約が可能な場合があるので、一旦申請してみます。その結果を見て今後のことは考えます。
+> お騒がせして申し訳ないです。
+
 [![Build Status](https://github.com/takoyakisoft/VTuberKitForYMM4/actions/workflows/build.yml/badge.svg)](https://github.com/takoyakisoft/VTuberKitForYMM4/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](#)

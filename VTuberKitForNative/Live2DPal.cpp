@@ -11,8 +11,6 @@
 
 #pragma unmanaged
 
-#include "Live2DShader.h"
-
 namespace VTuberKitForNative {
 
 static void WriteLogToFile(const char* message) {

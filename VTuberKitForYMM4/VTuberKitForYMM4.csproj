@@ -73,7 +73,6 @@
 	<!--ビルド後にYMM4のプラグインフォルダにdllをコピーする-->
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 	  <Exec Command="mkdir &quot;$(YMM4DirPath)user\plugin\$(ProjectName)&quot; &gt; NUL 2&gt;&amp;1&#xD;&#xA;copy &quot;$(TargetDir)*.dll&quot; &quot;$(YMM4DirPath)user\plugin\$(ProjectName)\&quot;" />
-	  <!-- Shadersフォルダをコピー -->
-	  <Exec Command="if exist &quot;$(ProjectDir)..\VTuberKitForNative\Shaders&quot; (&#xD;&#xA;    mkdir &quot;$(YMM4DirPath)user\plugin\$(ProjectName)\Shaders&quot; &gt; NUL 2&gt;&amp;1&#xD;&#xA;    copy &quot;$(ProjectDir)..\VTuberKitForNative\Shaders\*.fx&quot; &quot;$(YMM4DirPath)user\plugin\$(ProjectName)\Shaders\&quot;&#xD;&#xA;  )" />
+	  <Exec Command="if exist &quot;$(CubismSdkPath)Framework\src\Rendering\D3D11\Shaders\CubismEffect.fx&quot; (&#xD;&#xA;    mkdir &quot;$(YMM4DirPath)user\plugin\$(ProjectName)\Shaders&quot; &gt; NUL 2&gt;&amp;1&#xD;&#xA;    copy &quot;$(CubismSdkPath)Framework\src\Rendering\D3D11\Shaders\CubismEffect.fx&quot; &quot;$(YMM4DirPath)user\plugin\$(ProjectName)\Shaders\&quot; /Y&#xD;&#xA;  )" />
 	</Target>
 </Project>

@@ -66,7 +66,7 @@ void Live2DPal::PrintLogLn(const char* format, ...) {
 Csm::csmByte* __cdecl Live2DPal::LoadFileAsBytes(const std::string filePath, Csm::csmSizeInt* outSize) {
     // シェーダーファイルの場合はDLLの隣のShadersフォルダから読み込む
     std::wstring widePath;
-    if (filePath.find("CubismEffect.fx") != std::string::npos || filePath.find(".fx") != std::string::npos) {
+    if (filePath.find("CubismEffect.fx") != std::string::npos) {
         // DLLのパスを取得
         wchar_t dllPath[MAX_PATH];
         HMODULE hModule = NULL;
@@ -89,7 +89,6 @@ Csm::csmByte* __cdecl Live2DPal::LoadFileAsBytes(const std::string filePath, Csm
     _wfopen_s(&fp, widePath.c_str(), L"rb");
     if (fp == nullptr) {
         if (outSize) *outSize = 0;
-        // エラーログを出さないと何が起きたかわからないため追加
         PrintLogLn("[Error] Failed to open file: %s", filePath.c_str());
         return nullptr;
     }

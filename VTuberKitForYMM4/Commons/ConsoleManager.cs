@@ -36,7 +36,7 @@ namespace VTuberKitForYMM4.Commons
             var method = frame.GetMethod();
             var type = method?.DeclaringType;
             var name = method?.Name;
-            var line = $"{(level == "DEBUG" ? "" : $"[{level} ")}{DateTime.Now}] {(level == "DEBUG" ? " " : "")} {type}.{name}(): {message}";
+            var line = $"[{level} {DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}] {type}.{name}(): {message}";
             Console.WriteLine(line);
 
             lock (fileLock)

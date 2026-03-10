@@ -37,6 +37,7 @@ namespace VTuberKitForYMM4.Plugin
                 }
 
                 ModelMetadataCatalog.UpdateFromModelPath(normalized);
+                DynamicOverrides.ModelFile = normalized;
                 DynamicOverrides.SyncWithMetadata();
             }
         }

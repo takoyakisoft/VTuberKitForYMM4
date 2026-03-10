@@ -127,6 +127,23 @@ namespace VTuberKitForYMM4.Plugin
             return false;
         }
 
+        public static bool TryGetParameterMetadata(string? modelPath, string? id, out ParameterMetadata metadata)
+        {
+            lock (LockObj)
+            {
+                var snapshot = GetSnapshotCore(modelPath);
+                if (snapshot != null &&
+                    !string.IsNullOrWhiteSpace(id) &&
+                    snapshot.ParameterMetadataById.TryGetValue(id, out metadata))
+                {
+                    return true;
+                }
+            }
+
+            metadata = default;
+            return false;
+        }
+
         public static IReadOnlyList<(string Id, string Name)> HitAreas
         {
             get
@@ -209,6 +226,22 @@ namespace VTuberKitForYMM4.Plugin
             lock (LockObj)
             {
                 return GetSnapshotCore(modelPath)?.HitAreas ?? [];
+            }
+        }
+
+        public static IReadOnlyList<(string Id, string Name)> GetParameters(string? modelPath)
+        {
+            lock (LockObj)
+            {
+                return GetSnapshotCore(modelPath)?.Parameters ?? [];
+            }
+        }
+
+        public static IReadOnlyList<(string Id, string Name)> GetParts(string? modelPath)
+        {
+            lock (LockObj)
+            {
+                return GetSnapshotCore(modelPath)?.Parts ?? [];
             }
         }
 
@@ -377,9 +410,18 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             var normalizedPath = Path.GetFullPath(modelPath);
-            if (SnapshotCache.TryGetValue(normalizedPath, out var cached) &&
-                cached.ParameterMetadataById.Count > 0)
+            if (SnapshotCache.TryGetValue(normalizedPath, out var cached))
             {
+                if (cached.ParameterMetadataById.Count == 0 && CanLoadNativeParameterMetadata())
+                {
+                    var refreshed = LoadSnapshot(normalizedPath);
+                    if (refreshed != null)
+                    {
+                        SnapshotCache[normalizedPath] = refreshed;
+                        return refreshed;
+                    }
+                }
+
                 return cached;
             }
 
@@ -390,6 +432,19 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             return snapshot;
+        }
+
+        private static bool CanLoadNativeParameterMetadata()
+        {
+            try
+            {
+                var manager = Live2DManager.GetInstance();
+                return manager != null && manager.HasD3D11Device();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static ModelMetadataSnapshot? LoadSnapshot(string modelPath)

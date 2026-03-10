@@ -33,6 +33,14 @@ namespace VTuberKitForYMM4.Plugin
         public object ParameterRowsSyncRoot { get; } = new();
         public object PartRowsSyncRoot { get; } = new();
 
+        [Browsable(false)]
+        public string ModelFile
+        {
+            get => modelFile;
+            set => Set(ref modelFile, value ?? string.Empty);
+        }
+        string modelFile = string.Empty;
+
         public Live2DFaceDynamicOverrides()
         {
             ParameterRows.CollectionChanged += OnRowsChanged;
@@ -62,7 +70,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (ParameterRowsSyncRoot)
             {
-                var metadata = ModelMetadataCatalog.Parameters
+                var metadata = ModelMetadataCatalog.GetParameters(ModelFile)
                     .Where(x => !StandardParameterIds.Contains(x.Id))
                     .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
@@ -73,7 +81,7 @@ namespace VTuberKitForYMM4.Plugin
                 foreach (var item in metadata)
                 {
                     var name = string.IsNullOrWhiteSpace(item.Name) ? item.Id : item.Name;
-                    var hasNative = ModelMetadataCatalog.TryGetParameterMetadata(item.Id, out var native);
+                    var hasNative = ModelMetadataCatalog.TryGetParameterMetadata(ModelFile, item.Id, out var native);
                     var defaultValue = hasNative ? native.Default : 0.0f;
                     var minValue = hasNative ? native.Min : -100.0f;
                     var maxValue = hasNative ? native.Max : 100.0f;
@@ -104,7 +112,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (PartRowsSyncRoot)
             {
-                var parts = ModelMetadataCatalog.Parts
+                var parts = ModelMetadataCatalog.GetParts(ModelFile)
                     .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
                 RemoveDuplicatePartRows();

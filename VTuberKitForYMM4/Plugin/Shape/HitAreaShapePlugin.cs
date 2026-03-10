@@ -362,6 +362,12 @@ namespace VTuberKitForYMM4.Plugin.Shape
         private float transformPositionY;
         private float transformScale = 1.0f;
         private float transformRotationDegrees;
+        private float transformModelCenterX;
+        private float transformModelCenterY;
+        private float transformHitTestScaleX = 1.0f;
+        private float transformHitTestScaleY = 1.0f;
+        private float transformHitTestTranslateX;
+        private float transformHitTestTranslateY;
 
         public ID2D1Image Output => commandList ?? throw new InvalidOperationException($"{nameof(commandList)} is null.");
 
@@ -390,21 +396,29 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var transform = GetTransformState(newLinkId);
 
             var newIsHit = isHit;
-            Live2DInteractionStore.UpdateHitAreaRect(
-                sourceId,
-                newLinkId,
-                parameter.HitAreaName,
-                parameter.ExpressionId,
-                parameter.MotionGroup,
-                parameter.MotionIndex,
-                newX,
-                newY,
-                newWidth,
-                newHeight,
-                timelineItemSourceDescription.Layer);
-            if (Live2DInteractionStore.TryGetHitAreaRect(sourceId, out var state) && state != null)
+            if (string.IsNullOrWhiteSpace(newLinkId))
             {
-                newIsHit = state.IsHit;
+                Live2DInteractionStore.RemoveHitAreaRect(sourceId);
+                newIsHit = false;
+            }
+            else
+            {
+                Live2DInteractionStore.UpdateHitAreaRect(
+                    sourceId,
+                    newLinkId,
+                    parameter.HitAreaName,
+                    parameter.ExpressionId,
+                    parameter.MotionGroup,
+                    parameter.MotionIndex,
+                    newX,
+                    newY,
+                    newWidth,
+                    newHeight,
+                    timelineItemSourceDescription.Layer);
+                if (Live2DInteractionStore.TryGetHitAreaRect(sourceId, out var state) && state != null)
+                {
+                    newIsHit = state.IsHit;
+                }
             }
 
             if (commandList != null &&
@@ -419,6 +433,12 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 transformPositionY == transform.PositionY &&
                 transformScale == transform.Scale &&
                 transformRotationDegrees == transform.RotationDegrees &&
+                transformModelCenterX == transform.ModelCenterX &&
+                transformModelCenterY == transform.ModelCenterY &&
+                transformHitTestScaleX == transform.HitTestScaleX &&
+                transformHitTestScaleY == transform.HitTestScaleY &&
+                transformHitTestTranslateX == transform.HitTestTranslateX &&
+                transformHitTestTranslateY == transform.HitTestTranslateY &&
                 this.isHit == newIsHit)
                 return;
 
@@ -427,6 +447,36 @@ namespace VTuberKitForYMM4.Plugin.Shape
             commandList = dc.CreateCommandList();
             hitBrush.Color = InteractionShapeColors.GetHitAreaHitColor(newLinkId);
             missBrush.Color = InteractionShapeColors.GetHitAreaMissColor(newLinkId);
+
+            if (string.IsNullOrWhiteSpace(newLinkId))
+            {
+                dc.Target = commandList;
+                dc.BeginDraw();
+                dc.Clear(null);
+                dc.EndDraw();
+                dc.Target = null;
+                commandList.Close();
+
+                x = newX;
+                y = newY;
+                width = newWidth;
+                height = newHeight;
+                this.isHit = false;
+                screenWidth = newScreenWidth;
+                screenHeight = newScreenHeight;
+                currentLinkId = string.Empty;
+                transformPositionX = transform.PositionX;
+                transformPositionY = transform.PositionY;
+                transformScale = transform.Scale;
+                transformRotationDegrees = transform.RotationDegrees;
+                transformModelCenterX = transform.ModelCenterX;
+                transformModelCenterY = transform.ModelCenterY;
+                transformHitTestScaleX = transform.HitTestScaleX;
+                transformHitTestScaleY = transform.HitTestScaleY;
+                transformHitTestTranslateX = transform.HitTestTranslateX;
+                transformHitTestTranslateY = transform.HitTestTranslateY;
+                return;
+            }
 
             var topLeft = TransformPoint(newLinkId, newX - newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
             var topRight = TransformPoint(newLinkId, newX + newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
@@ -458,6 +508,12 @@ namespace VTuberKitForYMM4.Plugin.Shape
             transformPositionY = transform.PositionY;
             transformScale = transform.Scale;
             transformRotationDegrees = transform.RotationDegrees;
+            transformModelCenterX = transform.ModelCenterX;
+            transformModelCenterY = transform.ModelCenterY;
+            transformHitTestScaleX = transform.HitTestScaleX;
+            transformHitTestScaleY = transform.HitTestScaleY;
+            transformHitTestTranslateX = transform.HitTestTranslateX;
+            transformHitTestTranslateY = transform.HitTestTranslateY;
         }
 
         private Vector2 TransformPoint(string linkId, float x, float y, int screenWidth, int screenHeight)
@@ -466,14 +522,14 @@ namespace VTuberKitForYMM4.Plugin.Shape
             return InteractionShapeTransform.TransformHitBoxPointToPixel(new Vector2(x, y), Vector2.Zero, state, screenWidth, screenHeight);
         }
 
-        private static (float PositionX, float PositionY, float Scale, float RotationDegrees) GetTransformState(string linkId)
+        private static Live2DInteractionStore.InteractionTransformState GetTransformState(string linkId)
         {
             if (Live2DInteractionStore.TryGetInteractionTransform(linkId, out var state) && state is not null)
             {
-                return (state.PositionX, state.PositionY, state.Scale, state.RotationDegrees);
+                return state;
             }
 
-            return default;
+            return new Live2DInteractionStore.InteractionTransformState(0, 0, 1, 0, 0, 0, 1, 1, 0, 0);
         }
 
         public void Dispose()

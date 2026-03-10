@@ -100,6 +100,25 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
+    public void ResolveActiveFace_ComputesFaceLocalFrameFromFaceStart()
+    {
+        var face = new Live2DFaceParameter();
+        var fps = 60;
+        var current = new FrameTime(150, fps);
+        var faces = new[]
+        {
+            new TachieFaceDescription(new FrameTime(120, fps), new FrameTime(180, fps), 1, face),
+        };
+
+        var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
+
+        Assert.Same(face, resolved.Face);
+        Assert.Equal(30.0, resolved.LocalFrame);
+        Assert.Equal(180.0, resolved.DurationFrame);
+        Assert.Equal(0.5f, resolved.RelativeTimeSeconds);
+    }
+
+    [Fact]
     public void DynamicFaceOverridesEditor_RaisesEditEvents_WhenSliderValueNotificationArrives()
     {
         RunSta(() =>

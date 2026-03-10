@@ -32,7 +32,7 @@ namespace VTuberKitForYMM4.Plugin
         }
         string modelFile = string.Empty;
 
-        [System.ComponentModel.Browsable(false)]
+        [Browsable(false)]
         public string ExpressionId
         {
             get
@@ -47,7 +47,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
         bool motionLoop = true;
 
-        [System.ComponentModel.Browsable(false)]
+        [Browsable(false)]
         public string MotionGroup
         {
             get
@@ -56,7 +56,7 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
-        [System.ComponentModel.Browsable(false)]
+        [Browsable(false)]
         public int MotionIndex
         {
             get

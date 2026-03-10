@@ -124,6 +124,42 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
+    public void ResolveStartedFace_ReturnsNullBeforeFirstFaceStarts()
+    {
+        var face = new Live2DFaceParameter();
+        var fps = 60;
+        var current = new FrameTime(30, fps);
+        var faces = new[]
+        {
+            new TachieFaceDescription(new FrameTime(120, fps), new FrameTime(180, fps), 1, face),
+        };
+
+        var resolved = Live2DTachieSource.ResolveStartedFace(faces, current);
+
+        Assert.Null(resolved.Face);
+        Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
+    }
+
+    [Fact]
+    public void ResolveStartedFace_UsesLatestStartedFaceAfterFaceEnds()
+    {
+        var earlierFace = new Live2DFaceParameter();
+        var laterFace = new Live2DFaceParameter();
+        var fps = 60;
+        var current = new FrameTime(260, fps);
+        var faces = new[]
+        {
+            new TachieFaceDescription(new FrameTime(60, fps), new FrameTime(60, fps), 1, earlierFace),
+            new TachieFaceDescription(new FrameTime(180, fps), new FrameTime(30, fps), 1, laterFace),
+        };
+
+        var resolved = Live2DTachieSource.ResolveStartedFace(faces, current);
+
+        Assert.Same(laterFace, resolved.Face);
+        Assert.InRange(resolved.RelativeTimeSeconds, 1.3333f, 1.3334f);
+    }
+
+    [Fact]
     public void DynamicFaceOverridesEditor_RaisesEditEvents_WhenSliderValueNotificationArrives()
     {
         RunSta(() =>

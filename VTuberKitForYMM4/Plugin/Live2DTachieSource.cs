@@ -352,7 +352,7 @@ namespace VTuberKitForYMM4.Plugin
                             desc,
                             faceParam,
                             itemParam,
-                            Math.Max(0.0f, activeFace.RelativeTimeSeconds),
+                            Math.Max(activeFace.RelativeTimeSeconds, (float)itemTimeSeconds),
                             (float)(charParam?.LipSyncGain ?? 1.0),
                             charParam?.LipSyncVowelsOnly ?? false,
                             activeHitArea?.MotionGroup,
@@ -377,8 +377,8 @@ namespace VTuberKitForYMM4.Plugin
                             var multiplyA = itemParam.MultiplyA.GetValue(frame, length, fps);
                             var faceOpacity = faceParam?.OpacityHold == true
                                 ? faceParam.Opacity.GetValue(
-                                    Math.Max(0L, (long)Math.Round(activeFace.LocalFrame)),
-                                    Math.Max(1L, (long)Math.Round(activeFace.DurationFrame)),
+                                    frame,
+                                    length,
                                     fps)
                                 : opacity;
                             finalOpacity = (float)Math.Clamp(faceOpacity, 0.0, 1.0);
@@ -411,8 +411,8 @@ namespace VTuberKitForYMM4.Plugin
 
                         if (faceParam != null)
                         {
-                            var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
-                            var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
+                            var faceFrame = desc.ItemPosition.Frame;
+                            var faceLength = desc.ItemDuration.Frame;
                             var fpsForFace = desc.FPS;
 
                             transformPositionX += (float)faceParam.OffsetPositionX.GetValue(faceFrame, faceLength, fpsForFace);
@@ -460,8 +460,7 @@ namespace VTuberKitForYMM4.Plugin
                                 desc,
                                 faceParam,
                                 itemParam,
-                                Math.Max(0.0f, activeFace.RelativeTimeSeconds),
-                                activeFace.DurationFrame,
+                                Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
                                 (float)(charParam?.LipSyncGain ?? 1.0),
                                 (float)(charParam?.WindStrength ?? 0.0));
                         }
@@ -471,8 +470,8 @@ namespace VTuberKitForYMM4.Plugin
                         }
                         if (faceParam != null)
                         {
-                            var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
-                            var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
+                            var faceFrame = desc.ItemPosition.Frame;
+                            var faceLength = desc.ItemDuration.Frame;
                             TachieMotionEvaluator.ApplyFaceAndLipSync(
                                 _model,
                                 desc,
@@ -485,8 +484,8 @@ namespace VTuberKitForYMM4.Plugin
                         _model.UpdatePostPhysics(deltaSeconds);
                         if (faceParam != null)
                         {
-                            var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
-                            var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
+                            var faceFrame = desc.ItemPosition.Frame;
+                            var faceLength = desc.ItemDuration.Frame;
                             TachieMotionEvaluator.ApplyDynamicFaceParts(
                                 _model,
                                 faceParam,
@@ -717,7 +716,6 @@ namespace VTuberKitForYMM4.Plugin
             Live2DFaceParameter? faceParam,
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
-            double activeFaceDurationFrame,
             float lipSyncGain,
             float windStrength)
         {
@@ -754,8 +752,8 @@ namespace VTuberKitForYMM4.Plugin
                 model.UpdatePrePhysics(delta);
                 if (faceParam != null)
                 {
-                    var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
-                    var faceLength = Math.Max(1L, (long)Math.Round(activeFaceDurationFrame));
+                    var faceFrame = Math.Clamp((long)Math.Round(next * desc.FPS), 0L, desc.ItemDuration.Frame);
+                    var faceLength = desc.ItemDuration.Frame;
                     TachieMotionEvaluator.ApplyFaceAndLipSync(
                         model,
                         desc,
@@ -768,8 +766,8 @@ namespace VTuberKitForYMM4.Plugin
                 model.UpdatePostPhysics(delta);
                 if (faceParam != null)
                 {
-                    var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
-                    var faceLength = Math.Max(1L, (long)Math.Round(activeFaceDurationFrame));
+                    var faceFrame = Math.Clamp((long)Math.Round(next * desc.FPS), 0L, desc.ItemDuration.Frame);
+                    var faceLength = desc.ItemDuration.Frame;
                     TachieMotionEvaluator.ApplyDynamicFaceParts(
                         model,
                         faceParam,

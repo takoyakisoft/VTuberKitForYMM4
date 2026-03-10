@@ -356,10 +356,12 @@ namespace VTuberKitForYMM4.Plugin
         private static IEnumerable<ParameterMetadata> LoadNativeParameterMetadata(string modelPath)
         {
             var loadedParameters = new List<ParameterMetadata>();
+            var initializedManager = false;
             try
             {
                 var manager = Live2DManager.GetInstance();
                 manager?.Initialize();
+                initializedManager = manager != null;
                 if (manager == null)
                 {
                     return loadedParameters;
@@ -397,6 +399,20 @@ namespace VTuberKitForYMM4.Plugin
             catch (Exception ex)
             {
                 LogMetadataError(nameof(LoadNativeParameterMetadata), modelPath, ex);
+            }
+            finally
+            {
+                if (initializedManager)
+                {
+                    try
+                    {
+                        Live2DManager.GetInstance()?.Release();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMetadataError(nameof(LoadNativeParameterMetadata), $"{modelPath} (release)", ex);
+                    }
+                }
             }
 
             return loadedParameters;

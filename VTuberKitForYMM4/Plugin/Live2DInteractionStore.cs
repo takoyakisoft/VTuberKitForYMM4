@@ -154,6 +154,8 @@ namespace VTuberKitForYMM4.Plugin
                 if (item.Value.LastSeenUtcTicks < minTicks)
                 {
                     InteractionTargets.TryRemove(item.Key, out _);
+                    InteractionTransforms.TryRemove(item.Key, out _);
+                    InteractionHitAreas.TryRemove(item.Key, out _);
                 }
             }
 
@@ -169,6 +171,7 @@ namespace VTuberKitForYMM4.Plugin
                 return;
 
             InteractionTargets.TryRemove(linkId, out _);
+            InteractionTransforms.TryRemove(linkId, out _);
             InteractionHitAreas.TryRemove(linkId, out _);
         }
 

@@ -39,7 +39,7 @@ namespace VTuberKitForYMM4.Plugin
                 var itemTimeSeconds = itemTimeSecondsOverride ?? (float)Math.Max(0.0, description.ItemPosition.Time.TotalSeconds);
                 nativeModel.EvaluateMotion(itemGroup, itemIndex, Math.Max(0, itemTimeSeconds), itemParam?.MotionLoop ?? true);
             }
-            else if (activeFace != null || interactionMotionIndex >= 0)
+            else if (activeFace != null)
             {
                 nativeModel.StopAllMotions();
             }

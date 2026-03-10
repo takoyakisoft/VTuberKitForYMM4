@@ -265,13 +265,18 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var selected = viewModel.SelectedLinkId ?? string.Empty;
             if (!string.Equals(linkId, selected, StringComparison.Ordinal))
             {
-                Motion.UpdateItemsSource();
                 if (!string.IsNullOrWhiteSpace(linkId))
                 {
                     ClearReactionSelections();
                 }
 
                 Set(ref linkId, selected, nameof(LinkId));
+                HitArea.UpdateItemsSource();
+                HitArea.UpdateSelectedValue();
+                Motion.UpdateItemsSource();
+                SyncMotionSelection();
+                Expression.UpdateItemsSource();
+                Expression.UpdateSelectedValue();
             }
         }
 

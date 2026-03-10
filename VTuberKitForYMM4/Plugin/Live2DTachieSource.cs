@@ -477,8 +477,8 @@ namespace VTuberKitForYMM4.Plugin
                         else
                         {
                             _model.UpdatePrePhysics(deltaSeconds);
+                            _model.UpdatePostPhysics(deltaSeconds);
                         }
-                        _model.UpdatePostPhysics(deltaSeconds);
                         if (faceParam != null)
                         {
                             var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
@@ -783,6 +783,7 @@ namespace VTuberKitForYMM4.Plugin
         private Live2DInteractionStore.HitAreaRectState? GetActiveHitAreaReaction(string? linkId, double itemTimeSeconds, out float motionTimeSeconds)
         {
             motionTimeSeconds = 0.0f;
+            PruneInactiveHitAreaState(linkId);
             var activeHitArea = Live2DInteractionStore.GetPreferredHitAreaReaction(
                 linkId,
                 sourceId => _hitAreaActiveSinceSeconds.TryGetValue(sourceId, out var activeSinceSeconds)
@@ -818,6 +819,33 @@ namespace VTuberKitForYMM4.Plugin
         {
             _hitAreaActiveSinceSeconds.Clear();
             Live2DInteractionStore.ClearHitAreaResults();
+        }
+
+        private void PruneInactiveHitAreaState(string? linkId)
+        {
+            if (string.IsNullOrWhiteSpace(linkId))
+            {
+                _hitAreaActiveSinceSeconds.Clear();
+                return;
+            }
+
+            var activeSourceIds = Live2DInteractionStore.GetHitAreaRects(linkId)
+                .Select(x => x.SourceId)
+                .ToHashSet(StringComparer.Ordinal);
+
+            if (activeSourceIds.Count == 0)
+            {
+                _hitAreaActiveSinceSeconds.Clear();
+                return;
+            }
+
+            foreach (var sourceId in _hitAreaActiveSinceSeconds.Keys.ToArray())
+            {
+                if (!activeSourceIds.Contains(sourceId))
+                {
+                    _hitAreaActiveSinceSeconds.Remove(sourceId);
+                }
+            }
         }
 
         private (int Width, int Height) CalculateRenderTargetSize(int screenWidth, int screenHeight, int maxRenderTargetSize, float internalRenderScale)

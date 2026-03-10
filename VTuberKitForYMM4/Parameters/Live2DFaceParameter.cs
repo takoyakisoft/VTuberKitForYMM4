@@ -12,17 +12,35 @@ namespace VTuberKitForYMM4.Plugin
     {
         public Live2DFaceParameter()
         {
-            Motion = new MotionViewModel("Idle", modelPathProvider: () => ModelFile);
-            Expression = new ExpressionViewModel("exp", () => ModelFile);
+            motion = CreateMotionViewModel();
+            expression = CreateExpressionViewModel();
         }
 
         [Display(Name = "モーション", Description = "model3.json の Motions から選択（Idle含む）")]
         [CustomComboBox]
-        public MotionViewModel Motion { get; set; }
+        public MotionViewModel Motion
+        {
+            get => motion;
+            set
+            {
+                motion = value ?? CreateMotionViewModel();
+                motionInitialized = false;
+            }
+        }
+        MotionViewModel motion;
 
         [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
         [CustomComboBox]
-        public ExpressionViewModel Expression { get; set; }
+        public ExpressionViewModel Expression
+        {
+            get => expression;
+            set
+            {
+                expression = value ?? CreateExpressionViewModel();
+                expressionInitialized = false;
+            }
+        }
+        ExpressionViewModel expression;
 
         [Browsable(false)]
         public string ModelFile
@@ -38,22 +56,21 @@ namespace VTuberKitForYMM4.Plugin
 
                 ModelMetadataCatalog.UpdateFromModelPath(normalized);
                 DynamicOverrides.ModelFile = normalized;
-                DynamicOverrides.SyncWithMetadata();
+                motionInitialized = false;
+                expressionInitialized = false;
             }
         }
         string modelFile = string.Empty;
+        bool motionInitialized;
+        bool expressionInitialized;
 
         [Browsable(false)]
         public string ExpressionId
         {
             get
             {
-                if (Expression != null && Expression.ItemsSource.Count == 0)
-                {
-                    Expression.UpdateItemsSource();
-                    Expression.UpdateSelectedValue();
-                }
-                return Expression?.SelectedExpressionId ?? string.Empty;
+                EnsureExpressionInitialized();
+                return Expression.SelectedExpressionId ?? string.Empty;
             }
         }
 
@@ -62,12 +79,8 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                if (Motion != null && Motion.ItemsSource.Count == 0)
-                {
-                    Motion.UpdateItemsSource();
-                    Motion.UpdateSelectedValue();
-                }
-                return Motion?.SelectedGroup ?? string.Empty;
+                EnsureMotionInitialized();
+                return Motion.SelectedGroup ?? string.Empty;
             }
         }
 
@@ -76,12 +89,8 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                if (Motion != null && Motion.ItemsSource.Count == 0)
-                {
-                    Motion.UpdateItemsSource();
-                    Motion.UpdateSelectedValue();
-                }
-                return Motion?.SelectedIndex ?? -1;
+                EnsureMotionInitialized();
+                return Motion.SelectedIndex;
             }
         }
 
@@ -99,7 +108,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool OpacityHold { get => opacityHold; set => Set(ref opacityHold, value); }
         bool opacityHold;
 
-        [Display(Name = "目L", Description = "ParamEyeLOpen")]
+        [Display(Name = "左目 開閉", Description = "ParamEyeLOpen")]
         [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
         public Animation EyeLOpen { get; } = new(1, 0, 1);
 
@@ -107,7 +116,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool EyeLOpenHold { get => eyeLOpenHold; set => Set(ref eyeLOpenHold, value); }
         bool eyeLOpenHold;
 
-        [Display(Name = "目R", Description = "ParamEyeROpen")]
+        [Display(Name = "右目 開閉", Description = "ParamEyeROpen")]
         [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
         public Animation EyeROpen { get; } = new(1, 0, 1);
 
@@ -115,7 +124,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool EyeROpenHold { get => eyeROpenHold; set => Set(ref eyeROpenHold, value); }
         bool eyeROpenHold;
 
-        [Display(Name = "口開き", Description = "ParamMouthOpenY")]
+        [Display(Name = "口 開閉", Description = "ParamMouthOpenY")]
         [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
         public Animation MouthOpen { get; } = new(0, 0, 1);
 
@@ -123,7 +132,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool MouthOpenHold { get => mouthOpenHold; set => Set(ref mouthOpenHold, value); }
         bool mouthOpenHold;
 
-        [Display(Name = "口形", Description = "ParamMouthForm")]
+        [Display(Name = "口 変形", Description = "ParamMouthForm")]
         [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
         public Animation MouthForm { get; } = new(0, -1, 1);
 
@@ -131,7 +140,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool MouthFormHold { get => mouthFormHold; set => Set(ref mouthFormHold, value); }
         bool mouthFormHold;
 
-        [Display(Name = "顔X", Description = "ParamAngleX")]
+        [Display(Name = "角度 X", Description = "ParamAngleX")]
         [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
         public Animation AngleX { get; } = new(0, -30, 30);
 
@@ -139,7 +148,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool AngleXHold { get => angleXHold; set => Set(ref angleXHold, value); }
         bool angleXHold;
 
-        [Display(Name = "顔Y", Description = "ParamAngleY")]
+        [Display(Name = "角度 Y", Description = "ParamAngleY")]
         [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
         public Animation AngleY { get; } = new(0, -30, 30);
 
@@ -147,7 +156,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool AngleYHold { get => angleYHold; set => Set(ref angleYHold, value); }
         bool angleYHold;
 
-        [Display(Name = "顔Z", Description = "ParamAngleZ")]
+        [Display(Name = "角度 Z", Description = "ParamAngleZ")]
         [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
         public Animation AngleZ { get; } = new(0, -30, 30);
 
@@ -155,7 +164,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool AngleZHold { get => angleZHold; set => Set(ref angleZHold, value); }
         bool angleZHold;
 
-        [Display(Name = "体X", Description = "ParamBodyAngleX")]
+        [Display(Name = "体の回転 X", Description = "ParamBodyAngleX")]
         [AnimatedHoldSlider("F3", "", -10.0, 10.0)]
         public Animation BodyAngleX { get; } = new(0, -10, 10);
 
@@ -163,7 +172,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool BodyAngleXHold { get => bodyAngleXHold; set => Set(ref bodyAngleXHold, value); }
         bool bodyAngleXHold;
 
-        [Display(Name = "視線X", Description = "ParamEyeBallX")]
+        [Display(Name = "目玉 X", Description = "ParamEyeBallX")]
         [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
         public Animation EyeBallX { get; } = new(0, -1, 1);
 
@@ -171,7 +180,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool EyeBallXHold { get => eyeBallXHold; set => Set(ref eyeBallXHold, value); }
         bool eyeBallXHold;
 
-        [Display(Name = "視線Y", Description = "ParamEyeBallY")]
+        [Display(Name = "目玉 Y", Description = "ParamEyeBallY")]
         [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
         public Animation EyeBallY { get; } = new(0, -1, 1);
 
@@ -187,7 +196,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool CheekHold { get => cheekHold; set => Set(ref cheekHold, value); }
         bool cheekHold;
 
-        [Display(Name = "腕L", Description = "ParamArmLA")]
+        [Display(Name = "左腕", Description = "ParamArmLA")]
         [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
         public Animation ArmLA { get; } = new(0, -1, 1);
 
@@ -195,7 +204,7 @@ namespace VTuberKitForYMM4.Plugin
         public bool ArmLAHold { get => armLAHold; set => Set(ref armLAHold, value); }
         bool armLAHold;
 
-        [Display(Name = "腕R", Description = "ParamArmRA")]
+        [Display(Name = "右腕", Description = "ParamArmRA")]
         [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
         public Animation ArmRA { get; } = new(0, -1, 1);
 
@@ -245,5 +254,33 @@ namespace VTuberKitForYMM4.Plugin
             OffsetRotation,
             DynamicOverrides
         ];
+
+        private MotionViewModel CreateMotionViewModel() => new("Idle", modelPathProvider: () => ModelFile);
+
+        private ExpressionViewModel CreateExpressionViewModel() => new("exp", () => ModelFile);
+
+        private void EnsureMotionInitialized()
+        {
+            if (motionInitialized)
+            {
+                return;
+            }
+
+            Motion.UpdateItemsSource();
+            Motion.UpdateSelectedValue();
+            motionInitialized = true;
+        }
+
+        private void EnsureExpressionInitialized()
+        {
+            if (expressionInitialized)
+            {
+                return;
+            }
+
+            Expression.UpdateItemsSource();
+            Expression.UpdateSelectedValue();
+            expressionInitialized = true;
+        }
     }
 }

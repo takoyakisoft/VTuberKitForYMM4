@@ -24,6 +24,7 @@ namespace VTuberKitForYMM4.Plugin
             LipSyncVowelParameterIds LipSyncVowelParameters,
             IReadOnlyList<string> ParameterIds,
             IReadOnlyList<string> PartIds);
+        private sealed record SnapshotCacheEntry(ModelMetadataSnapshot Snapshot, bool NativeRefreshAttempted);
         public readonly record struct LipSyncVowelParameterIds(string A, string I, string U, string E, string O)
         {
             public bool HasAny =>
@@ -35,7 +36,7 @@ namespace VTuberKitForYMM4.Plugin
         }
 
         private static readonly object LockObj = new();
-        private static readonly Dictionary<string, ModelMetadataSnapshot> SnapshotCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, SnapshotCacheEntry> SnapshotCache = new(StringComparer.OrdinalIgnoreCase);
         private static string currentModelPath = string.Empty;
         private static List<string> expressions = [];
         private static List<(string Group, int Index, string FileName)> motions = [];
@@ -393,8 +394,9 @@ namespace VTuberKitForYMM4.Plugin
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogMetadataError(nameof(LoadNativeParameterMetadata), modelPath, ex);
             }
 
             return loadedParameters;
@@ -412,23 +414,26 @@ namespace VTuberKitForYMM4.Plugin
             var normalizedPath = Path.GetFullPath(modelPath);
             if (SnapshotCache.TryGetValue(normalizedPath, out var cached))
             {
-                if (cached.ParameterMetadataById.Count == 0 && CanLoadNativeParameterMetadata())
+                if (!cached.NativeRefreshAttempted && CanLoadNativeParameterMetadata())
                 {
                     var refreshed = LoadSnapshot(normalizedPath);
                     if (refreshed != null)
                     {
-                        SnapshotCache[normalizedPath] = refreshed;
+                        SnapshotCache[normalizedPath] = new SnapshotCacheEntry(refreshed, true);
                         return refreshed;
                     }
+
+                    SnapshotCache[normalizedPath] = cached with { NativeRefreshAttempted = true };
                 }
 
-                return cached;
+                return cached.Snapshot;
             }
 
+            var nativeRefreshAttempted = CanLoadNativeParameterMetadata();
             var snapshot = LoadSnapshot(normalizedPath);
             if (snapshot != null)
             {
-                SnapshotCache[normalizedPath] = snapshot;
+                SnapshotCache[normalizedPath] = new SnapshotCacheEntry(snapshot, nativeRefreshAttempted);
             }
 
             return snapshot;
@@ -441,8 +446,9 @@ namespace VTuberKitForYMM4.Plugin
                 var manager = Live2DManager.GetInstance();
                 return manager != null && manager.HasD3D11Device();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogMetadataError(nameof(CanLoadNativeParameterMetadata), "D3D11 device availability", ex);
                 return false;
             }
         }
@@ -451,12 +457,12 @@ namespace VTuberKitForYMM4.Plugin
         {
             var loadedExpressions = new List<string>();
             var loadedMotions = new List<(string Group, int Index, string FileName)>();
-            var loadedParameters = new List<(string Id, string Name)>();
+            var loadedParametersById = new Dictionary<string, (string Id, string Name)>(StringComparer.OrdinalIgnoreCase);
             var loadedParameterMetadata = new Dictionary<string, ParameterMetadata>(StringComparer.OrdinalIgnoreCase);
             var loadedParts = new List<(string Id, string Name)>();
             var loadedHitAreas = new List<(string Id, string Name)>();
             var loadedLayout = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
-            var loadedParameterIds = new List<string>();
+            var loadedParameterIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var loadedPartIds = new List<string>();
 
             try
@@ -547,7 +553,7 @@ namespace VTuberKitForYMM4.Plugin
                                     {
                                         loadedParameterMetadata[id] = metadata with { Name = name };
                                     }
-                                    loadedParameters.Add((id, name));
+                                    loadedParametersById[id] = (id, name);
                                     loadedParameterIds.Add(id);
                                 }
                             }
@@ -569,12 +575,40 @@ namespace VTuberKitForYMM4.Plugin
                     }
                 }
 
-                loadedParameters.Sort((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id));
+                foreach (var id in loadedParameterMetadata.Keys)
+                {
+                    loadedParameterIds.Add(id);
+                }
+
+                var mergedParameters = loadedParameterIds
+                    .Select(id =>
+                    {
+                        loadedParametersById.TryGetValue(id, out var displayInfo);
+                        var displayName = displayInfo.Name;
+
+                        if (loadedParameterMetadata.TryGetValue(id, out var metadata))
+                        {
+                            var mergedName = string.IsNullOrWhiteSpace(metadata.Name) ? displayName : metadata.Name;
+                            var mergedMetadata = metadata with { Name = mergedName ?? string.Empty };
+                            loadedParameterMetadata[id] = mergedMetadata;
+                            return (Parameter: (Id: id, Name: mergedName ?? string.Empty), Metadata: mergedMetadata);
+                        }
+
+                        var synthesizedMetadata = new ParameterMetadata(id, displayName ?? string.Empty, 0.0f, -100.0f, 100.0f);
+                        loadedParameterMetadata[id] = synthesizedMetadata;
+                        return (Parameter: (Id: id, Name: displayName ?? string.Empty), Metadata: synthesizedMetadata);
+                    })
+                    .OrderBy(x => x.Parameter.Id, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                var loadedParameters = mergedParameters
+                    .Select(x => (x.Parameter.Id, x.Parameter.Name))
+                    .ToList();
                 loadedParts.Sort((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id));
                 loadedHitAreas.Sort((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id));
-                loadedParameterIds.Sort(StringComparer.OrdinalIgnoreCase);
+                var sortedParameterIds = loadedParameterIds.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
                 loadedPartIds.Sort(StringComparer.OrdinalIgnoreCase);
-                var loadedLipSyncVowelParameters = ResolveLipSyncVowelParameterIds(loadedParameterMetadata.Values);
+                var loadedLipSyncVowelParameters = ResolveLipSyncVowelParameterIds(mergedParameters.Select(x => x.Metadata));
 
                 return new ModelMetadataSnapshot(
                     modelPath,
@@ -586,11 +620,12 @@ namespace VTuberKitForYMM4.Plugin
                     loadedHitAreas,
                     loadedLayout,
                     loadedLipSyncVowelParameters,
-                    loadedParameterIds,
+                    sortedParameterIds,
                     loadedPartIds);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogMetadataError(nameof(LoadSnapshot), modelPath, ex);
                 return null;
             }
         }
@@ -604,6 +639,11 @@ namespace VTuberKitForYMM4.Plugin
 
             value = 0.0f;
             return false;
+        }
+
+        private static void LogMetadataError(string methodName, string context, Exception exception)
+        {
+            Commons.ConsoleManager.Error($"ModelMetadataCatalog.{methodName} failed: {context}\n{exception}");
         }
     }
 }

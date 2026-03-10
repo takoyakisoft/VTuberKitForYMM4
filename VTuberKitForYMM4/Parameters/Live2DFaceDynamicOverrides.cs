@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Input;
+using System.Windows;
 using VTuberKitForNative;
 using YukkuriMovieMaker.Commons;
 
@@ -43,8 +44,8 @@ namespace VTuberKitForYMM4.Plugin
 
         public Live2DFaceDynamicOverrides()
         {
-            ParameterRows.CollectionChanged += OnRowsChanged;
-            PartRows.CollectionChanged += OnRowsChanged;
+            CollectionChangedEventManager.AddHandler(ParameterRows, OnRowsChanged);
+            CollectionChangedEventManager.AddHandler(PartRows, OnRowsChanged);
         }
 
         public void SyncWithMetadata()
@@ -146,6 +147,18 @@ namespace VTuberKitForYMM4.Plugin
 
         private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (ReferenceEquals(sender, ParameterRows))
+            {
+                OnPropertyChanged(nameof(ParameterRows));
+                return;
+            }
+
+            if (ReferenceEquals(sender, PartRows))
+            {
+                OnPropertyChanged(nameof(PartRows));
+                return;
+            }
+
             OnPropertyChanged(nameof(ParameterRows));
             OnPropertyChanged(nameof(PartRows));
         }
@@ -199,6 +212,16 @@ namespace VTuberKitForYMM4.Plugin
             EditedCallback?.Invoke();
             OnPropertyChanged(nameof(DisplayName));
         }
+
+        protected static bool TryParseValue(string? text, out float value)
+        {
+            if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+
+            return float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value);
+        }
     }
 
     public sealed class Live2DFaceDynamicParameterRow : Live2DFaceDynamicRowBase
@@ -248,7 +271,7 @@ namespace VTuberKitForYMM4.Plugin
                 }
             }
         }
-        Animation value = new(0, -100, 100);
+        Animation value = default!;
 
         [Browsable(false)]
         [JsonIgnore]
@@ -321,16 +344,6 @@ namespace VTuberKitForYMM4.Plugin
             return (float)Value.GetValue(frame, length, fps);
         }
 
-        private static bool TryParseValue(string? text, out float value)
-        {
-            if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
-            {
-                return true;
-            }
-
-            return float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value);
-        }
-
         private Animation CreateAnimationWithCurrentState(float currentValue, float min, float max)
         {
             var animation = new Animation(currentValue, min, max, Value.Loop);
@@ -353,7 +366,6 @@ namespace VTuberKitForYMM4.Plugin
         {
             Id = id;
             Name = name;
-            Opacity.CopyFrom(new Animation(1, 0, 1));
             ResetCommand = new ActionCommand(_ => true, _ =>
             {
                 Hold = false;
@@ -424,14 +436,5 @@ namespace VTuberKitForYMM4.Plugin
             NotifyEdited();
         }
 
-        private static bool TryParseValue(string? text, out float value)
-        {
-            if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
-            {
-                return true;
-            }
-
-            return float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value);
-        }
     }
 }

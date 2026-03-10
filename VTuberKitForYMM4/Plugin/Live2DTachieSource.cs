@@ -1,5 +1,6 @@
 using SharpGen.Runtime;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Vortice.Direct2D1;
 using Vortice.Direct3D11;
@@ -201,9 +202,17 @@ namespace VTuberKitForYMM4.Plugin
                     {
                         itemParam.ModelFile = currentModelFile;
                     }
-                    if (faceParam != null && !string.Equals(faceParam.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
+
+                    if (desc.Tachie?.Faces is { } allFaces)
                     {
-                        faceParam.ModelFile = currentModelFile;
+                        foreach (var face in allFaces)
+                        {
+                            if (face.FaceParameter is Live2DFaceParameter live2DFace &&
+                                !string.Equals(live2DFace.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
+                            {
+                                live2DFace.ModelFile = currentModelFile;
+                            }
+                        }
                     }
                     Live2DInteractionStore.UpdateInteractionTarget(charParam?.InteractionLinkId, charParam?.InteractionDisplayName, currentModelFile);
 
@@ -601,17 +610,6 @@ namespace VTuberKitForYMM4.Plugin
                 return (null, 0.0f, 0.0, 1.0);
             }
 
-            var hasFace = false;
-            foreach (var _ in faces)
-            {
-                hasFace = true;
-                break;
-            }
-            if (!hasFace)
-            {
-                return (null, 0.0f, 0.0, 1.0);
-            }
-
             return ResolveActiveFace(faces, desc.ItemPosition);
         }
 
@@ -817,6 +815,10 @@ namespace VTuberKitForYMM4.Plugin
                 var wasHit = hitArea.IsHit;
                 Live2DInteractionStore.SetHitAreaResult(hitArea.SourceId, isHit);
                 if (!wasHit && isHit)
+                {
+                    _hitAreaActiveSinceSeconds[hitArea.SourceId] = itemTimeSeconds;
+                }
+                else if (isHit && !_hitAreaActiveSinceSeconds.ContainsKey(hitArea.SourceId))
                 {
                     _hitAreaActiveSinceSeconds[hitArea.SourceId] = itemTimeSeconds;
                 }

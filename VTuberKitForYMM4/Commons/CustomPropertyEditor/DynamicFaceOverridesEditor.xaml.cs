@@ -16,6 +16,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         private readonly Dictionary<AnimationSlider, List<INotifyPropertyChanged>> sliderValueWatchers = [];
         private NotifyCollectionChangedEventHandler? parameterRowsChangedHandler;
         private NotifyCollectionChangedEventHandler? partRowsChangedHandler;
+        private PropertyChangedEventHandler? overridesPropertyChangedHandler;
         private Point dragStartPoint;
         private Live2DFaceDynamicParameterRow? draggingParameterRow;
         private Live2DFaceDynamicPartRow? draggingPartRow;
@@ -115,6 +116,11 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 {
                     oldValue.PartRows.CollectionChanged -= partRowsChangedHandler;
                 }
+
+                if (overridesPropertyChangedHandler != null)
+                {
+                    oldValue.PropertyChanged -= overridesPropertyChangedHandler;
+                }
             }
 
             if (newValue == null)
@@ -129,7 +135,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             BindingOperations.EnableCollectionSynchronization(newValue.ParameterRows, newValue.ParameterRowsSyncRoot);
             BindingOperations.EnableCollectionSynchronization(newValue.PartRows, newValue.PartRowsSyncRoot);
 
-            newValue.SyncWithMetadata();
+            RefreshMetadata(newValue);
             parameterRowsChangedHandler = (_, _) =>
             {
                 AttachCallbacks(newValue);
@@ -140,8 +146,16 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 AttachCallbacks(newValue);
                 ApplyEditorInfoToAnimations(newValue);
             };
+            overridesPropertyChangedHandler = (_, e) =>
+            {
+                if (e.PropertyName == nameof(Live2DFaceDynamicOverrides.ModelFile))
+                {
+                    RefreshMetadata(newValue);
+                }
+            };
             newValue.ParameterRows.CollectionChanged += parameterRowsChangedHandler;
             newValue.PartRows.CollectionChanged += partRowsChangedHandler;
+            newValue.PropertyChanged += overridesPropertyChangedHandler;
 
             ParameterList.ItemsSource = newValue.ParameterRows;
             PartList.ItemsSource = newValue.PartRows;
@@ -231,8 +245,26 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void ReloadButton_Click(object sender, RoutedEventArgs e)
         {
-            Overrides?.SyncWithMetadata();
-            RefreshFilters();
+            if (Overrides != null)
+            {
+                RefreshMetadata(Overrides);
+            }
+        }
+
+        private void RefreshMetadata(Live2DFaceDynamicOverrides overrides)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                overrides.SyncWithMetadata();
+                RefreshFilters();
+                return;
+            }
+
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                overrides.SyncWithMetadata();
+                RefreshFilters();
+            }));
         }
 
         private void AnimationSlider_BeginEdit(object sender, EventArgs e)

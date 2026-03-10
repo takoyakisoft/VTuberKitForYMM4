@@ -10,6 +10,11 @@ namespace VTuberKitForYMM4.Tests.Plugin.Shape;
 
 public class InteractionShapeTransformTests
 {
+    public InteractionShapeTransformTests()
+    {
+        Live2DInteractionStore.Clear();
+    }
+
     [Fact]
     public void TargetPointPixelTransform_UsesHitTestScaleForItemTranslation()
     {
@@ -129,7 +134,6 @@ public class InteractionShapeTransformTests
             }
 
             var overrides = new Live2DFaceDynamicOverrides();
-            overrides.ParameterRows.Add(new Live2DFaceDynamicParameterRow("ParamTest", "Test", 0.0f, -30.0f, 30.0f));
 
             var editor = new DynamicFaceOverridesEditor
             {
@@ -154,10 +158,11 @@ public class InteractionShapeTransformTests
             {
                 window.Show();
                 PumpDispatcher();
+                overrides.ParameterRows.Add(new Live2DFaceDynamicParameterRow("ParamTest", "Test", 0.0f, -30.0f, 30.0f));
+                PumpDispatcher();
 
-                typeof(DynamicFaceOverridesEditor)
-                    .GetMethod("SliderValueViewModel_PropertyChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-                    .Invoke(editor, [null, new PropertyChangedEventArgs("Value")]);
+                overrides.ParameterRows[0].CurrentValue = 1.0;
+                PumpDispatcher();
 
                 Assert.True(beginEditCount > 0);
                 Assert.True(endEditCount > 0);

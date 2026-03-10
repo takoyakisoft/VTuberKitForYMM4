@@ -61,11 +61,10 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                var selectedLinkId = TargetCharacter?.SelectedLinkId;
+                var selectedLinkId = targetCharacter?.SelectedLinkId;
                 var resolved = string.IsNullOrWhiteSpace(selectedLinkId)
                     ? ResolveLinkId(linkId)
                     : selectedLinkId;
-                SyncTargetCharacterSelection(resolved);
 
                 return resolved;
             }
@@ -73,10 +72,11 @@ namespace VTuberKitForYMM4.Plugin.Shape
             {
                 var normalized = value ?? string.Empty;
                 Set(ref linkId, normalized);
-                if (TargetCharacter != null)
+                if (targetCharacter != null)
                 {
-                    TargetCharacter.SelectedLinkId = normalized;
+                    targetCharacter.SelectedLinkId = normalized;
                 }
+                SyncTargetCharacterSelection(normalized);
             }
         }
         string linkId = string.Empty;

@@ -306,5 +306,15 @@ namespace VTuberKitForYMM4.Plugin
 
             HitAreaRects.TryRemove(sourceId, out _);
         }
+
+        internal static void Clear()
+        {
+            TargetPoints.Clear();
+            HitAreaRects.Clear();
+            InteractionTransforms.Clear();
+            InteractionHitAreas.Clear();
+            InteractionTargets.Clear();
+            InteractionTargetSequence = 0;
+        }
     }
 }

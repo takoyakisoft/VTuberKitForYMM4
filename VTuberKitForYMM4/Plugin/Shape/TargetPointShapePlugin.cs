@@ -59,11 +59,10 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                var selectedLinkId = TargetCharacter?.SelectedLinkId;
+                var selectedLinkId = targetCharacter?.SelectedLinkId;
                 var resolved = string.IsNullOrWhiteSpace(selectedLinkId)
                     ? ResolveLinkId(linkId)
                     : selectedLinkId;
-                SyncTargetCharacterSelection(resolved);
 
                 return resolved;
             }
@@ -71,10 +70,11 @@ namespace VTuberKitForYMM4.Plugin.Shape
             {
                 var normalized = value ?? string.Empty;
                 Set(ref linkId, normalized);
-                if (TargetCharacter != null)
+                if (targetCharacter != null)
                 {
-                    TargetCharacter.SelectedLinkId = normalized;
+                    targetCharacter.SelectedLinkId = normalized;
                 }
+                SyncTargetCharacterSelection(normalized);
             }
         }
         string linkId = string.Empty;
@@ -277,22 +277,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 dc.Target = null;
                 commandList.Close();
 
-                x = newX;
-                y = newY;
-                size = newSize;
-                screenWidth = newScreenWidth;
-                screenHeight = newScreenHeight;
-                currentLinkId = string.Empty;
-                transformPositionX = transform.PositionX;
-                transformPositionY = transform.PositionY;
-                transformScale = transform.Scale;
-                transformRotationDegrees = transform.RotationDegrees;
-                transformModelCenterX = transform.ModelCenterX;
-                transformModelCenterY = transform.ModelCenterY;
-                transformHitTestScaleX = transform.HitTestScaleX;
-                transformHitTestScaleY = transform.HitTestScaleY;
-                transformHitTestTranslateX = transform.HitTestTranslateX;
-                transformHitTestTranslateY = transform.HitTestTranslateY;
+                CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, string.Empty, transform);
                 return;
             }
 
@@ -314,6 +299,30 @@ namespace VTuberKitForYMM4.Plugin.Shape
             dc.Target = null;
             commandList.Close();
 
+            CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, newLinkId, transform);
+        }
+
+        private Vector2 TransformPoint(string linkId, float x, float y, int screenWidth, int screenHeight)
+        {
+            var state = GetTransformState(linkId);
+            return InteractionShapeTransform.TransformTargetPointToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
+        }
+
+        private Vector2 TransformVector(string linkId, float x, float y, int screenWidth, int screenHeight)
+        {
+            var state = GetTransformState(linkId);
+            return InteractionShapeTransform.TransformLocalVectorToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
+        }
+
+        private void CacheTransformState(
+            float newX,
+            float newY,
+            float newSize,
+            int newScreenWidth,
+            int newScreenHeight,
+            string newLinkId,
+            Live2DInteractionStore.InteractionTransformState transform)
+        {
             x = newX;
             y = newY;
             size = newSize;
@@ -330,18 +339,6 @@ namespace VTuberKitForYMM4.Plugin.Shape
             transformHitTestScaleY = transform.HitTestScaleY;
             transformHitTestTranslateX = transform.HitTestTranslateX;
             transformHitTestTranslateY = transform.HitTestTranslateY;
-        }
-
-        private Vector2 TransformPoint(string linkId, float x, float y, int screenWidth, int screenHeight)
-        {
-            Live2DInteractionStore.TryGetInteractionTransform(linkId, out var state);
-            return InteractionShapeTransform.TransformTargetPointToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
-        }
-
-        private Vector2 TransformVector(string linkId, float x, float y, int screenWidth, int screenHeight)
-        {
-            Live2DInteractionStore.TryGetInteractionTransform(linkId, out var state);
-            return InteractionShapeTransform.TransformLocalVectorToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
         }
 
         private static Live2DInteractionStore.InteractionTransformState GetTransformState(string linkId)

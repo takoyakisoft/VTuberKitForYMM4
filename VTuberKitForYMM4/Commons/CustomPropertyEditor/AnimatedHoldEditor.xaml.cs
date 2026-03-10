@@ -48,6 +48,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             if (editorInfo != null)
             {
                 AnimationEditor.SetEditorInfo(editorInfo);
+                ApplyEditorInfoToAnimations(animations);
             }
         }
 
@@ -66,11 +67,30 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         {
             editorInfo = info;
             AnimationEditor.SetEditorInfo(info);
+            ApplyEditorInfoToAnimations(AnimationEditor.Animations ?? (AnimationEditor.Animation != null ? [AnimationEditor.Animation] : []));
         }
 
         public void SetFocus()
         {
             AnimationEditor.Focus();
+        }
+
+        private void ApplyEditorInfoToAnimations(Animation[] animations)
+        {
+            if (editorInfo == null || animations.Length == 0)
+            {
+                return;
+            }
+
+            var length = (int)Math.Clamp((long)editorInfo.ItemDuration.Frame, 1L, int.MaxValue);
+            var fps = Math.Max(1, editorInfo.VideoInfo.FPS);
+            var keyFrames = editorInfo.KeyFrames;
+
+            foreach (var animation in animations)
+            {
+                animation.SetKeyFrames(keyFrames);
+                animation.SetAnimationParameters(length, fps);
+            }
         }
 
         private void ResolveHoldProperty(ItemProperty[] itemProperties, string? explicitName)

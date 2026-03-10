@@ -80,6 +80,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         public DynamicFaceOverridesEditor()
         {
             InitializeComponent();
+            Unloaded += DynamicFaceOverridesEditor_Unloaded;
         }
 
         public void SetEditorInfo(IEditorInfo info)
@@ -101,6 +102,34 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         private static void OnFilterTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((DynamicFaceOverridesEditor)d).RefreshFilters();
+        }
+
+        private void DynamicFaceOverridesEditor_Unloaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var slider in sliderValueWatchers.Keys.ToList())
+            {
+                DetachSliderValueWatchers(slider);
+            }
+
+            if (Overrides != null)
+            {
+                if (parameterRowsChangedHandler != null)
+                {
+                    Overrides.ParameterRows.CollectionChanged -= parameterRowsChangedHandler;
+                }
+
+                if (partRowsChangedHandler != null)
+                {
+                    Overrides.PartRows.CollectionChanged -= partRowsChangedHandler;
+                }
+
+                if (overridesPropertyChangedHandler != null)
+                {
+                    Overrides.PropertyChanged -= overridesPropertyChangedHandler;
+                }
+            }
+
+            Unloaded -= DynamicFaceOverridesEditor_Unloaded;
         }
 
         private void BindOverrides(Live2DFaceDynamicOverrides? oldValue, Live2DFaceDynamicOverrides? newValue)

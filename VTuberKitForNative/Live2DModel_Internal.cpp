@@ -1024,10 +1024,10 @@ bool NativeModel::TryGetHitAreaBounds(const char* hitAreaNameOrId, float& center
             return false;
         }
 
-        csmFloat32 left = vertices[0];
-        csmFloat32 right = vertices[0];
-        csmFloat32 top = vertices[1];
-        csmFloat32 bottom = vertices[1];
+        csmFloat32 left = vertices[Constant::VertexOffset];
+        csmFloat32 right = vertices[Constant::VertexOffset];
+        csmFloat32 top = vertices[Constant::VertexOffset + 1];
+        csmFloat32 bottom = vertices[Constant::VertexOffset + 1];
 
         for (csmInt32 j = 1; j < vertexCount; ++j) {
             const csmFloat32 vertexX = vertices[Constant::VertexOffset + j * Constant::VertexStep];

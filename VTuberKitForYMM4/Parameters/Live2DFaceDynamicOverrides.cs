@@ -14,24 +14,55 @@ namespace VTuberKitForYMM4.Plugin
     {
         private static readonly HashSet<string> StandardParameterIds =
         [
-            Live2DManager.ParamEyeLOpen,
-            Live2DManager.ParamEyeROpen,
-            Live2DManager.ParamMouthOpenY,
-            Live2DManager.ParamMouthForm,
             Live2DManager.ParamAngleX,
             Live2DManager.ParamAngleY,
             Live2DManager.ParamAngleZ,
-            Live2DManager.ParamBodyAngleX,
+            Live2DManager.ParamEyeLOpen,
+            Live2DManager.ParamEyeROpen,
+            Live2DManager.ParamEyeLSmile,
+            Live2DManager.ParamEyeRSmile,
             Live2DManager.ParamEyeBallX,
             Live2DManager.ParamEyeBallY,
+            Live2DManager.ParamEyeBallForm,
+            Live2DManager.ParamBrowLY,
+            Live2DManager.ParamBrowRY,
+            Live2DManager.ParamBrowLX,
+            Live2DManager.ParamBrowRX,
+            Live2DManager.ParamBrowLAngle,
+            Live2DManager.ParamBrowRAngle,
+            Live2DManager.ParamBrowLForm,
+            Live2DManager.ParamBrowRForm,
+            Live2DManager.ParamMouthForm,
+            Live2DManager.ParamMouthOpenY,
             Live2DManager.ParamCheek,
+            Live2DManager.ParamBodyAngleX,
+            Live2DManager.ParamBodyAngleY,
+            Live2DManager.ParamBodyAngleZ,
+            Live2DManager.ParamBreath,
             Live2DManager.ParamArmLA,
             Live2DManager.ParamArmRA,
+            Live2DManager.ParamArmLB,
+            Live2DManager.ParamArmRB,
+            Live2DManager.ParamHandL,
+            Live2DManager.ParamHandR,
+            Live2DManager.ParamHairFront,
+            Live2DManager.ParamHairSide,
+            Live2DManager.ParamHairBack,
+            Live2DManager.ParamHairFluffy,
+            Live2DManager.ParamShoulderY,
+            Live2DManager.ParamBustX,
+            Live2DManager.ParamBustY,
+            Live2DManager.ParamBaseX,
+            Live2DManager.ParamBaseY,
         ];
 
         public ObservableCollection<Live2DFaceDynamicParameterRow> ParameterRows { get; } = [];
         public ObservableCollection<Live2DFaceDynamicPartRow> PartRows { get; } = [];
+        [Browsable(false)]
+        [JsonIgnore]
         public object ParameterRowsSyncRoot { get; } = new();
+        [Browsable(false)]
+        [JsonIgnore]
         public object PartRowsSyncRoot { get; } = new();
 
         [Browsable(false)]
@@ -56,12 +87,24 @@ namespace VTuberKitForYMM4.Plugin
 
         protected override IEnumerable<IAnimatable> GetAnimatables()
         {
-            foreach (var row in ParameterRows)
+            Live2DFaceDynamicParameterRow[] parameterRows;
+            lock (ParameterRowsSyncRoot)
+            {
+                parameterRows = ParameterRows.ToArray();
+            }
+
+            foreach (var row in parameterRows)
             {
                 yield return row;
             }
 
-            foreach (var row in PartRows)
+            Live2DFaceDynamicPartRow[] partRows;
+            lock (PartRowsSyncRoot)
+            {
+                partRows = PartRows.ToArray();
+            }
+
+            foreach (var row in partRows)
             {
                 yield return row;
             }

@@ -307,6 +307,14 @@ namespace VTuberKitForYMM4.Plugin
             HitAreaRects.TryRemove(sourceId, out _);
         }
 
+        internal static void ClearHitAreaResults()
+        {
+            foreach (var pair in HitAreaRects)
+            {
+                HitAreaRects[pair.Key] = pair.Value with { IsHit = false };
+            }
+        }
+
         internal static void Clear()
         {
             TargetPoints.Clear();

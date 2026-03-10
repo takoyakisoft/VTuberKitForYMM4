@@ -866,6 +866,7 @@ namespace VTuberKitForYMM4.Plugin
         private void ClearInteractionState()
         {
             _hitAreaActiveSinceSeconds.Clear();
+            Live2DInteractionStore.ClearHitAreaResults();
         }
 
         private (int Width, int Height) CalculateRenderTargetSize(int screenWidth, int screenHeight, int maxRenderTargetSize, float internalRenderScale)

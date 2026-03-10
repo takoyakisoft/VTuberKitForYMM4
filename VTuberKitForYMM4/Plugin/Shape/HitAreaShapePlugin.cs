@@ -265,6 +265,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var selected = viewModel.SelectedLinkId ?? string.Empty;
             if (!string.Equals(linkId, selected, StringComparison.Ordinal))
             {
+                Motion.UpdateItemsSource();
                 if (!string.IsNullOrWhiteSpace(linkId))
                 {
                     ClearReactionSelections();
@@ -478,12 +479,12 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 return;
             }
 
-            var topLeft = TransformPoint(newLinkId, newX - newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var topRight = TransformPoint(newLinkId, newX + newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var bottomRight = TransformPoint(newLinkId, newX + newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var bottomLeft = TransformPoint(newLinkId, newX - newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
+            var topLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
+            var topRight = TransformPoint(transform, newX + newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
+            var bottomRight = TransformPoint(transform, newX + newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
+            var bottomLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
             var activeBrush = newIsHit ? hitBrush : missBrush;
-            var center = TransformPoint(newLinkId, newX, newY, newScreenWidth, newScreenHeight);
+            var center = TransformPoint(transform, newX, newY, newScreenWidth, newScreenHeight);
 
             dc.Target = commandList;
             dc.BeginDraw();
@@ -516,9 +517,8 @@ namespace VTuberKitForYMM4.Plugin.Shape
             transformHitTestTranslateY = transform.HitTestTranslateY;
         }
 
-        private Vector2 TransformPoint(string linkId, float x, float y, int screenWidth, int screenHeight)
+        private static Vector2 TransformPoint(Live2DInteractionStore.InteractionTransformState state, float x, float y, int screenWidth, int screenHeight)
         {
-            Live2DInteractionStore.TryGetInteractionTransform(linkId, out var state);
             return InteractionShapeTransform.TransformHitBoxPointToPixel(new Vector2(x, y), Vector2.Zero, state, screenWidth, screenHeight);
         }
 

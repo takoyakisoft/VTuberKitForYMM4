@@ -12,35 +12,17 @@ namespace VTuberKitForYMM4.Plugin
     {
         public Live2DFaceParameter()
         {
-            motion = CreateMotionViewModel();
-            expression = CreateExpressionViewModel();
+            Motion = new MotionViewModel("Idle", modelPathProvider: () => ModelFile);
+            Expression = new ExpressionViewModel("exp", () => ModelFile);
         }
 
         [Display(Name = "モーション", Description = "model3.json の Motions から選択（Idle含む）")]
         [CustomComboBox]
-        public MotionViewModel Motion
-        {
-            get => motion;
-            set
-            {
-                motion = value ?? CreateMotionViewModel();
-                motionInitialized = false;
-            }
-        }
-        MotionViewModel motion;
+        public MotionViewModel Motion { get; set; }
 
         [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
         [CustomComboBox]
-        public ExpressionViewModel Expression
-        {
-            get => expression;
-            set
-            {
-                expression = value ?? CreateExpressionViewModel();
-                expressionInitialized = false;
-            }
-        }
-        ExpressionViewModel expression;
+        public ExpressionViewModel Expression { get; set; }
 
         [Browsable(false)]
         public string ModelFile
@@ -56,21 +38,16 @@ namespace VTuberKitForYMM4.Plugin
 
                 ModelMetadataCatalog.UpdateFromModelPath(normalized);
                 DynamicOverrides.ModelFile = normalized;
-                motionInitialized = false;
-                expressionInitialized = false;
             }
         }
         string modelFile = string.Empty;
-        bool motionInitialized;
-        bool expressionInitialized;
 
         [Browsable(false)]
         public string ExpressionId
         {
             get
             {
-                EnsureExpressionInitialized();
-                return Expression.SelectedExpressionId ?? string.Empty;
+                return Expression?.SelectedExpressionId ?? string.Empty;
             }
         }
 
@@ -79,8 +56,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                EnsureMotionInitialized();
-                return Motion.SelectedGroup ?? string.Empty;
+                return Motion?.SelectedGroup ?? string.Empty;
             }
         }
 
@@ -89,8 +65,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                EnsureMotionInitialized();
-                return Motion.SelectedIndex;
+                return Motion?.SelectedIndex ?? -1;
             }
         }
 
@@ -255,32 +230,5 @@ namespace VTuberKitForYMM4.Plugin
             DynamicOverrides
         ];
 
-        private MotionViewModel CreateMotionViewModel() => new("Idle", modelPathProvider: () => ModelFile);
-
-        private ExpressionViewModel CreateExpressionViewModel() => new("exp", () => ModelFile);
-
-        private void EnsureMotionInitialized()
-        {
-            if (motionInitialized)
-            {
-                return;
-            }
-
-            Motion.UpdateItemsSource();
-            Motion.UpdateSelectedValue();
-            motionInitialized = true;
-        }
-
-        private void EnsureExpressionInitialized()
-        {
-            if (expressionInitialized)
-            {
-                return;
-            }
-
-            Expression.UpdateItemsSource();
-            Expression.UpdateSelectedValue();
-            expressionInitialized = true;
-        }
     }
 }

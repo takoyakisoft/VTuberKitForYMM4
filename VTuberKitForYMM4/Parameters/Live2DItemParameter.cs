@@ -37,11 +37,6 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                if (Expression != null && Expression.ItemsSource.Count == 0)
-                {
-                    Expression.UpdateItemsSource();
-                    Expression.UpdateSelectedValue();
-                }
                 return Expression?.SelectedExpressionId ?? string.Empty;
             }
         }
@@ -57,11 +52,6 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                if (Motion != null && Motion.ItemsSource.Count == 0)
-                {
-                    Motion.UpdateItemsSource();
-                    Motion.UpdateSelectedValue();
-                }
                 return Motion?.SelectedGroup ?? string.Empty;
             }
         }
@@ -71,11 +61,6 @@ namespace VTuberKitForYMM4.Plugin
         {
             get
             {
-                if (Motion != null && Motion.ItemsSource.Count == 0)
-                {
-                    Motion.UpdateItemsSource();
-                    Motion.UpdateSelectedValue();
-                }
                 return Motion?.SelectedIndex ?? -1;
             }
         }

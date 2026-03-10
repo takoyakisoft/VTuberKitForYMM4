@@ -124,7 +124,7 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
-    public void ResolveStartedFace_ReturnsNullBeforeFirstFaceStarts()
+    public void ResolveActiveFace_ReturnsNullBeforeFirstFaceStarts()
     {
         var face = new Live2DFaceParameter();
         var fps = 60;
@@ -134,7 +134,7 @@ public class InteractionShapeTransformTests
             new TachieFaceDescription(new FrameTime(120, fps), new FrameTime(180, fps), 1, face),
         };
 
-        var resolved = Live2DTachieSource.ResolveStartedFace(faces, current);
+        var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
 
         Assert.Null(resolved.Face);
         Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
@@ -143,24 +143,22 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
-    public void ResolveStartedFace_UsesLatestStartedFaceAfterFaceEnds()
+    public void ResolveActiveFace_ReturnsNullAfterFaceEnds()
     {
-        var earlierFace = new Live2DFaceParameter();
-        var laterFace = new Live2DFaceParameter();
+        var face = new Live2DFaceParameter();
         var fps = 60;
         var current = new FrameTime(260, fps);
         var faces = new[]
         {
-            new TachieFaceDescription(new FrameTime(60, fps), new FrameTime(60, fps), 1, earlierFace),
-            new TachieFaceDescription(new FrameTime(180, fps), new FrameTime(30, fps), 1, laterFace),
+            new TachieFaceDescription(new FrameTime(180, fps), new FrameTime(30, fps), 1, face),
         };
 
-        var resolved = Live2DTachieSource.ResolveStartedFace(faces, current);
+        var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
 
-        Assert.Same(laterFace, resolved.Face);
-        Assert.InRange(resolved.RelativeTimeSeconds, 1.3333f, 1.3334f);
-        Assert.Equal(30.0, resolved.DurationFrame);
-        Assert.Equal(30.0, resolved.LocalFrame);
+        Assert.Null(resolved.Face);
+        Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
+        Assert.Equal(0.0, resolved.LocalFrame);
+        Assert.Equal(1.0, resolved.DurationFrame);
     }
 
     [Fact]

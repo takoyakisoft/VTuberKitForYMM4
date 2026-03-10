@@ -470,6 +470,7 @@ namespace VTuberKitForYMM4.Plugin
                                 faceParam,
                                 itemParam,
                                 Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
+                                activeFace.DurationFrame,
                                 (float)(charParam?.LipSyncGain ?? 1.0),
                                 (float)(charParam?.WindStrength ?? 0.0));
                         }
@@ -540,15 +541,6 @@ namespace VTuberKitForYMM4.Plugin
             TimeSpan activeStart = TimeSpan.MinValue;
             double activeStartFrame = 0.0;
             double activeDurationFrame = 1.0;
-            Live2DFaceParameter? latestStartedFace = null;
-            int latestStartedLayer = int.MinValue;
-            TimeSpan latestStartedAt = TimeSpan.MinValue;
-            double latestStartedFrame = 0.0;
-            double latestDurationFrame = 1.0;
-            Live2DFaceParameter? earliestFace = null;
-            int earliestLayer = int.MinValue;
-            TimeSpan earliestAt = TimeSpan.MaxValue;
-            double earliestDurationFrame = 1.0;
 
             foreach (var face in faces)
             {
@@ -556,24 +548,6 @@ namespace VTuberKitForYMM4.Plugin
                 var end = start + face.ItemDuration.Time;
                 var startFrame = (double)face.ItemPosition.Frame;
                 var durationFrame = Math.Max(1.0, (double)face.ItemDuration.Frame);
-
-                if (start < earliestAt || (start == earliestAt && face.Layer > earliestLayer))
-                {
-                    earliestAt = start;
-                    earliestLayer = face.Layer;
-                    earliestFace = face.FaceParameter as Live2DFaceParameter;
-                    earliestDurationFrame = durationFrame;
-                }
-
-                if (start <= currentTime &&
-                    (face.Layer > latestStartedLayer || (face.Layer == latestStartedLayer && start >= latestStartedAt)))
-                {
-                    latestStartedFace = face.FaceParameter as Live2DFaceParameter;
-                    latestStartedLayer = face.Layer;
-                    latestStartedAt = start;
-                    latestStartedFrame = startFrame;
-                    latestDurationFrame = durationFrame;
-                }
 
                 if (currentTime >= start && currentTime < end &&
                     (face.Layer > activeLayer || (face.Layer == activeLayer && start >= activeStart)))
@@ -591,73 +565,6 @@ namespace VTuberKitForYMM4.Plugin
                 var relative = currentTime - activeStart;
                 var localFrame = Math.Clamp(currentFrame - activeStartFrame, 0.0, activeDurationFrame);
                 return (activeFace, (float)Math.Max(0.0, relative.TotalSeconds), localFrame, activeDurationFrame);
-            }
-
-            if (latestStartedFace != null)
-            {
-                var relative = currentTime - latestStartedAt;
-                var localFrame = Math.Clamp(currentFrame - latestStartedFrame, 0.0, latestDurationFrame);
-                return (latestStartedFace, (float)Math.Max(0.0, relative.TotalSeconds), localFrame, latestDurationFrame);
-            }
-
-            return (earliestFace, 0.0f, 0.0, earliestDurationFrame);
-        }
-
-        internal static (Live2DFaceParameter? Face, float RelativeTimeSeconds, double LocalFrame, double DurationFrame) ResolveStartedFace(
-            IEnumerable<TachieFaceDescription> faces,
-            YukkuriMovieMaker.Player.Video.FrameTime currentPosition)
-        {
-            var currentTime = currentPosition.Time;
-            var currentFrame = (double)currentPosition.Frame;
-            Live2DFaceParameter? activeFace = null;
-            int activeLayer = int.MinValue;
-            TimeSpan activeStart = TimeSpan.MinValue;
-            double activeStartFrame = 0.0;
-            double activeDurationFrame = 1.0;
-            Live2DFaceParameter? latestStartedFace = null;
-            int latestStartedLayer = int.MinValue;
-            TimeSpan latestStartedAt = TimeSpan.MinValue;
-            double latestStartedFrame = 0.0;
-            double latestDurationFrame = 1.0;
-
-            foreach (var face in faces)
-            {
-                var start = face.ItemPosition.Time;
-                var end = start + face.ItemDuration.Time;
-                var startFrame = (double)face.ItemPosition.Frame;
-                var durationFrame = Math.Max(1.0, (double)face.ItemDuration.Frame);
-
-                if (start <= currentTime &&
-                    (face.Layer > latestStartedLayer || (face.Layer == latestStartedLayer && start >= latestStartedAt)))
-                {
-                    latestStartedFace = face.FaceParameter as Live2DFaceParameter;
-                    latestStartedLayer = face.Layer;
-                    latestStartedAt = start;
-                    latestStartedFrame = startFrame;
-                    latestDurationFrame = durationFrame;
-                }
-
-                if (currentTime >= start && currentTime < end &&
-                    (face.Layer > activeLayer || (face.Layer == activeLayer && start >= activeStart)))
-                {
-                    activeFace = face.FaceParameter as Live2DFaceParameter;
-                    activeLayer = face.Layer;
-                    activeStart = start;
-                    activeStartFrame = startFrame;
-                    activeDurationFrame = durationFrame;
-                }
-            }
-
-            if (activeFace != null)
-            {
-                var localFrame = Math.Clamp(currentFrame - activeStartFrame, 0.0, activeDurationFrame);
-                return (activeFace, (float)Math.Max(0.0, (currentTime - activeStart).TotalSeconds), localFrame, activeDurationFrame);
-            }
-
-            if (latestStartedFace != null)
-            {
-                var localFrame = Math.Clamp(currentFrame - latestStartedFrame, 0.0, latestDurationFrame);
-                return (latestStartedFace, (float)Math.Max(0.0, (currentTime - latestStartedAt).TotalSeconds), localFrame, latestDurationFrame);
             }
 
             return (null, 0.0f, 0.0, 1.0);
@@ -774,6 +681,7 @@ namespace VTuberKitForYMM4.Plugin
             Live2DFaceParameter? faceParam,
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
+            double activeFaceDurationFrame,
             float lipSyncGain,
             float windStrength)
         {
@@ -792,18 +700,13 @@ namespace VTuberKitForYMM4.Plugin
             {
                 var next = Math.Min(targetSeconds, elapsed + replayStep);
                 var delta = next - elapsed;
-                var replayFrame = (long)Math.Round(next * desc.FPS);
-                var replayPosition = new YukkuriMovieMaker.Player.Video.FrameTime((int)replayFrame, desc.FPS);
-                var replayActiveFace = desc.Tachie?.Faces is { } replayFaces
-                    ? ResolveStartedFace(replayFaces, replayPosition)
-                    : (null, 0.0f, 0.0, 1.0);
 
                 TachieMotionEvaluator.UpdateMotionToCurrentTime(
                     model,
                     desc,
-                    replayActiveFace.Face,
+                    faceParam,
                     itemParam,
-                    Math.Min(replayActiveFace.RelativeTimeSeconds, next),
+                    Math.Min(activeFaceTimeSeconds, next),
                     lipSyncGain,
                     (desc.Tachie?.CharacterParameter as Live2DCharacterParameter)?.LipSyncVowelsOnly ?? false,
                     null,
@@ -813,27 +716,27 @@ namespace VTuberKitForYMM4.Plugin
 
                 ApplyTargetPointOrDragging(model, desc.Tachie?.CharacterParameter as Live2DCharacterParameter, next);
                 model.UpdatePrePhysics(delta);
-                if (replayActiveFace.Face != null)
+                if (faceParam != null)
                 {
-                    var faceFrame = Math.Max(0L, (long)Math.Round(replayActiveFace.LocalFrame));
-                    var faceLength = Math.Max(1L, (long)Math.Round(replayActiveFace.DurationFrame));
+                    var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
+                    var faceLength = Math.Max(1L, (long)Math.Round(activeFaceDurationFrame));
                     TachieMotionEvaluator.ApplyFaceAndLipSync(
                         model,
                         desc,
-                        replayActiveFace.Face,
+                        faceParam,
                         faceFrame,
                         faceLength,
                         lipSyncGain,
                         (desc.Tachie?.CharacterParameter as Live2DCharacterParameter)?.LipSyncVowelsOnly ?? false);
                 }
                 model.UpdatePostPhysics(delta);
-                if (replayActiveFace.Face != null)
+                if (faceParam != null)
                 {
-                    var faceFrame = Math.Max(0L, (long)Math.Round(replayActiveFace.LocalFrame));
-                    var faceLength = Math.Max(1L, (long)Math.Round(replayActiveFace.DurationFrame));
+                    var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
+                    var faceLength = Math.Max(1L, (long)Math.Round(activeFaceDurationFrame));
                     TachieMotionEvaluator.ApplyDynamicFaceParts(
                         model,
-                        replayActiveFace.Face,
+                        faceParam,
                         faceFrame,
                         faceLength,
                         desc.FPS);

@@ -683,6 +683,11 @@ bool NativeModel::IsMotionFinished() {
 }
 
 void NativeModel::Update(float deltaTime) {
+    UpdatePrePhysics(deltaTime);
+    UpdatePostPhysics(deltaTime);
+}
+
+void NativeModel::UpdatePrePhysics(float deltaTime) {
     if (!_model) {
         return;
     }
@@ -704,10 +709,6 @@ void NativeModel::Update(float deltaTime) {
 
     _model->SaveParameters();
 
-    if (!motionUpdated && _eyeBlinkEnabled && _eyeBlink) {
-        _eyeBlink->UpdateParameters(_model, deltaTime);
-    }
-
     if (_expressionManager) {
         _expressionManager->UpdateMotion(_model, deltaTime);
     }
@@ -716,14 +717,37 @@ void NativeModel::Update(float deltaTime) {
         _breath->UpdateParameters(_model, deltaTime);
     }
 
-    if (_physicsEnabled && _physics) {
-        _physics->Evaluate(_model, deltaTime);
+    if (!motionUpdated && _eyeBlinkEnabled && _eyeBlink) {
+        _eyeBlink->UpdateParameters(_model, deltaTime);
+    }
+
+    if (_dragX != 0.0f || _dragY != 0.0f) {
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleX), _dragX * 30.0f);
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleY), _dragY * 30.0f);
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamAngleZ), _dragX * _dragY * -30.0f);
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamBodyAngleX), _dragX * 10.0f);
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallX), _dragX);
+        _model->AddParameterValue(CubismFramework::GetIdManager()->GetId(ParamEyeBallY), _dragY);
     }
 
     if (_lipSyncEnabled && _lipSyncIds.GetSize() > 0) {
         for (csmUint32 i = 0; i < _lipSyncIds.GetSize(); ++i) {
-            _model->AddParameterValue(_lipSyncIds[i], _lipSyncValue, 0.8f);
+            _model->SetParameterValue(_lipSyncIds[i], _lipSyncValue);
         }
+    }
+}
+
+void NativeModel::UpdatePostPhysics(float deltaTime) {
+    if (!_model) {
+        return;
+    }
+
+    if (deltaTime < 0.0f) {
+        deltaTime = 0.0f;
+    }
+
+    if (_physicsEnabled && _physics) {
+        _physics->Evaluate(_model, deltaTime);
     }
 
     if (_pose) {
@@ -958,11 +982,123 @@ csmBool NativeModel::HitTest(const char* hitAreaName, csmFloat32 x, csmFloat32 y
 
     const csmInt32 count = _modelSetting->GetHitAreasCount();
     for (csmInt32 i = 0; i < count; i++) {
-        if (strcmp(_modelSetting->GetHitAreaName(i), hitAreaName) == 0) {
+        const char* currentName = _modelSetting->GetHitAreaName(i);
+        const char* currentId = _modelSetting->GetHitAreaId(i)->GetString().GetRawString();
+        const bool matchesName = currentName && strcmp(currentName, hitAreaName) == 0;
+        const bool matchesId = currentId && strcmp(currentId, hitAreaName) == 0;
+        if (matchesName || matchesId) {
             return IsHit(_modelSetting->GetHitAreaId(i), x, y);
         }
     }
     return false;
+}
+
+bool NativeModel::TryGetHitAreaBounds(const char* hitAreaNameOrId, float& centerX, float& centerY, float& width, float& height) {
+    centerX = 0.0f;
+    centerY = 0.0f;
+    width = 0.0f;
+    height = 0.0f;
+
+    if (!_modelSetting || !_model || !hitAreaNameOrId) {
+        return false;
+    }
+
+    const csmInt32 count = _modelSetting->GetHitAreasCount();
+    for (csmInt32 i = 0; i < count; i++) {
+        const char* currentName = _modelSetting->GetHitAreaName(i);
+        const char* currentId = _modelSetting->GetHitAreaId(i)->GetString().GetRawString();
+        const bool matchesName = currentName && strcmp(currentName, hitAreaNameOrId) == 0;
+        const bool matchesId = currentId && strcmp(currentId, hitAreaNameOrId) == 0;
+        if (!matchesName && !matchesId) {
+            continue;
+        }
+
+        const csmInt32 drawIndex = _model->GetDrawableIndex(_modelSetting->GetHitAreaId(i));
+        if (drawIndex < 0) {
+            return false;
+        }
+
+        const csmInt32 vertexCount = _model->GetDrawableVertexCount(drawIndex);
+        const csmFloat32* vertices = _model->GetDrawableVertices(drawIndex);
+        if (vertexCount <= 0 || vertices == nullptr) {
+            return false;
+        }
+
+        csmFloat32 left = vertices[0];
+        csmFloat32 right = vertices[0];
+        csmFloat32 top = vertices[1];
+        csmFloat32 bottom = vertices[1];
+
+        for (csmInt32 j = 1; j < vertexCount; ++j) {
+            const csmFloat32 vertexX = vertices[Constant::VertexOffset + j * Constant::VertexStep];
+            const csmFloat32 vertexY = vertices[Constant::VertexOffset + j * Constant::VertexStep + 1];
+
+            if (vertexX < left) left = vertexX;
+            if (vertexX > right) right = vertexX;
+            if (vertexY < bottom) bottom = vertexY;
+            if (vertexY > top) top = vertexY;
+        }
+
+        centerX = (left + right) * 0.5f;
+        centerY = (top + bottom) * 0.5f;
+        width = right - left;
+        height = top - bottom;
+        return true;
+    }
+
+    return false;
+}
+
+bool NativeModel::TryGetModelBounds(float& centerX, float& centerY, float& width, float& height) {
+    if (!_model) {
+        return false;
+    }
+
+    const csmInt32 drawableCount = _model->GetDrawableCount();
+    if (drawableCount <= 0) {
+        return false;
+    }
+
+    bool hasAnyVertex = false;
+    csmFloat32 left = 0.0f;
+    csmFloat32 right = 0.0f;
+    csmFloat32 top = 0.0f;
+    csmFloat32 bottom = 0.0f;
+
+    for (csmInt32 drawIndex = 0; drawIndex < drawableCount; ++drawIndex) {
+        const csmInt32 vertexCount = _model->GetDrawableVertexCount(drawIndex);
+        const csmFloat32* vertices = _model->GetDrawableVertices(drawIndex);
+        if (vertexCount <= 0 || vertices == nullptr) {
+            continue;
+        }
+
+        for (csmInt32 j = 0; j < vertexCount; ++j) {
+            const csmFloat32 vertexX = vertices[Constant::VertexOffset + j * Constant::VertexStep];
+            const csmFloat32 vertexY = vertices[Constant::VertexOffset + j * Constant::VertexStep + 1];
+
+            if (!hasAnyVertex) {
+                left = right = vertexX;
+                top = bottom = vertexY;
+                hasAnyVertex = true;
+                continue;
+            }
+
+            if (vertexX < left) left = vertexX;
+            if (vertexX > right) right = vertexX;
+            if (vertexY < bottom) bottom = vertexY;
+            if (vertexY > top) top = vertexY;
+        }
+    }
+
+    if (!hasAnyVertex) {
+        return false;
+    }
+
+    centerX = (left + right) * 0.5f;
+    centerY = (top + bottom) * 0.5f;
+    width = right - left;
+    height = top - bottom;
+    return true;
 }
 
 void NativeModel::SetMultiplyColor(float r, float g, float b, float a) {

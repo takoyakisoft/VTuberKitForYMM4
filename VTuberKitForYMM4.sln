@@ -5,6 +5,8 @@ VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTuberKitForYMM4", "VTuberKitForYMM4\VTuberKitForYMM4.csproj", "{C124EEAD-3AB2-4990-A0F0-811A2A32BD3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTuberKitForYMM4.Tests", "VTuberKitForYMM4.Tests\VTuberKitForYMM4.Tests.csproj", "{A7F03D3C-4459-4F18-9A8A-7A8E94A7F3A3}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VTuberKitForNative", "VTuberKitForNative\VTuberKitForNative.vcxproj", "{B5F3D4E8-7C2A-4B1E-9F6D-8E3A5C2B4D1E}"
 EndProject
 Global
@@ -17,6 +19,10 @@ Global
 		{C124EEAD-3AB2-4990-A0F0-811A2A32BD3D}.Debug|x64.Build.0 = Debug|x64
 		{C124EEAD-3AB2-4990-A0F0-811A2A32BD3D}.Release|x64.ActiveCfg = Release|x64
 		{C124EEAD-3AB2-4990-A0F0-811A2A32BD3D}.Release|x64.Build.0 = Release|x64
+		{A7F03D3C-4459-4F18-9A8A-7A8E94A7F3A3}.Debug|x64.ActiveCfg = Debug|x64
+		{A7F03D3C-4459-4F18-9A8A-7A8E94A7F3A3}.Debug|x64.Build.0 = Debug|x64
+		{A7F03D3C-4459-4F18-9A8A-7A8E94A7F3A3}.Release|x64.ActiveCfg = Release|x64
+		{A7F03D3C-4459-4F18-9A8A-7A8E94A7F3A3}.Release|x64.Build.0 = Release|x64
 		{B5F3D4E8-7C2A-4B1E-9F6D-8E3A5C2B4D1E}.Debug|x64.ActiveCfg = Debug|x64
 		{B5F3D4E8-7C2A-4B1E-9F6D-8E3A5C2B4D1E}.Debug|x64.Build.0 = Debug|x64
 		{B5F3D4E8-7C2A-4B1E-9F6D-8E3A5C2B4D1E}.Release|x64.ActiveCfg = Release|x64

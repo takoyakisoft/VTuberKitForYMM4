@@ -16,7 +16,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         public ObservableCollection<CustomComboBoxValueBase> ItemsSource { get; set; }
 
         private CustomComboBoxValueBase _selectedValue;
-        public CustomComboBoxValueBase SelectedValue
+        [JsonIgnore]
+        public virtual CustomComboBoxValueBase SelectedValue
         {
             get => _selectedValue;
             set
@@ -27,6 +28,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         }
 
         private string _selectedDisplayMember = string.Empty;
+        [JsonIgnore]
         public string SelectedDisplayMember
         {
             get => _selectedDisplayMember;
@@ -63,25 +65,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         {
             if (0 < ItemsSource.Count)
             {
-                var items = ItemsSource.OrderByDescending(x => x.DisplayMember).ToList();
-
-                if (SelectedValue == null)
-                {
-                    SelectedValue = items.FirstOrDefault(x => x.DisplayMember.Equals(SelectedDisplayMember))
-                        ?? items.First();
-                }
-                else if (!string.IsNullOrEmpty(SelectedValue.DisplayMember))
-                {
-                    SelectedValue = items.FirstOrDefault(x => x.DisplayMember.Equals(SelectedValue.DisplayMember))
-                        ?? items.First();
-                }
-                else
-                {
-                    SelectedValue = items.FirstOrDefault(x => x.DisplayMember.StartsWith(SearchDisplayMember))
-                        ?? items.First();
-                }
-
-                SelectedDisplayMember = SelectedValue.DisplayMember;
+                SelectedValue = ItemsSource.FirstOrDefault(x => x.DisplayMember.StartsWith(SearchDisplayMember))
+                    ?? ItemsSource.First();
             }
         }
 

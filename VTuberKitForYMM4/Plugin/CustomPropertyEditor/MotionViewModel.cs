@@ -15,11 +15,16 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
 
     public class MotionViewModel : CustomComboBoxViewModelBase
     {
+        private readonly Func<string?>? modelPathProvider;
         private readonly bool onlyIdle;
         private readonly bool excludeIdle;
+        private string selectedGroup = string.Empty;
+        private int selectedIndex = -1;
+        private bool isRefreshing;
 
-        public MotionViewModel(string searchDisplayMember, bool onlyIdle = false, bool excludeIdle = false) : base(searchDisplayMember)
+        public MotionViewModel(string searchDisplayMember, bool onlyIdle = false, bool excludeIdle = false, Func<string?>? modelPathProvider = null) : base(searchDisplayMember)
         {
+            this.modelPathProvider = modelPathProvider;
             this.onlyIdle = onlyIdle;
             this.excludeIdle = excludeIdle;
             IsEnabled = true;
@@ -30,7 +35,12 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
             get
             {
                 var selected = SelectedValue as MotionItem;
-                return selected == null || selected.IsNone ? string.Empty : selected.Group;
+                return selected == null || selected.IsNone ? selectedGroup : selected.Group;
+            }
+            set
+            {
+                selectedGroup = value ?? string.Empty;
+                OnPropertyChanged(nameof(SelectedGroup));
             }
         }
 
@@ -39,17 +49,57 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
             get
             {
                 var selected = SelectedValue as MotionItem;
-                return selected == null || selected.IsNone ? -1 : selected.Index;
+                return selected == null || selected.IsNone ? selectedIndex : selected.Index;
+            }
+            set
+            {
+                selectedIndex = value;
+                OnPropertyChanged(nameof(SelectedIndex));
+            }
+        }
+
+        public override CustomComboBoxValueBase SelectedValue
+        {
+            get => base.SelectedValue;
+            set
+            {
+                var previousSelectedGroup = selectedGroup;
+                var previousSelectedIndex = selectedIndex;
+                base.SelectedValue = value;
+                var selected = value as MotionItem;
+                var isNone = selected == null || selected.IsNone;
+                if (isRefreshing && isNone && (!string.IsNullOrEmpty(previousSelectedGroup) || previousSelectedIndex >= 0))
+                {
+                    return;
+                }
+
+                if (selected == null || selected.IsNone)
+                {
+                    selectedGroup = string.Empty;
+                    selectedIndex = -1;
+                }
+                else
+                {
+                    selectedGroup = selected.Group;
+                    selectedIndex = selected.Index;
+                }
+                OnPropertyChanged(nameof(SelectedGroup));
+                OnPropertyChanged(nameof(SelectedIndex));
             }
         }
 
         public override void UpdateItemsSource()
         {
+            isRefreshing = true;
             IsEnabled = true;
             ItemsSource.Clear();
             ItemsSource.Add(new MotionItem { IsNone = true, Group = string.Empty, Index = -1, FileName = string.Empty });
 
-            foreach (var motion in ModelMetadataCatalog.Motions)
+            var motions = modelPathProvider == null
+                ? ModelMetadataCatalog.Motions
+                : ModelMetadataCatalog.GetMotions(modelPathProvider());
+
+            foreach (var motion in motions)
             {
                 var isIdle = string.Equals(motion.Group, "Idle", System.StringComparison.OrdinalIgnoreCase);
                 if (onlyIdle && !isIdle)
@@ -72,22 +122,29 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
 
         public override void UpdateSelectedValue()
         {
-            if (ItemsSource.Count == 0)
+            try
             {
-                return;
-            }
+                if (ItemsSource.Count == 0)
+                {
+                    return;
+                }
 
-            var selected = SelectedValue as MotionItem;
-            MotionItem? found = null;
-            if (selected != null && !selected.IsNone)
+                MotionItem? found = null;
+                if (!string.IsNullOrEmpty(selectedGroup) || selectedIndex >= 0)
+                {
+                    found = ItemsSource
+                        .OfType<MotionItem>()
+                        .FirstOrDefault(x => !x.IsNone && x.Group == selectedGroup && x.Index == selectedIndex);
+                }
+
+                SelectedValue = found ?? ItemsSource.First();
+            }
+            finally
             {
-                found = ItemsSource
-                    .OfType<MotionItem>()
-                    .FirstOrDefault(x => !x.IsNone && x.Group == selected.Group && x.Index == selected.Index);
+                isRefreshing = false;
+                OnPropertyChanged(nameof(SelectedGroup));
+                OnPropertyChanged(nameof(SelectedIndex));
             }
-
-            SelectedValue = found ?? ItemsSource.First();
-            SelectedDisplayMember = SelectedValue.DisplayMember;
         }
     }
 }

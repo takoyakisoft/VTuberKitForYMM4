@@ -1,6 +1,17 @@
-MIT License
-
+VTuberKitForYMM4
 Copyright (c) 2026 takoyakisoft
+
+This repository contains the VTuberKitForYMM4 source code and original assets
+created for this project. Unless otherwise noted, those contents are licensed
+under the MIT License below.
+
+Third-party software required to build or run this project, including
+YukkuriMovieMaker4 and Live2D Cubism SDK for Native / Cubism Native Framework,
+is not included in this repository and is not covered by the MIT License below.
+You must obtain and use those components under their respective licenses and
+terms.
+
+MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

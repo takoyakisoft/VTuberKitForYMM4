@@ -10,26 +10,79 @@ namespace VTuberKitForYMM4.Plugin
 {
     public class Live2DFaceParameter : TachieFaceParameterBase
     {
-        [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
-        [CustomComboBox]
-        public ExpressionViewModel Expression { get; set; } = new("exp");
+        public Live2DFaceParameter()
+        {
+            Motion = new MotionViewModel("Idle", modelPathProvider: () => ModelFile);
+            Expression = new ExpressionViewModel("exp", () => ModelFile);
+        }
 
         [Display(Name = "モーション", Description = "model3.json の Motions から選択（Idle含む）")]
         [CustomComboBox]
-        public MotionViewModel Motion { get; set; } = new("Idle");
+        public MotionViewModel Motion { get; set; }
+
+        [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
+        [CustomComboBox]
+        public ExpressionViewModel Expression { get; set; }
 
         [Browsable(false)]
-        public string ExpressionId => Expression?.SelectedExpressionId ?? string.Empty;
+        public string ModelFile
+        {
+            get => modelFile;
+            set
+            {
+                var normalized = value ?? string.Empty;
+                if (!Set(ref modelFile, normalized))
+                {
+                    return;
+                }
+
+                ModelMetadataCatalog.UpdateFromModelPath(normalized);
+                DynamicOverrides.SyncWithMetadata();
+            }
+        }
+        string modelFile = string.Empty;
 
         [Browsable(false)]
-        public string MotionGroup => Motion?.SelectedGroup ?? string.Empty;
+        public string ExpressionId
+        {
+            get
+            {
+                if (Expression != null && Expression.ItemsSource.Count == 0)
+                {
+                    Expression.UpdateItemsSource();
+                    Expression.UpdateSelectedValue();
+                }
+                return Expression?.SelectedExpressionId ?? string.Empty;
+            }
+        }
 
         [Browsable(false)]
-        public int MotionIndex => Motion?.SelectedIndex ?? -1;
+        public string MotionGroup
+        {
+            get
+            {
+                if (Motion != null && Motion.ItemsSource.Count == 0)
+                {
+                    Motion.UpdateItemsSource();
+                    Motion.UpdateSelectedValue();
+                }
+                return Motion?.SelectedGroup ?? string.Empty;
+            }
+        }
 
-        [Display(Name = "モーション再生", Description = "有効時は指定モーションをクリップ時間で評価します")]
-        public bool UseMotion { get => useMotion; set => Set(ref useMotion, value); }
-        bool useMotion = false;
+        [Browsable(false)]
+        public int MotionIndex
+        {
+            get
+            {
+                if (Motion != null && Motion.ItemsSource.Count == 0)
+                {
+                    Motion.UpdateItemsSource();
+                    Motion.UpdateSelectedValue();
+                }
+                return Motion?.SelectedIndex ?? -1;
+            }
+        }
 
         [Display(Name = "モーションループ", Description = "ONで face モーションを繰り返し再生します")]
         [ToggleSlider]
@@ -37,229 +90,159 @@ namespace VTuberKitForYMM4.Plugin
         public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
         bool motionLoop = false;
 
-        [Display(Name = "パラメータ加算", Description = "ONで既存モーションへ加算、OFFで絶対値として適用します")]
-        [ToggleSlider]
-        [DefaultValue(true)]
-        public bool AdditiveParameters { get => additiveParameters; set => Set(ref additiveParameters, value); }
-        bool additiveParameters = true;
-
         [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation Opacity { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
+        public Animation Opacity { get; } = new(1, 0, 1);
 
-        [Display(Name = "目の開きL", Description = "ParamEyeLOpen")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation EyeLOpen { get; } = new Animation(0, -1, 1);
+        [Browsable(false)]
+        public bool OpacityHold { get => opacityHold; set => Set(ref opacityHold, value); }
+        bool opacityHold;
 
-        [Display(Name = "目の開きR", Description = "ParamEyeROpen")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation EyeROpen { get; } = new Animation(0, -1, 1);
+        [Display(Name = "目L", Description = "ParamEyeLOpen")]
+        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
+        public Animation EyeLOpen { get; } = new(1, 0, 1);
 
-        [Display(Name = "口の開き", Description = "ParamMouthOpenY")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation MouthOpen { get; } = new Animation(0, -1, 1);
+        [Browsable(false)]
+        public bool EyeLOpenHold { get => eyeLOpenHold; set => Set(ref eyeLOpenHold, value); }
+        bool eyeLOpenHold;
 
-        [Display(Name = "口の形", Description = "ParamMouthForm")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation MouthForm { get; } = new Animation(0, -1, 1);
+        [Display(Name = "目R", Description = "ParamEyeROpen")]
+        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
+        public Animation EyeROpen { get; } = new(1, 0, 1);
+
+        [Browsable(false)]
+        public bool EyeROpenHold { get => eyeROpenHold; set => Set(ref eyeROpenHold, value); }
+        bool eyeROpenHold;
+
+        [Display(Name = "口開き", Description = "ParamMouthOpenY")]
+        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
+        public Animation MouthOpen { get; } = new(0, 0, 1);
+
+        [Browsable(false)]
+        public bool MouthOpenHold { get => mouthOpenHold; set => Set(ref mouthOpenHold, value); }
+        bool mouthOpenHold;
+
+        [Display(Name = "口形", Description = "ParamMouthForm")]
+        [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
+        public Animation MouthForm { get; } = new(0, -1, 1);
+
+        [Browsable(false)]
+        public bool MouthFormHold { get => mouthFormHold; set => Set(ref mouthFormHold, value); }
+        bool mouthFormHold;
 
         [Display(Name = "顔X", Description = "ParamAngleX")]
-        [AnimationSlider("F1", "", -30.0, 30.0)]
-        public Animation AngleX { get; } = new Animation(0, -30, 30);
+        [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
+        public Animation AngleX { get; } = new(0, -30, 30);
+
+        [Browsable(false)]
+        public bool AngleXHold { get => angleXHold; set => Set(ref angleXHold, value); }
+        bool angleXHold;
 
         [Display(Name = "顔Y", Description = "ParamAngleY")]
-        [AnimationSlider("F1", "", -30.0, 30.0)]
-        public Animation AngleY { get; } = new Animation(0, -30, 30);
+        [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
+        public Animation AngleY { get; } = new(0, -30, 30);
+
+        [Browsable(false)]
+        public bool AngleYHold { get => angleYHold; set => Set(ref angleYHold, value); }
+        bool angleYHold;
 
         [Display(Name = "顔Z", Description = "ParamAngleZ")]
-        [AnimationSlider("F1", "", -30.0, 30.0)]
-        public Animation AngleZ { get; } = new Animation(0, -30, 30);
+        [AnimatedHoldSlider("F3", "", -30.0, 30.0)]
+        public Animation AngleZ { get; } = new(0, -30, 30);
+
+        [Browsable(false)]
+        public bool AngleZHold { get => angleZHold; set => Set(ref angleZHold, value); }
+        bool angleZHold;
 
         [Display(Name = "体X", Description = "ParamBodyAngleX")]
-        [AnimationSlider("F1", "", -10.0, 10.0)]
-        public Animation BodyAngleX { get; } = new Animation(0, -10, 10);
+        [AnimatedHoldSlider("F3", "", -10.0, 10.0)]
+        public Animation BodyAngleX { get; } = new(0, -10, 10);
+
+        [Browsable(false)]
+        public bool BodyAngleXHold { get => bodyAngleXHold; set => Set(ref bodyAngleXHold, value); }
+        bool bodyAngleXHold;
 
         [Display(Name = "視線X", Description = "ParamEyeBallX")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation EyeBallX { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
+        public Animation EyeBallX { get; } = new(0, -1, 1);
+
+        [Browsable(false)]
+        public bool EyeBallXHold { get => eyeBallXHold; set => Set(ref eyeBallXHold, value); }
+        bool eyeBallXHold;
 
         [Display(Name = "視線Y", Description = "ParamEyeBallY")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation EyeBallY { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
+        public Animation EyeBallY { get; } = new(0, -1, 1);
+
+        [Browsable(false)]
+        public bool EyeBallYHold { get => eyeBallYHold; set => Set(ref eyeBallYHold, value); }
+        bool eyeBallYHold;
 
         [Display(Name = "頬", Description = "ParamCheek")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation Cheek { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
+        public Animation Cheek { get; } = new(0, 0, 1);
+
+        [Browsable(false)]
+        public bool CheekHold { get => cheekHold; set => Set(ref cheekHold, value); }
+        bool cheekHold;
 
         [Display(Name = "腕L", Description = "ParamArmLA")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation ArmLA { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
+        public Animation ArmLA { get; } = new(0, -1, 1);
+
+        [Browsable(false)]
+        public bool ArmLAHold { get => armLAHold; set => Set(ref armLAHold, value); }
+        bool armLAHold;
 
         [Display(Name = "腕R", Description = "ParamArmRA")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation ArmRA { get; } = new Animation(0, -1, 1);
+        [AnimatedHoldSlider("F3", "", -1.0, 1.0)]
+        public Animation ArmRA { get; } = new(0, -1, 1);
+
+        [Browsable(false)]
+        public bool ArmRAHold { get => armRAHold; set => Set(ref armRAHold, value); }
+        bool armRAHold;
 
         [Display(Name = "表示位置Xオフセット", Description = "Itemの位置Xに加算する一時オフセット")]
-        [AnimationSlider("F3", "", -2.0, 2.0)]
+        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
         public Animation OffsetPositionX { get; } = new Animation(0, -2, 2);
 
         [Display(Name = "表示位置Yオフセット", Description = "Itemの位置Yに加算する一時オフセット")]
-        [AnimationSlider("F3", "", -2.0, 2.0)]
+        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
         public Animation OffsetPositionY { get; } = new Animation(0, -2, 2);
 
         [Display(Name = "表示拡大率オフセット", Description = "Itemの拡大率に加算する一時オフセット")]
-        [AnimationSlider("F3", "x", -2.0, 2.0)]
+        [AnimatedHoldSlider("F3", "x", -2.0, 2.0)]
         public Animation OffsetScale { get; } = new Animation(0, -2, 2);
 
         [Display(Name = "表示回転オフセット", Description = "Itemの回転に加算する一時オフセット")]
-        [AnimationSlider("F1", "°", -180.0, 180.0)]
+        [AnimatedHoldSlider("F1", "°", -180.0, 180.0)]
         public Animation OffsetRotation { get; } = new Animation(0, -180, 180);
 
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam1 ID", Description = "Param IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public ParameterIdViewModel CustomParam1 { get; set; } = new("Param");
+        [Display(GroupName = "動的Override", Name = "追加", Description = "モデル定義から動的に読み込んだ追加Param/Partを編集します。各タブを開くと一覧で確認・設定できます。")]
+        [DynamicFaceOverridesEditor(PropertyEditorSize = PropertyEditorSize.FullWidth)]
+        public Live2DFaceDynamicOverrides DynamicOverrides { get; } = new();
 
-        [Browsable(false)]
-        public string CustomParam1Id
-        {
-            get => CustomParam1?.SelectedId ?? customParam1Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customParam1Id, normalized);
-                if (CustomParam1 != null)
-                {
-                    CustomParam1.SelectedId = normalized;
-                }
-            }
-        }
-        string customParam1Id = string.Empty;
-
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam1 値", Description = "カスタムParam1 IDに適用する値")]
-        [AnimationSlider("F2", "", -100.0, 100.0)]
-        public Animation CustomParam1Value { get; } = new Animation(0, -100, 100);
-
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam2 ID", Description = "Param IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public ParameterIdViewModel CustomParam2 { get; set; } = new("Param");
-
-        [Browsable(false)]
-        public string CustomParam2Id
-        {
-            get => CustomParam2?.SelectedId ?? customParam2Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customParam2Id, normalized);
-                if (CustomParam2 != null)
-                {
-                    CustomParam2.SelectedId = normalized;
-                }
-            }
-        }
-        string customParam2Id = string.Empty;
-
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam2 値", Description = "カスタムParam2 IDに適用する値")]
-        [AnimationSlider("F2", "", -100.0, 100.0)]
-        public Animation CustomParam2Value { get; } = new Animation(0, -100, 100);
-
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam3 ID", Description = "Param IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public ParameterIdViewModel CustomParam3 { get; set; } = new("Param");
-
-        [Browsable(false)]
-        public string CustomParam3Id
-        {
-            get => CustomParam3?.SelectedId ?? customParam3Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customParam3Id, normalized);
-                if (CustomParam3 != null)
-                {
-                    CustomParam3.SelectedId = normalized;
-                }
-            }
-        }
-        string customParam3Id = string.Empty;
-
-        [Display(GroupName = "カスタムParam", Name = "カスタムParam3 値", Description = "カスタムParam3 IDに適用する値")]
-        [AnimationSlider("F2", "", -100.0, 100.0)]
-        public Animation CustomParam3Value { get; } = new Animation(0, -100, 100);
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart1 ID", Description = "Part IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public PartIdViewModel CustomPart1 { get; set; } = new("Part");
-
-        [Browsable(false)]
-        public string CustomPart1Id
-        {
-            get => CustomPart1?.SelectedId ?? customPart1Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customPart1Id, normalized);
-                if (CustomPart1 != null)
-                {
-                    CustomPart1.SelectedId = normalized;
-                }
-            }
-        }
-        string customPart1Id = string.Empty;
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart1 不透明度", Description = "カスタムPart1 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation CustomPart1Opacity { get; } = new Animation(0, -1, 1);
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart2 ID", Description = "Part IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public PartIdViewModel CustomPart2 { get; set; } = new("Part");
-
-        [Browsable(false)]
-        public string CustomPart2Id
-        {
-            get => CustomPart2?.SelectedId ?? customPart2Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customPart2Id, normalized);
-                if (CustomPart2 != null)
-                {
-                    CustomPart2.SelectedId = normalized;
-                }
-            }
-        }
-        string customPart2Id = string.Empty;
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart2 不透明度", Description = "カスタムPart2 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation CustomPart2Opacity { get; } = new Animation(0, -1, 1);
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart3 ID", Description = "Part IDを選択（未選択で無効）")]
-        [CustomComboBox]
-        public PartIdViewModel CustomPart3 { get; set; } = new("Part");
-
-        [Browsable(false)]
-        public string CustomPart3Id
-        {
-            get => CustomPart3?.SelectedId ?? customPart3Id;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                Set(ref customPart3Id, normalized);
-                if (CustomPart3 != null)
-                {
-                    CustomPart3.SelectedId = normalized;
-                }
-            }
-        }
-        string customPart3Id = string.Empty;
-
-        [Display(GroupName = "カスタムPart", Name = "カスタムPart3 不透明度", Description = "カスタムPart3 IDに適用する不透明度")]
-        [AnimationSlider("F2", "", -1.0, 1.0)]
-        public Animation CustomPart3Opacity { get; } = new Animation(0, -1, 1);
-
-        protected override IEnumerable<IAnimatable> GetAnimatables() => [Opacity, EyeLOpen, EyeROpen, MouthOpen, MouthForm, AngleX, AngleY, AngleZ, BodyAngleX, EyeBallX, EyeBallY, Cheek, ArmLA, ArmRA, OffsetPositionX, OffsetPositionY, OffsetScale, OffsetRotation, CustomPart1Opacity, CustomPart2Opacity, CustomPart3Opacity, CustomParam1Value, CustomParam2Value, CustomParam3Value];
+        protected override IEnumerable<IAnimatable> GetAnimatables() =>
+        [
+            Opacity,
+            EyeLOpen,
+            EyeROpen,
+            MouthOpen,
+            MouthForm,
+            AngleX,
+            AngleY,
+            AngleZ,
+            BodyAngleX,
+            EyeBallX,
+            EyeBallY,
+            Cheek,
+            ArmLA,
+            ArmRA,
+            OffsetPositionX,
+            OffsetPositionY,
+            OffsetScale,
+            OffsetRotation,
+            DynamicOverrides
+        ];
     }
 }
-

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -6,26 +7,47 @@ namespace VTuberKitForYMM4.Commons
 {
     public partial class ConsoleManager
     {
+        private static readonly object fileLock = new();
+        private static readonly string logFilePath = Path.Combine(Path.GetTempPath(), "VTuberKitForYMM4.debug.log");
+
         [LibraryImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool AllocConsole();
 
-#if DEBUG
-        private static bool isConsoleAllocated;
-
-        public static void Debug(string message)
+        private static void EnsureConsole()
         {
+#if DEBUG
             if (!isConsoleAllocated)
             {
                 AllocConsole();
                 isConsoleAllocated = true;
             }
+#endif
+        }
 
-            StackFrame frame = new(1);
+#if DEBUG
+        private static bool isConsoleAllocated;
+
+        private static void WriteLog(string level, string message, int skipFrames = 2)
+        {
+            EnsureConsole();
+
+            StackFrame frame = new(skipFrames);
             var method = frame.GetMethod();
             var type = method?.DeclaringType;
             var name = method?.Name;
-            Console.WriteLine($" [{DateTime.Now}]  {type}.{name}(): {message}");
+            var line = $"{(level == "DEBUG" ? "" : $"[{level} ")}{DateTime.Now}] {(level == "DEBUG" ? " " : "")} {type}.{name}(): {message}";
+            Console.WriteLine(line);
+
+            lock (fileLock)
+            {
+                File.AppendAllText(logFilePath, line + Environment.NewLine);
+            }
+        }
+
+        public static void Debug(string message)
+        {
+            WriteLog("DEBUG", message);
         }
 #else
         public static void Debug(string message)
@@ -36,11 +58,7 @@ namespace VTuberKitForYMM4.Commons
         public static void Error(string message)
         {
 #if DEBUG
-            StackFrame frame = new(1);
-            var method = frame.GetMethod();
-            var type = method?.DeclaringType;
-            var name = method?.Name;
-            Console.WriteLine($"[ERROR {DateTime.Now}] {type}.{name}(): {message}");
+            WriteLog("ERROR", message);
 #endif
             MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
         }

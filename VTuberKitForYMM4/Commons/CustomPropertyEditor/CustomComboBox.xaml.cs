@@ -7,6 +7,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
     public partial class CustomComboBox : UserControl, IPropertyEditorControl
     {
         private readonly Button reloadButton;
+        private readonly TextBlock reloadIcon;
         private bool isReloading;
 
         public CustomComboBoxViewModelBase CustomViewModel
@@ -28,6 +29,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         {
             InitializeComponent();
             reloadButton = (Button)FindName("PART_ReloadButton");
+            reloadIcon = (TextBlock)FindName("PART_ReloadIcon");
             isReloading = false;
         }
 
@@ -44,23 +46,24 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 isReloading = true;
                 BeginEdit?.Invoke(this, EventArgs.Empty);
-                reloadButton.Content = "…";
+                reloadIcon.Text = "…";
                 EndEdit?.Invoke(this, EventArgs.Empty);
 
                 await CustomViewModel.PreUpdateItemsSource(update);
                 CustomViewModel?.UpdateItemsSource();
                 CustomViewModel?.UpdateSelectedValue();
 
-                reloadButton.Content = "↻";
+                reloadIcon.Text = "\uE72C";
                 isReloading = false;
             }
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (CustomViewModel != null && CustomViewModel.SelectedValue != null)
+            if (CustomViewModel != null)
             {
-                CustomViewModel.SelectedDisplayMember = CustomViewModel.SelectedValue.DisplayMember;
+                BeginEdit?.Invoke(this, EventArgs.Empty);
+                EndEdit?.Invoke(this, EventArgs.Empty);
             }
         }
 

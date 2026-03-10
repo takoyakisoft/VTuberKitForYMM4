@@ -177,29 +177,34 @@ namespace VTuberKitForYMM4.Plugin
             float armLA,
             float armRA)
         {
-            ApplyHeldParameter(model, activeFace.EyeLOpenHold, Live2DManager.ParamEyeLOpen, eyeLOpen);
-            ApplyHeldParameter(model, activeFace.EyeROpenHold, Live2DManager.ParamEyeROpen, eyeROpen);
-            ApplyHeldParameter(model, activeFace.MouthOpenHold, Live2DManager.ParamMouthOpenY, mouthOpenY);
-            ApplyHeldParameter(model, activeFace.MouthFormHold, Live2DManager.ParamMouthForm, mouthForm);
-            ApplyHeldParameter(model, activeFace.AngleXHold, Live2DManager.ParamAngleX, angleX);
-            ApplyHeldParameter(model, activeFace.AngleYHold, Live2DManager.ParamAngleY, angleY);
-            ApplyHeldParameter(model, activeFace.AngleZHold, Live2DManager.ParamAngleZ, angleZ);
-            ApplyHeldParameter(model, activeFace.BodyAngleXHold, Live2DManager.ParamBodyAngleX, bodyAngleX);
-            ApplyHeldParameter(model, activeFace.EyeBallXHold, Live2DManager.ParamEyeBallX, eyeBallX);
-            ApplyHeldParameter(model, activeFace.EyeBallYHold, Live2DManager.ParamEyeBallY, eyeBallY);
-            ApplyHeldParameter(model, activeFace.CheekHold, Live2DManager.ParamCheek, cheek);
-            ApplyHeldParameter(model, activeFace.ArmLAHold, Live2DManager.ParamArmLA, armLA);
-            ApplyHeldParameter(model, activeFace.ArmRAHold, Live2DManager.ParamArmRA, armRA);
+            ApplyHeldParameter(model, activeFace.EyeLOpenHold, activeFace.EyeLOpen, Live2DManager.ParamEyeLOpen, eyeLOpen);
+            ApplyHeldParameter(model, activeFace.EyeROpenHold, activeFace.EyeROpen, Live2DManager.ParamEyeROpen, eyeROpen);
+            ApplyHeldParameter(model, activeFace.MouthOpenHold, activeFace.MouthOpen, Live2DManager.ParamMouthOpenY, mouthOpenY);
+            ApplyHeldParameter(model, activeFace.MouthFormHold, activeFace.MouthForm, Live2DManager.ParamMouthForm, mouthForm);
+            ApplyHeldParameter(model, activeFace.AngleXHold, activeFace.AngleX, Live2DManager.ParamAngleX, angleX);
+            ApplyHeldParameter(model, activeFace.AngleYHold, activeFace.AngleY, Live2DManager.ParamAngleY, angleY);
+            ApplyHeldParameter(model, activeFace.AngleZHold, activeFace.AngleZ, Live2DManager.ParamAngleZ, angleZ);
+            ApplyHeldParameter(model, activeFace.BodyAngleXHold, activeFace.BodyAngleX, Live2DManager.ParamBodyAngleX, bodyAngleX);
+            ApplyHeldParameter(model, activeFace.EyeBallXHold, activeFace.EyeBallX, Live2DManager.ParamEyeBallX, eyeBallX);
+            ApplyHeldParameter(model, activeFace.EyeBallYHold, activeFace.EyeBallY, Live2DManager.ParamEyeBallY, eyeBallY);
+            ApplyHeldParameter(model, activeFace.CheekHold, activeFace.Cheek, Live2DManager.ParamCheek, cheek);
+            ApplyHeldParameter(model, activeFace.ArmLAHold, activeFace.ArmLA, Live2DManager.ParamArmLA, armLA);
+            ApplyHeldParameter(model, activeFace.ArmRAHold, activeFace.ArmRA, Live2DManager.ParamArmRA, armRA);
         }
 
-        private static void ApplyHeldParameter(Live2DModelWrapper model, bool hold, string parameterId, float value)
+        private static void ApplyHeldParameter(Live2DModelWrapper model, bool hold, Animation animation, string parameterId, float value)
         {
-            if (!hold)
+            if (!hold && !HasAnimatedValues(animation))
             {
                 return;
             }
 
             model.SetParameterValue(parameterId, value);
+        }
+
+        private static bool HasAnimatedValues(Animation animation)
+        {
+            return animation.Values.Count > 1;
         }
 
         private static void ApplyVowelLipSyncParameters(Live2DModelWrapper model, MouthShape shape, float lipValue)

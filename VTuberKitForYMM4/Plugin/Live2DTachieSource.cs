@@ -384,7 +384,7 @@ namespace VTuberKitForYMM4.Plugin
                             var multiplyG = itemParam.MultiplyG.GetValue(frame, length, fps);
                             var multiplyB = itemParam.MultiplyB.GetValue(frame, length, fps);
                             var multiplyA = itemParam.MultiplyA.GetValue(frame, length, fps);
-                            var faceOpacity = faceParam?.OpacityHold == true
+                            var faceOpacity = faceParam != null && (faceParam.OpacityHold || faceParam.Opacity.Values.Count > 1)
                                 ? faceParam.Opacity.GetValue(
                                     Math.Max(0L, (long)Math.Round(activeFace.LocalFrame)),
                                     Math.Max(1L, (long)Math.Round(activeFace.DurationFrame)),

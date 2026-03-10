@@ -144,6 +144,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
+            EnsureHoldEnabled();
             BeginEdit?.Invoke(this, EventArgs.Empty);
         }
 
@@ -154,7 +155,33 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
+            EnsureHoldEnabled();
             EndEdit?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void EnsureHoldEnabled()
+        {
+            if (holdPropertyInfo == null || holdOwners.Length == 0)
+            {
+                return;
+            }
+
+            var changed = false;
+            foreach (var owner in holdOwners)
+            {
+                if ((bool?)holdPropertyInfo.GetValue(owner) == true)
+                {
+                    continue;
+                }
+
+                holdPropertyInfo.SetValue(owner, true);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                UpdateHoldCheckBox();
+            }
         }
 
         private void CheckBox_Changed(object sender, RoutedEventArgs e)

@@ -129,7 +129,7 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            foreach (var row in activeFace.DynamicOverrides.PartRows)
+            foreach (var row in activeFace.DynamicOverrides.PartRows.ToArray())
             {
                 if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
                 {
@@ -148,7 +148,7 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            foreach (var row in activeFace.DynamicOverrides.ParameterRows)
+            foreach (var row in activeFace.DynamicOverrides.ParameterRows.ToArray())
             {
                 if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
                 {

@@ -87,7 +87,7 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
-    public void ResolveActiveFace_UsesLatestStartWithinSameLayer()
+    public void ResolveActiveFace_UsesLatestFacePositionWithinSameLayer()
     {
         var earlierFace = new Live2DFaceParameter();
         var laterFace = new Live2DFaceParameter();
@@ -105,60 +105,22 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
-    public void ResolveActiveFace_ComputesFaceLocalFrameFromFaceStart()
+    public void ResolveActiveFace_UsesFaceLocalPositionFromDescription()
     {
         var face = new Live2DFaceParameter();
-        var fps = 60;
-        var current = new FrameTime(150, fps);
+        var fps = 30;
+        var current = new FrameTime(299, fps);
         var faces = new[]
         {
-            new TachieFaceDescription(new FrameTime(120, fps), new FrameTime(180, fps), 1, face),
+            new TachieFaceDescription(new FrameTime(299, fps), new FrameTime(300, fps), 1, face),
         };
 
         var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
 
         Assert.Same(face, resolved.Face);
-        Assert.Equal(30.0, resolved.LocalFrame);
-        Assert.Equal(180.0, resolved.DurationFrame);
-        Assert.Equal(0.5f, resolved.RelativeTimeSeconds);
-    }
-
-    [Fact]
-    public void ResolveActiveFace_ReturnsNullBeforeFirstFaceStarts()
-    {
-        var face = new Live2DFaceParameter();
-        var fps = 60;
-        var current = new FrameTime(30, fps);
-        var faces = new[]
-        {
-            new TachieFaceDescription(new FrameTime(120, fps), new FrameTime(180, fps), 1, face),
-        };
-
-        var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
-
-        Assert.Null(resolved.Face);
-        Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
-        Assert.Equal(0.0, resolved.LocalFrame);
-        Assert.Equal(1.0, resolved.DurationFrame);
-    }
-
-    [Fact]
-    public void ResolveActiveFace_ReturnsNullAfterFaceEnds()
-    {
-        var face = new Live2DFaceParameter();
-        var fps = 60;
-        var current = new FrameTime(260, fps);
-        var faces = new[]
-        {
-            new TachieFaceDescription(new FrameTime(180, fps), new FrameTime(30, fps), 1, face),
-        };
-
-        var resolved = Live2DTachieSource.ResolveActiveFace(faces, current);
-
-        Assert.Null(resolved.Face);
-        Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
-        Assert.Equal(0.0, resolved.LocalFrame);
-        Assert.Equal(1.0, resolved.DurationFrame);
+        Assert.Equal(299.0, resolved.LocalFrame);
+        Assert.Equal(300.0, resolved.DurationFrame);
+        Assert.Equal(299.0 / 30.0f, resolved.RelativeTimeSeconds, 3);
     }
 
     [Fact]

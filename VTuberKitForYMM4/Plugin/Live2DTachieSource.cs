@@ -205,7 +205,7 @@ namespace VTuberKitForYMM4.Plugin
 
                     if (desc.Tachie?.Faces is { } allFaces)
                     {
-                        foreach (var face in allFaces)
+                        foreach (var face in allFaces.ToArray())
                         {
                             if (face.FaceParameter is Live2DFaceParameter live2DFace &&
                                 !string.Equals(live2DFace.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
@@ -478,6 +478,7 @@ namespace VTuberKitForYMM4.Plugin
                         {
                             _model.UpdatePrePhysics(deltaSeconds);
                         }
+                        _model.UpdatePostPhysics(deltaSeconds);
                         if (faceParam != null)
                         {
                             var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
@@ -490,12 +491,6 @@ namespace VTuberKitForYMM4.Plugin
                                 faceLength,
                                 (float)(charParam?.LipSyncGain ?? 1.0),
                                 charParam?.LipSyncVowelsOnly ?? false);
-                        }
-                        _model.UpdatePostPhysics(deltaSeconds);
-                        if (faceParam != null)
-                        {
-                            var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
-                            var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
                             TachieMotionEvaluator.ApplyDynamicFaceParts(
                                 _model,
                                 faceParam,
@@ -534,37 +529,30 @@ namespace VTuberKitForYMM4.Plugin
             IEnumerable<TachieFaceDescription> faces,
             YukkuriMovieMaker.Player.Video.FrameTime currentPosition)
         {
-            var currentTime = currentPosition.Time;
-            var currentFrame = (double)currentPosition.Frame;
             Live2DFaceParameter? activeFace = null;
             int activeLayer = int.MinValue;
-            TimeSpan activeStart = TimeSpan.MinValue;
-            double activeStartFrame = 0.0;
+            TimeSpan activeLocalTime = TimeSpan.Zero;
+            double activeLocalFrame = 0.0;
             double activeDurationFrame = 1.0;
 
-            foreach (var face in faces)
+            foreach (var face in faces.ToArray())
             {
-                var start = face.ItemPosition.Time;
-                var end = start + face.ItemDuration.Time;
-                var startFrame = (double)face.ItemPosition.Frame;
                 var durationFrame = Math.Max(1.0, (double)face.ItemDuration.Frame);
-
-                if (currentTime >= start && currentTime < end &&
-                    (face.Layer > activeLayer || (face.Layer == activeLayer && start >= activeStart)))
+                var localTime = face.ItemPosition.Time;
+                var localFrame = Math.Clamp((double)face.ItemPosition.Frame, 0.0, durationFrame);
+                if ((face.Layer > activeLayer || (face.Layer == activeLayer && localTime >= activeLocalTime)))
                 {
                     activeFace = face.FaceParameter as Live2DFaceParameter;
                     activeLayer = face.Layer;
-                    activeStart = start;
-                    activeStartFrame = startFrame;
+                    activeLocalTime = localTime;
+                    activeLocalFrame = localFrame;
                     activeDurationFrame = durationFrame;
                 }
             }
 
             if (activeFace != null)
             {
-                var relative = currentTime - activeStart;
-                var localFrame = Math.Clamp(currentFrame - activeStartFrame, 0.0, activeDurationFrame);
-                return (activeFace, (float)Math.Max(0.0, relative.TotalSeconds), localFrame, activeDurationFrame);
+                return (activeFace, (float)Math.Max(0.0, activeLocalTime.TotalSeconds), activeLocalFrame, activeDurationFrame);
             }
 
             return (null, 0.0f, 0.0, 1.0);
@@ -716,6 +704,7 @@ namespace VTuberKitForYMM4.Plugin
 
                 ApplyTargetPointOrDragging(model, desc.Tachie?.CharacterParameter as Live2DCharacterParameter, next);
                 model.UpdatePrePhysics(delta);
+                model.UpdatePostPhysics(delta);
                 if (faceParam != null)
                 {
                     var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
@@ -728,12 +717,6 @@ namespace VTuberKitForYMM4.Plugin
                         faceLength,
                         lipSyncGain,
                         (desc.Tachie?.CharacterParameter as Live2DCharacterParameter)?.LipSyncVowelsOnly ?? false);
-                }
-                model.UpdatePostPhysics(delta);
-                if (faceParam != null)
-                {
-                    var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
-                    var faceLength = Math.Max(1L, (long)Math.Round(activeFaceDurationFrame));
                     TachieMotionEvaluator.ApplyDynamicFaceParts(
                         model,
                         faceParam,

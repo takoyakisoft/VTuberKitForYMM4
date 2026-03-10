@@ -138,6 +138,8 @@ public class InteractionShapeTransformTests
 
         Assert.Null(resolved.Face);
         Assert.Equal(0.0f, resolved.RelativeTimeSeconds);
+        Assert.Equal(0.0, resolved.LocalFrame);
+        Assert.Equal(1.0, resolved.DurationFrame);
     }
 
     [Fact]
@@ -157,6 +159,8 @@ public class InteractionShapeTransformTests
 
         Assert.Same(laterFace, resolved.Face);
         Assert.InRange(resolved.RelativeTimeSeconds, 1.3333f, 1.3334f);
+        Assert.Equal(30.0, resolved.DurationFrame);
+        Assert.Equal(30.0, resolved.LocalFrame);
     }
 
     [Fact]

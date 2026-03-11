@@ -12,49 +12,59 @@ namespace VTuberKitForYMM4.Plugin
 {
     public class Live2DFaceDynamicOverrides : Animatable
     {
-        private static readonly HashSet<string> StandardParameterIds =
+        internal readonly record struct StandardParameterDefinition(
+            string Id,
+            string DisplayName,
+            float Min,
+            float Default,
+            float Max,
+            int SortOrder);
+
+        private static readonly StandardParameterDefinition[] StandardParameters =
         [
-            Live2DManager.ParamAngleX,
-            Live2DManager.ParamAngleY,
-            Live2DManager.ParamAngleZ,
-            Live2DManager.ParamEyeLOpen,
-            Live2DManager.ParamEyeROpen,
-            Live2DManager.ParamEyeLSmile,
-            Live2DManager.ParamEyeRSmile,
-            Live2DManager.ParamEyeBallX,
-            Live2DManager.ParamEyeBallY,
-            Live2DManager.ParamEyeBallForm,
-            Live2DManager.ParamBrowLY,
-            Live2DManager.ParamBrowRY,
-            Live2DManager.ParamBrowLX,
-            Live2DManager.ParamBrowRX,
-            Live2DManager.ParamBrowLAngle,
-            Live2DManager.ParamBrowRAngle,
-            Live2DManager.ParamBrowLForm,
-            Live2DManager.ParamBrowRForm,
-            Live2DManager.ParamMouthForm,
-            Live2DManager.ParamMouthOpenY,
-            Live2DManager.ParamCheek,
-            Live2DManager.ParamBodyAngleX,
-            Live2DManager.ParamBodyAngleY,
-            Live2DManager.ParamBodyAngleZ,
-            Live2DManager.ParamBreath,
-            Live2DManager.ParamArmLA,
-            Live2DManager.ParamArmRA,
-            Live2DManager.ParamArmLB,
-            Live2DManager.ParamArmRB,
-            Live2DManager.ParamHandL,
-            Live2DManager.ParamHandR,
-            Live2DManager.ParamHairFront,
-            Live2DManager.ParamHairSide,
-            Live2DManager.ParamHairBack,
-            Live2DManager.ParamHairFluffy,
-            Live2DManager.ParamShoulderY,
-            Live2DManager.ParamBustX,
-            Live2DManager.ParamBustY,
-            Live2DManager.ParamBaseX,
-            Live2DManager.ParamBaseY,
+            new(Live2DManager.ParamAngleX, "角度 X", -30.0f, 0.0f, 30.0f, 0),
+            new(Live2DManager.ParamAngleY, "角度 Y", -30.0f, 0.0f, 30.0f, 1),
+            new(Live2DManager.ParamAngleZ, "角度 Z", -30.0f, 0.0f, 30.0f, 2),
+            new(Live2DManager.ParamEyeLOpen, "左目 開閉", 0.0f, 1.0f, 1.0f, 3),
+            new(Live2DManager.ParamEyeLSmile, "左目 笑顔", 0.0f, 0.0f, 1.0f, 4),
+            new(Live2DManager.ParamEyeROpen, "右目 開閉", 0.0f, 1.0f, 1.0f, 5),
+            new(Live2DManager.ParamEyeRSmile, "右目 笑顔", 0.0f, 0.0f, 1.0f, 6),
+            new(Live2DManager.ParamEyeBallX, "目玉 X", -1.0f, 0.0f, 1.0f, 7),
+            new(Live2DManager.ParamEyeBallY, "目玉 Y", -1.0f, 0.0f, 1.0f, 8),
+            new(Live2DManager.ParamEyeBallForm, "目玉の拡大縮小", -1.0f, 0.0f, 1.0f, 9),
+            new(Live2DManager.ParamBrowLY, "左眉 上下", -1.0f, 0.0f, 1.0f, 10),
+            new(Live2DManager.ParamBrowRY, "右眉 上下", -1.0f, 0.0f, 1.0f, 11),
+            new(Live2DManager.ParamBrowLX, "左眉 左右", -1.0f, 0.0f, 1.0f, 12),
+            new(Live2DManager.ParamBrowRX, "右眉 左右", -1.0f, 0.0f, 1.0f, 13),
+            new(Live2DManager.ParamBrowLAngle, "左眉 角度", -1.0f, 0.0f, 1.0f, 14),
+            new(Live2DManager.ParamBrowRAngle, "右眉 角度", -1.0f, 0.0f, 1.0f, 15),
+            new(Live2DManager.ParamBrowLForm, "左眉 変形", -1.0f, 0.0f, 1.0f, 16),
+            new(Live2DManager.ParamBrowRForm, "右眉 変形", -1.0f, 0.0f, 1.0f, 17),
+            new(Live2DManager.ParamMouthForm, "口 変形", -1.0f, 0.0f, 1.0f, 18),
+            new(Live2DManager.ParamMouthOpenY, "口 開閉", 0.0f, 0.0f, 1.0f, 19),
+            new(Live2DManager.ParamCheek, "照れ", 0.0f, 0.0f, 1.0f, 20),
+            new(Live2DManager.ParamBodyAngleX, "体の回転 X", -10.0f, 0.0f, 10.0f, 21),
+            new(Live2DManager.ParamBodyAngleY, "体の回転 Y", -10.0f, 0.0f, 10.0f, 22),
+            new(Live2DManager.ParamBodyAngleZ, "体の回転 Z", -10.0f, 0.0f, 10.0f, 23),
+            new(Live2DManager.ParamBreath, "呼吸", 0.0f, 0.0f, 1.0f, 24),
+            new(Live2DManager.ParamArmLA, "左腕 A", -30.0f, 0.0f, 30.0f, 25),
+            new(Live2DManager.ParamArmRA, "右腕 A", -30.0f, 0.0f, 30.0f, 26),
+            new(Live2DManager.ParamArmLB, "左腕 B", -30.0f, 0.0f, 30.0f, 27),
+            new(Live2DManager.ParamArmRB, "右腕 B", -30.0f, 0.0f, 30.0f, 28),
+            new(Live2DManager.ParamHandL, "左手", -10.0f, 0.0f, 10.0f, 29),
+            new(Live2DManager.ParamHandR, "右手", -10.0f, 0.0f, 10.0f, 30),
+            new(Live2DManager.ParamHairFront, "髪揺れ 前", -1.0f, 0.0f, 1.0f, 31),
+            new(Live2DManager.ParamHairSide, "髪揺れ 横", -1.0f, 0.0f, 1.0f, 32),
+            new(Live2DManager.ParamHairBack, "髪揺れ 後", -1.0f, 0.0f, 1.0f, 33),
+            new(Live2DManager.ParamHairFluffy, "髪揺れ ふわ", -1.0f, 0.0f, 1.0f, 34),
+            new(Live2DManager.ParamShoulderY, "肩すくめる", -10.0f, 0.0f, 10.0f, 35),
+            new(Live2DManager.ParamBustX, "胸揺れ X", -1.0f, 0.0f, 1.0f, 36),
+            new(Live2DManager.ParamBustY, "胸揺れ Y", -1.0f, 0.0f, 1.0f, 37),
+            new(Live2DManager.ParamBaseX, "全体の左右", -10.0f, 0.0f, 10.0f, 38),
+            new(Live2DManager.ParamBaseY, "全体の上下", -10.0f, 0.0f, 10.0f, 39),
         ];
+        private static readonly Dictionary<string, StandardParameterDefinition> StandardParameterDefinitionsById =
+            StandardParameters.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
 
         public ObservableCollection<Live2DFaceDynamicParameterRow> ParameterRows { get; } = [];
         public ObservableCollection<Live2DFaceDynamicPartRow> PartRows { get; } = [];
@@ -115,8 +125,8 @@ namespace VTuberKitForYMM4.Plugin
             lock (ParameterRowsSyncRoot)
             {
                 var metadata = ModelMetadataCatalog.GetParameters(ModelFile)
-                    .Where(x => !StandardParameterIds.Contains(x.Id))
-                    .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => GetStandardSortOrder(x.Id))
+                    .ThenBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
                 RemoveDuplicateParameterRows();
                 var existing = ParameterRows.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
@@ -124,11 +134,9 @@ namespace VTuberKitForYMM4.Plugin
 
                 foreach (var item in metadata)
                 {
-                    var name = string.IsNullOrWhiteSpace(item.Name) ? item.Id : item.Name;
+                    var name = ResolveDisplayName(item.Id, item.Name);
                     var hasNative = ModelMetadataCatalog.TryGetParameterMetadata(ModelFile, item.Id, out var native);
-                    var defaultValue = hasNative ? native.Default : 0.0f;
-                    var minValue = hasNative ? native.Min : -100.0f;
-                    var maxValue = hasNative ? native.Max : 100.0f;
+                    var (defaultValue, minValue, maxValue) = ResolveParameterRange(item.Id, hasNative ? native : null);
 
                     if (existing.TryGetValue(item.Id, out var row))
                     {
@@ -149,7 +157,55 @@ namespace VTuberKitForYMM4.Plugin
                         ParameterRows.RemoveAt(i);
                     }
                 }
+
+                ReorderParameterRows(metadata.Select(x => x.Id).ToArray());
             }
+        }
+
+        internal static bool TryGetStandardParameterDefinition(string? id, out StandardParameterDefinition definition)
+        {
+            if (!string.IsNullOrWhiteSpace(id) &&
+                StandardParameterDefinitionsById.TryGetValue(id, out definition))
+            {
+                return true;
+            }
+
+            definition = default;
+            return false;
+        }
+
+        internal static int GetStandardSortOrder(string? id)
+        {
+            return TryGetStandardParameterDefinition(id, out var definition)
+                ? definition.SortOrder
+                : int.MaxValue;
+        }
+
+        private static string ResolveDisplayName(string id, string name)
+        {
+            if (TryGetStandardParameterDefinition(id, out var definition))
+            {
+                return definition.DisplayName;
+            }
+
+            return string.IsNullOrWhiteSpace(name) ? id : name;
+        }
+
+        private static (float DefaultValue, float MinValue, float MaxValue) ResolveParameterRange(
+            string id,
+            ModelMetadataCatalog.ParameterMetadata? nativeMetadata)
+        {
+            if (nativeMetadata is ModelMetadataCatalog.ParameterMetadata native)
+            {
+                return (native.Default, native.Min, native.Max);
+            }
+
+            if (TryGetStandardParameterDefinition(id, out var definition))
+            {
+                return (definition.Default, definition.Min, definition.Max);
+            }
+
+            return (0.0f, -100.0f, 100.0f);
         }
 
         private void SyncPartRows()
@@ -190,6 +246,8 @@ namespace VTuberKitForYMM4.Plugin
 
         private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateRowSubscriptions(e);
+
             if (ReferenceEquals(sender, ParameterRows))
             {
                 OnPropertyChanged(nameof(ParameterRows));
@@ -206,6 +264,64 @@ namespace VTuberKitForYMM4.Plugin
             OnPropertyChanged(nameof(PartRows));
         }
 
+        internal void NotifyRowsEdited()
+        {
+            OnPropertyChanged(nameof(ParameterRows));
+            OnPropertyChanged(nameof(PartRows));
+        }
+
+        private void UpdateRowSubscriptions(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null)
+            {
+                foreach (var row in e.OldItems.OfType<INotifyPropertyChanged>())
+                {
+                    row.PropertyChanged -= Row_PropertyChanged;
+                }
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach (var row in e.NewItems.OfType<INotifyPropertyChanged>())
+                {
+                    row.PropertyChanged -= Row_PropertyChanged;
+                    row.PropertyChanged += Row_PropertyChanged;
+                }
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var row in ParameterRows.OfType<INotifyPropertyChanged>())
+                {
+                    row.PropertyChanged -= Row_PropertyChanged;
+                    row.PropertyChanged += Row_PropertyChanged;
+                }
+
+                foreach (var row in PartRows.OfType<INotifyPropertyChanged>())
+                {
+                    row.PropertyChanged -= Row_PropertyChanged;
+                    row.PropertyChanged += Row_PropertyChanged;
+                }
+            }
+        }
+
+        private void Row_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is Live2DFaceDynamicParameterRow)
+            {
+                OnPropertyChanged(nameof(ParameterRows));
+                return;
+            }
+
+            if (sender is Live2DFaceDynamicPartRow)
+            {
+                OnPropertyChanged(nameof(PartRows));
+                return;
+            }
+
+            NotifyRowsEdited();
+        }
+
         private void RemoveDuplicateParameterRows()
         {
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -217,6 +333,34 @@ namespace VTuberKitForYMM4.Plugin
                     ParameterRows.RemoveAt(i);
                 }
             }
+        }
+
+        private void ReorderParameterRows(IReadOnlyList<string> orderedIds)
+        {
+            for (var targetIndex = 0; targetIndex < orderedIds.Count; targetIndex++)
+            {
+                var id = orderedIds[targetIndex];
+                var currentIndex = FindParameterRowIndex(id);
+                if (currentIndex < 0 || currentIndex == targetIndex)
+                {
+                    continue;
+                }
+
+                ParameterRows.Move(currentIndex, targetIndex);
+            }
+        }
+
+        private int FindParameterRowIndex(string id)
+        {
+            for (var index = 0; index < ParameterRows.Count; index++)
+            {
+                if (string.Equals(ParameterRows[index].Id, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return index;
+                }
+            }
+
+            return -1;
         }
 
         private void RemoveDuplicatePartRows()
@@ -244,7 +388,7 @@ namespace VTuberKitForYMM4.Plugin
         string name = string.Empty;
 
         [Browsable(false)]
-        public string DisplayName => string.IsNullOrWhiteSpace(Name) ? Id : $"{Id} | {Name}";
+        public string DisplayName => string.IsNullOrWhiteSpace(Name) ? Id : Name;
 
         [Browsable(false)]
         [JsonIgnore]
@@ -285,7 +429,10 @@ namespace VTuberKitForYMM4.Plugin
             ResetCommand = new ActionCommand(_ => true, _ =>
             {
                 Hold = false;
-                SetCurrentValue(DefaultValue);
+                Value.CopyFrom(new Animation(DefaultValue, Min, Max, Value.Loop));
+                OnPropertyChanged(nameof(CurrentValue));
+                OnPropertyChanged(nameof(CurrentValueText));
+                NotifyEdited();
             });
         }
 
@@ -309,12 +456,15 @@ namespace VTuberKitForYMM4.Plugin
             {
                 if (Set(ref this.value, value))
                 {
+                    DetachValueWatcher();
+                    AttachValueWatcher();
                     OnPropertyChanged(nameof(CurrentValue));
                     OnPropertyChanged(nameof(CurrentValueText));
                 }
             }
         }
         Animation value = default!;
+        INotifyPropertyChanged? valueWatcher;
 
         [Browsable(false)]
         [JsonIgnore]
@@ -396,6 +546,31 @@ namespace VTuberKitForYMM4.Plugin
 #pragma warning restore CS0618
             return animation;
         }
+
+        private void AttachValueWatcher()
+        {
+            valueWatcher = Value as INotifyPropertyChanged;
+            if (valueWatcher != null)
+            {
+                valueWatcher.PropertyChanged += Value_PropertyChanged;
+            }
+        }
+
+        private void DetachValueWatcher()
+        {
+            if (valueWatcher != null)
+            {
+                valueWatcher.PropertyChanged -= Value_PropertyChanged;
+                valueWatcher = null;
+            }
+        }
+
+        private void Value_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(CurrentValue));
+            OnPropertyChanged(nameof(CurrentValueText));
+            NotifyEdited();
+        }
     }
 
     public sealed class Live2DFaceDynamicPartRow : Live2DFaceDynamicRowBase
@@ -409,10 +584,17 @@ namespace VTuberKitForYMM4.Plugin
         {
             Id = id;
             Name = name;
+            if (Opacity is INotifyPropertyChanged watcher)
+            {
+                watcher.PropertyChanged += Opacity_PropertyChanged;
+            }
             ResetCommand = new ActionCommand(_ => true, _ =>
             {
                 Hold = false;
-                SetCurrentOpacity(1.0f);
+                Opacity.CopyFrom(new Animation(1.0, 0.0, 1.0, Opacity.Loop));
+                OnPropertyChanged(nameof(CurrentOpacity));
+                OnPropertyChanged(nameof(CurrentOpacityText));
+                NotifyEdited();
             });
         }
 
@@ -474,6 +656,13 @@ namespace VTuberKitForYMM4.Plugin
 #pragma warning disable CS0618
             Opacity.From = clamped;
 #pragma warning restore CS0618
+            OnPropertyChanged(nameof(CurrentOpacity));
+            OnPropertyChanged(nameof(CurrentOpacityText));
+            NotifyEdited();
+        }
+
+        private void Opacity_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
             OnPropertyChanged(nameof(CurrentOpacity));
             OnPropertyChanged(nameof(CurrentOpacityText));
             NotifyEdited();

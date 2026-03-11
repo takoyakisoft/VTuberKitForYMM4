@@ -68,21 +68,6 @@ namespace VTuberKitForYMM4.Plugin
         {
             var frame = Math.Max(0L, (long)Math.Round(faceLocalFrame));
             var length = Math.Max(1L, (long)Math.Round(faceDurationFrame));
-            var fps = description.FPS;
-
-            var eyeLOpen = activeFace.EyeLOpen.GetValue(frame, length, fps);
-            var eyeROpen = activeFace.EyeROpen.GetValue(frame, length, fps);
-            var mouthOpen = activeFace.MouthOpen.GetValue(frame, length, fps);
-            var mouthForm = activeFace.MouthForm.GetValue(frame, length, fps);
-            var angleX = activeFace.AngleX.GetValue(frame, length, fps);
-            var angleY = activeFace.AngleY.GetValue(frame, length, fps);
-            var angleZ = activeFace.AngleZ.GetValue(frame, length, fps);
-            var bodyAngleX = activeFace.BodyAngleX.GetValue(frame, length, fps);
-            var eyeBallX = activeFace.EyeBallX.GetValue(frame, length, fps);
-            var eyeBallY = activeFace.EyeBallY.GetValue(frame, length, fps);
-            var cheek = activeFace.Cheek.GetValue(frame, length, fps);
-            var armLA = activeFace.ArmLA.GetValue(frame, length, fps);
-            var armRA = activeFace.ArmRA.GetValue(frame, length, fps);
 
             var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
             var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
@@ -100,24 +85,7 @@ namespace VTuberKitForYMM4.Plugin
                 ApplyVowelLipSyncParameters(model, modelPath, description.MouthShape, lipValue);
             }
 
-            ApplyStandardFaceParameters(
-                model,
-                activeFace,
-                (float)eyeLOpen,
-                (float)eyeROpen,
-                (float)mouthOpen,
-                (float)mouthForm,
-                (float)angleX,
-                (float)angleY,
-                (float)angleZ,
-                (float)bodyAngleX,
-                (float)eyeBallX,
-                (float)eyeBallY,
-                (float)cheek,
-                (float)armLA,
-                (float)armRA);
-
-            ApplyDynamicFaceParameters(model, activeFace, frame, length, fps);
+            ApplyDynamicFaceParameters(model, activeFace, frame, length, description.FPS);
             return lipValue;
         }
 
@@ -176,53 +144,6 @@ namespace VTuberKitForYMM4.Plugin
                 var value = row.GetValue(frame, length, fps);
                 model.SetParameterValue(row.Id, value);
             }
-        }
-
-        private static void ApplyStandardFaceParameters(
-            Live2DModelWrapper model,
-            Live2DFaceParameter activeFace,
-            float eyeLOpen,
-            float eyeROpen,
-            float mouthOpenY,
-            float mouthForm,
-            float angleX,
-            float angleY,
-            float angleZ,
-            float bodyAngleX,
-            float eyeBallX,
-            float eyeBallY,
-            float cheek,
-            float armLA,
-            float armRA)
-        {
-            ApplyHeldParameter(model, activeFace.EyeLOpenHold, activeFace.EyeLOpen, Live2DManager.ParamEyeLOpen, eyeLOpen);
-            ApplyHeldParameter(model, activeFace.EyeROpenHold, activeFace.EyeROpen, Live2DManager.ParamEyeROpen, eyeROpen);
-            ApplyHeldParameter(model, activeFace.MouthOpenHold, activeFace.MouthOpen, Live2DManager.ParamMouthOpenY, mouthOpenY);
-            ApplyHeldParameter(model, activeFace.MouthFormHold, activeFace.MouthForm, Live2DManager.ParamMouthForm, mouthForm);
-            ApplyHeldParameter(model, activeFace.AngleXHold, activeFace.AngleX, Live2DManager.ParamAngleX, angleX);
-            ApplyHeldParameter(model, activeFace.AngleYHold, activeFace.AngleY, Live2DManager.ParamAngleY, angleY);
-            ApplyHeldParameter(model, activeFace.AngleZHold, activeFace.AngleZ, Live2DManager.ParamAngleZ, angleZ);
-            ApplyHeldParameter(model, activeFace.BodyAngleXHold, activeFace.BodyAngleX, Live2DManager.ParamBodyAngleX, bodyAngleX);
-            ApplyHeldParameter(model, activeFace.EyeBallXHold, activeFace.EyeBallX, Live2DManager.ParamEyeBallX, eyeBallX);
-            ApplyHeldParameter(model, activeFace.EyeBallYHold, activeFace.EyeBallY, Live2DManager.ParamEyeBallY, eyeBallY);
-            ApplyHeldParameter(model, activeFace.CheekHold, activeFace.Cheek, Live2DManager.ParamCheek, cheek);
-            ApplyHeldParameter(model, activeFace.ArmLAHold, activeFace.ArmLA, Live2DManager.ParamArmLA, armLA);
-            ApplyHeldParameter(model, activeFace.ArmRAHold, activeFace.ArmRA, Live2DManager.ParamArmRA, armRA);
-        }
-
-        private static void ApplyHeldParameter(Live2DModelWrapper model, bool hold, Animation animation, string parameterId, float value)
-        {
-            if (!hold && !HasAnimatedValues(animation))
-            {
-                return;
-            }
-
-            model.SetParameterValue(parameterId, value);
-        }
-
-        private static bool HasAnimatedValues(Animation animation)
-        {
-            return animation.Values.Count > 1;
         }
 
         private static void ApplyVowelLipSyncParameters(Live2DModelWrapper model, string? modelPath, MouthShape shape, float lipValue)

@@ -86,7 +86,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         public void SetEditorInfo(IEditorInfo info)
         {
             editorInfo = info;
-            ApplyEditorInfoToAnimations(Overrides);
+            ApplyEditorInfoToVisibleAnimations(Overrides);
         }
 
         public void SetFocus()
@@ -168,12 +168,12 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             parameterRowsChangedHandler = (_, _) =>
             {
                 AttachCallbacks(newValue);
-                ApplyEditorInfoToAnimations(newValue);
+                ApplyEditorInfoToVisibleAnimations(newValue);
             };
             partRowsChangedHandler = (_, _) =>
             {
                 AttachCallbacks(newValue);
-                ApplyEditorInfoToAnimations(newValue);
+                ApplyEditorInfoToVisibleAnimations(newValue);
             };
             overridesPropertyChangedHandler = (_, e) =>
             {
@@ -186,8 +186,6 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             newValue.PartRows.CollectionChanged += partRowsChangedHandler;
             newValue.PropertyChanged += overridesPropertyChangedHandler;
 
-            ParameterList.ItemsSource = newValue.ParameterRows;
-            PartList.ItemsSource = newValue.PartRows;
             if (SelectedParameterRow == null || !newValue.ParameterRows.Contains(SelectedParameterRow))
             {
                 SelectedParameterRow = newValue.ParameterRows.FirstOrDefault();
@@ -197,7 +195,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 SelectedPartRow = newValue.PartRows.FirstOrDefault();
             }
             AttachCallbacks(newValue);
-            ApplyEditorInfoToAnimations(newValue);
+            RefreshVisibleCollections(newValue);
+            ApplyEditorInfoToVisibleAnimations(newValue);
             RefreshFilters();
         }
 
@@ -205,16 +204,24 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         {
             foreach (var row in overrides.ParameterRows)
             {
-                row.EditedCallback = NotifyEdited;
+                row.EditedCallback = () =>
+                {
+                    overrides.NotifyRowsEdited();
+                    NotifyEdited();
+                };
             }
 
             foreach (var row in overrides.PartRows)
             {
-                row.EditedCallback = NotifyEdited;
+                row.EditedCallback = () =>
+                {
+                    overrides.NotifyRowsEdited();
+                    NotifyEdited();
+                };
             }
         }
 
-        private void ApplyEditorInfoToAnimations(Live2DFaceDynamicOverrides? overrides)
+        private void ApplyEditorInfoToVisibleAnimations(Live2DFaceDynamicOverrides? overrides)
         {
             if (editorInfo == null || overrides == null)
             {
@@ -225,17 +232,29 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             var fps = Math.Max(1, editorInfo.VideoInfo.FPS);
             var keyFrames = editorInfo.KeyFrames;
 
-            foreach (var row in overrides.ParameterRows)
+            if (ParameterExpander.IsExpanded)
             {
-                row.Value.SetKeyFrames(keyFrames);
-                row.Value.SetAnimationParameters(length, fps);
+                foreach (var row in overrides.ParameterRows)
+                {
+                    row.Value.SetKeyFrames(keyFrames);
+                    row.Value.SetAnimationParameters(length, fps);
+                }
             }
 
-            foreach (var row in overrides.PartRows)
+            if (PartExpander.IsExpanded)
             {
-                row.Opacity.SetKeyFrames(keyFrames);
-                row.Opacity.SetAnimationParameters(length, fps);
+                foreach (var row in overrides.PartRows)
+                {
+                    row.Opacity.SetKeyFrames(keyFrames);
+                    row.Opacity.SetAnimationParameters(length, fps);
+                }
             }
+        }
+
+        private void RefreshVisibleCollections(Live2DFaceDynamicOverrides? overrides)
+        {
+            ParameterList.ItemsSource = ParameterExpander.IsExpanded ? overrides?.ParameterRows : null;
+            PartList.ItemsSource = PartExpander.IsExpanded ? overrides?.PartRows : null;
         }
 
         private void NotifyEdited()
@@ -274,10 +293,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void ReloadButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Overrides != null)
-            {
-                RefreshMetadata(Overrides);
-            }
+            FilterText = string.Empty;
         }
 
         private void RefreshMetadata(Live2DFaceDynamicOverrides overrides)
@@ -285,6 +301,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             if (Dispatcher.CheckAccess())
             {
                 overrides.SyncWithMetadata();
+                RefreshVisibleCollections(overrides);
+                ApplyEditorInfoToVisibleAnimations(overrides);
                 RefreshFilters();
                 return;
             }
@@ -292,28 +310,34 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             _ = Dispatcher.BeginInvoke(new Action(() =>
             {
                 overrides.SyncWithMetadata();
+                RefreshVisibleCollections(overrides);
+                ApplyEditorInfoToVisibleAnimations(overrides);
                 RefreshFilters();
             }));
         }
 
-        private void AnimationSlider_BeginEdit(object sender, EventArgs e)
+        private void ParameterExpander_Expanded(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-            {
-                return;
-            }
-
-            BeginEdit?.Invoke(this, EventArgs.Empty);
+            RefreshVisibleCollections(Overrides);
+            ApplyEditorInfoToVisibleAnimations(Overrides);
+            RefreshFilters();
         }
 
-        private void AnimationSlider_EndEdit(object sender, EventArgs e)
+        private void ParameterExpander_Collapsed(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-            {
-                return;
-            }
+            RefreshVisibleCollections(Overrides);
+        }
 
-            EndEdit?.Invoke(this, EventArgs.Empty);
+        private void PartExpander_Expanded(object sender, RoutedEventArgs e)
+        {
+            RefreshVisibleCollections(Overrides);
+            ApplyEditorInfoToVisibleAnimations(Overrides);
+            RefreshFilters();
+        }
+
+        private void PartExpander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            RefreshVisibleCollections(Overrides);
         }
 
         private void DetailAnimationSlider_Loaded(object sender, RoutedEventArgs e)
@@ -356,6 +380,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                     slider.Animations = slider.Animation != null ? [slider.Animation] : [];
                     break;
             }
+
+            slider.Delay = 0;
 
             if (editorInfo != null)
             {
@@ -407,6 +433,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
+            Overrides?.NotifyRowsEdited();
             NotifyEdited();
         }
 

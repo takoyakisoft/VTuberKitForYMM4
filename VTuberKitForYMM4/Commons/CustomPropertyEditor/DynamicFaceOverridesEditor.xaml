@@ -38,14 +38,17 @@
 
         <TabControl Grid.Row="1" MinWidth="360">
             <TabItem Header="Param">
-                <Expander Margin="0,0,0,6"
-                              IsExpanded="False">
+                <Expander x:Name="ParameterExpander"
+                          Margin="0,0,0,6"
+                          IsExpanded="False"
+                          Expanded="ParameterExpander_Expanded"
+                          Collapsed="ParameterExpander_Collapsed">
                     <Expander.Header>
                         <TextBlock Text="Param一覧" />
                     </Expander.Header>
                     <ListBox x:Name="ParameterList"
                              Margin="0,4,0,0"
-                             MaxHeight="320"
+                             MaxHeight="720"
                              Background="Transparent"
                              BorderThickness="0"
                              ScrollViewer.CanContentScroll="True"
@@ -94,9 +97,7 @@
                                                                   DefaultMin="{Binding Min}"
                                                                   DefaultMax="{Binding Max}"
                                                                   Loaded="DetailAnimationSlider_Loaded"
-                                                                  DataContextChanged="DetailAnimationSlider_DataContextChanged"
-                                                                  BeginEdit="AnimationSlider_BeginEdit"
-                                                                  EndEdit="AnimationSlider_EndEdit" />
+                                                                  DataContextChanged="DetailAnimationSlider_DataContextChanged" />
                                         <CheckBox Grid.Row="1"
                                                   Grid.Column="1"
                                                   Style="{StaticResource AnimationSliderHoldCheckBoxStyle}"
@@ -117,14 +118,17 @@
                 </Expander>
             </TabItem>
             <TabItem Header="Part">
-                <Expander Margin="0,0,0,6"
-                              IsExpanded="False">
+                <Expander x:Name="PartExpander"
+                          Margin="0,0,0,6"
+                          IsExpanded="False"
+                          Expanded="PartExpander_Expanded"
+                          Collapsed="PartExpander_Collapsed">
                     <Expander.Header>
                         <TextBlock Text="Part一覧" />
                     </Expander.Header>
                     <ListBox x:Name="PartList"
                              Margin="0,4,0,0"
-                             MaxHeight="320"
+                             MaxHeight="720"
                              Background="Transparent"
                              BorderThickness="0"
                              ScrollViewer.CanContentScroll="True"
@@ -173,9 +177,7 @@
                                                                   DefaultMin="0"
                                                                   DefaultMax="1"
                                                                   Loaded="DetailAnimationSlider_Loaded"
-                                                                  DataContextChanged="DetailAnimationSlider_DataContextChanged"
-                                                                  BeginEdit="AnimationSlider_BeginEdit"
-                                                                  EndEdit="AnimationSlider_EndEdit" />
+                                                                  DataContextChanged="DetailAnimationSlider_DataContextChanged" />
                                         <CheckBox Grid.Row="1"
                                                   Grid.Column="1"
                                                   Style="{StaticResource AnimationSliderHoldCheckBoxStyle}"

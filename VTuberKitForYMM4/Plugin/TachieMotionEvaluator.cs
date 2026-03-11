@@ -53,15 +53,6 @@ namespace VTuberKitForYMM4.Plugin
                 {
                     nativeModel.SetLipSyncValue(lipValue);
                 }
-                if (!useVowelOnlyLipSync)
-                {
-                    nativeModel.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
-                    nativeModel.SetParameterValue(Live2DManager.ParamMouthForm, mouthForm);
-                }
-                if (useVowelOnlyLipSync)
-                {
-                    ApplyVowelLipSyncParameters(nativeModel, modelPath, description.MouthShape, lipValue);
-                }
             }
         }
 
@@ -128,6 +119,25 @@ namespace VTuberKitForYMM4.Plugin
 
             ApplyDynamicFaceParameters(model, activeFace, frame, length, fps);
             return lipValue;
+        }
+
+        public static void ApplyItemLipSyncPostPhysics(
+            Live2DModelWrapper model,
+            TachieSourceDescription description,
+            string? modelPath,
+            float lipSyncGain,
+            bool lipSyncVowelsOnly)
+        {
+            var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
+            if (!useVowelOnlyLipSync)
+            {
+                model.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
+                model.SetParameterValue(Live2DManager.ParamMouthForm, mouthFormValue);
+                return;
+            }
+
+            ApplyVowelLipSyncParameters(model, modelPath, description.MouthShape, lipValue);
         }
 
         public static void ApplyDynamicFaceParts(

@@ -26,6 +26,7 @@ using namespace Live2D::Cubism::Framework::DefaultParameterId;
 // Defined in Live2DManager.cpp
 extern ID3D11Device* g_d3d11Device;
 extern ID3D11DeviceContext* g_d3d11Context;
+extern std::mutex g_d3d11Mutex;
 
 namespace VTuberKitForNative {
 
@@ -410,7 +411,20 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
 }
 
 void NativeModel::SetupTextures() {
-    if (!g_d3d11Device) {
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    {
+        std::lock_guard<std::mutex> deviceLock(g_d3d11Mutex);
+        if (!g_d3d11Device || !g_d3d11Context) {
+            Live2DPal::PrintLogLn("D3D11 Device not initialized. Skipping texture load.");
+            return;
+        }
+
+        device = g_d3d11Device;
+        context = g_d3d11Context;
+    }
+
+    if (!device || !context) {
         Live2DPal::PrintLogLn("D3D11 Device not initialized. Skipping texture load.");
         return;
     }
@@ -484,7 +498,7 @@ void NativeModel::SetupTextures() {
         desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> tex2D;
-        hr = g_d3d11Device->CreateTexture2D(&desc, nullptr, &tex2D);
+        hr = device->CreateTexture2D(&desc, nullptr, &tex2D);
         if (SUCCEEDED(hr)) {
             ID3D11ShaderResourceView* textureView = nullptr;
             D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -493,10 +507,10 @@ void NativeModel::SetupTextures() {
             srvDesc.Texture2D.MostDetailedMip = 0;
             srvDesc.Texture2D.MipLevels = static_cast<UINT>(-1);
 
-            hr = g_d3d11Device->CreateShaderResourceView(tex2D.Get(), &srvDesc, &textureView);
+            hr = device->CreateShaderResourceView(tex2D.Get(), &srvDesc, &textureView);
             if (SUCCEEDED(hr) && textureView) {
-                g_d3d11Context->UpdateSubresource(tex2D.Get(), 0, nullptr, buffer.data(), width * 4, 0);
-                g_d3d11Context->GenerateMips(textureView);
+                context->UpdateSubresource(tex2D.Get(), 0, nullptr, buffer.data(), width * 4, 0);
+                context->GenerateMips(textureView);
 
                 CubismRenderer_D3D11* renderer = GetRenderer<CubismRenderer_D3D11>();
                 if (renderer) {

@@ -502,6 +502,15 @@ namespace VTuberKitForYMM4.Plugin
                                 faceLength,
                                 desc.FPS);
                         }
+                        else
+                        {
+                            TachieMotionEvaluator.ApplyItemLipSyncPostPhysics(
+                                _model,
+                                desc,
+                                _currentModelPath,
+                                (float)(charParam?.LipSyncGain ?? 1.0),
+                                charParam?.LipSyncVowelsOnly ?? false);
+                        }
                         _model.CommitParameters();
                         UpdateHitAreaResults(_model, charParam?.InteractionLinkId, itemTimeSeconds);
 
@@ -735,6 +744,15 @@ namespace VTuberKitForYMM4.Plugin
                         faceFrame,
                         faceLength,
                         desc.FPS);
+                }
+                else
+                {
+                    TachieMotionEvaluator.ApplyItemLipSyncPostPhysics(
+                        model,
+                        desc,
+                        modelPath,
+                        lipSyncGain,
+                        (desc.Tachie?.CharacterParameter as Live2DCharacterParameter)?.LipSyncVowelsOnly ?? false);
                 }
                 elapsed = next;
             }

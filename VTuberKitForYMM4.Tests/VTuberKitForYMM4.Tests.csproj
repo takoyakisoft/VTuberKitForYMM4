@@ -42,6 +42,9 @@
     <Reference Include="Vortice.Mathematics">
       <HintPath>$(YMM4DirPath)Vortice.Mathematics.dll</HintPath>
     </Reference>
+    <Reference Include="VTuberKitForNative">
+      <HintPath>..\VTuberKitForYMM4\bin\$(Configuration)\VTuberKitForNative.dll</HintPath>
+    </Reference>
 
     <ProjectReference Include="..\VTuberKitForYMM4\VTuberKitForYMM4.csproj" />
   </ItemGroup>
@@ -60,10 +63,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\VTuberKitForNative\VTuberKitForYMM4\bin\Release\VTuberKitForNative.dll"
+    <None Include="..\VTuberKitForYMM4\bin\$(Configuration)\VTuberKitForNative.dll"
           Link="VTuberKitForNative.dll"
           CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\VTuberKitForNative\VTuberKitForYMM4\bin\Release\Ijwhost.dll"
+    <None Include="..\VTuberKitForYMM4\bin\$(Configuration)\Ijwhost.dll"
           Link="Ijwhost.dll"
           CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\CubismSdkForNative\Framework\src\Rendering\D3D11\Shaders\CubismEffect.fx"

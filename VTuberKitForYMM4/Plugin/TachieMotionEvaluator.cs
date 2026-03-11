@@ -58,7 +58,10 @@ namespace VTuberKitForYMM4.Plugin
                     nativeModel.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
                     nativeModel.SetParameterValue(Live2DManager.ParamMouthForm, mouthForm);
                 }
-                ApplyVowelLipSyncParameters(nativeModel, description.MouthShape, lipValue);
+                if (useVowelOnlyLipSync)
+                {
+                    ApplyVowelLipSyncParameters(nativeModel, modelPath, description.MouthShape, lipValue);
+                }
             }
         }
 
@@ -101,7 +104,10 @@ namespace VTuberKitForYMM4.Plugin
                 model.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
                 model.SetParameterValue(Live2DManager.ParamMouthForm, mouthFormValue);
             }
-            ApplyVowelLipSyncParameters(model, description.MouthShape, lipValue);
+            if (useVowelOnlyLipSync)
+            {
+                ApplyVowelLipSyncParameters(model, modelPath, description.MouthShape, lipValue);
+            }
 
             ApplyStandardFaceParameters(
                 model,
@@ -209,9 +215,9 @@ namespace VTuberKitForYMM4.Plugin
             return animation.Values.Count > 1;
         }
 
-        private static void ApplyVowelLipSyncParameters(Live2DModelWrapper model, MouthShape shape, float lipValue)
+        private static void ApplyVowelLipSyncParameters(Live2DModelWrapper model, string? modelPath, MouthShape shape, float lipValue)
         {
-            var vowelParameters = ModelMetadataCatalog.LipSyncVowelParameters;
+            var vowelParameters = ModelMetadataCatalog.GetLipSyncVowelParameters(modelPath);
             if (!vowelParameters.HasAny)
             {
                 return;

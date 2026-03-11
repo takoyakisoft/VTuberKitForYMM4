@@ -114,7 +114,13 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                return Motion?.SelectedGroup ?? string.Empty;
+                var selected = Motion?.SelectedValue as MotionItem;
+                if (selected == null)
+                {
+                    return motionGroup;
+                }
+
+                return selected.IsNone ? string.Empty : selected.Group;
             }
             set
             {
@@ -130,7 +136,13 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                return Motion?.SelectedIndex ?? -1;
+                var selected = Motion?.SelectedValue as MotionItem;
+                if (selected == null)
+                {
+                    return motionIndex;
+                }
+
+                return selected.IsNone ? -1 : selected.Index;
             }
             set
             {
@@ -272,7 +284,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 HitArea.UpdateItemsSource();
                 HitArea.UpdateSelectedValue();
                 Motion.UpdateItemsSource();
-                SyncMotionSelection();
+                Motion.UpdateSelectedValue();
                 Expression.UpdateItemsSource();
                 Expression.UpdateSelectedValue();
             }

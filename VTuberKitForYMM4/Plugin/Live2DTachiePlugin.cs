@@ -26,7 +26,7 @@ namespace VTuberKitForYMM4.Plugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Live2D Plugin Init Error: {ex.Message}");
+                Commons.ConsoleManager.Error($"Live2D Plugin Init Error: {ex.Message}");
             }
         }
 
@@ -61,8 +61,7 @@ namespace VTuberKitForYMM4.Plugin
 
         public void CreateScriptFile(string path)
         {
-            // スクリプトファイル作成（必要に応じて実装）
-            File.WriteAllText(path, "// Live2D script placeholder");
+            File.WriteAllText(path, "// Live2D script");
         }
 
         public IEnumerable<ExoItem> CreateExoItems(

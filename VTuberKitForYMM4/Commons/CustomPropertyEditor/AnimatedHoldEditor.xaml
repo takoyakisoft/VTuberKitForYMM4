@@ -1,0 +1,34 @@
+<UserControl x:Class="VTuberKitForYMM4.Commons.CustomPropertyEditor.AnimatedHoldEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:YukkuriMovieMaker.Controls;assembly=YukkuriMovieMaker.Plugin"
+             mc:Ignorable="d"
+             x:Name="this"
+             d:DesignWidth="320"
+             MinWidth="180">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="26" />
+            <ColumnDefinition Width="26" />
+        </Grid.ColumnDefinitions>
+        <controls:AnimationSlider x:Name="AnimationEditor"
+                                  Grid.Column="0"
+                                  Margin="0,0,6,0"
+                                  BeginEdit="AnimationEditor_BeginEdit"
+                                  EndEdit="AnimationEditor_EndEdit" />
+        <CheckBox x:Name="HoldCheckBox"
+                  Grid.Column="1"
+                  Width="26"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Checked="CheckBox_Changed"
+                  Unchecked="CheckBox_Changed" />
+        <Button Grid.Column="2"
+                Width="26"
+                Content="↻"
+                Click="ResetButton_Click" />
+    </Grid>
+</UserControl>

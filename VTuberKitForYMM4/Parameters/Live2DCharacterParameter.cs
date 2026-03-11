@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
+using VTuberKitForYMM4.Commons;
 using YukkuriMovieMaker.Controls;
 using YukkuriMovieMaker.Plugin.Tachie;
 
@@ -16,6 +18,13 @@ namespace VTuberKitForYMM4.Plugin
 
     public class Live2DCharacterParameter : TachieCharacterParameterBase
     {
+        private string _lastRegisteredInteractionLinkId = string.Empty;
+
+        public Live2DCharacterParameter()
+        {
+            RegisterInteractionTarget();
+        }
+
         [Display(GroupName = "モデル", Name = "モデルファイル", Description = "Live2Dモデルのmodel3.jsonファイルを選択してください")]
         [FileSelector(YukkuriMovieMaker.Settings.FileGroupType.None)]
         public string? File
@@ -23,16 +32,150 @@ namespace VTuberKitForYMM4.Plugin
             get => file;
             set
             {
+                if (!string.IsNullOrEmpty(value) && !value.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    ConsoleManager.Error("Live2Dモデルには .model3.json を選択してください。");
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(value) || value.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
                 {
+                    var previousAutoDisplayName = ResolveDefaultDisplayName(file, _lastRegisteredInteractionLinkId);
+                    var shouldRefreshAutoDisplayName =
+                        string.IsNullOrWhiteSpace(interactionDisplayName) ||
+                        string.Equals(interactionDisplayName, previousAutoDisplayName, System.StringComparison.OrdinalIgnoreCase);
+
                     if (Set(ref file, value))
                     {
+                        if (shouldRefreshAutoDisplayName)
+                        {
+                            interactionDisplayName = string.Empty;
+                        }
+
                         ModelMetadataCatalog.UpdateFromModelPath(value);
+                        RegisterInteractionTarget();
                     }
                 }
             }
         }
         string? file = null;
+
+        [Display(GroupName = "連携", Name = "リンクID", Description = "ターゲットポイント/ヒットボックス図形と関連付けるID。空欄なら自動採番します")]
+        public string InteractionLinkId
+        {
+            get
+            {
+                var resolved = string.IsNullOrWhiteSpace(interactionLinkId) || IsLegacyDefaultLinkId(interactionLinkId)
+                    ? AutoInteractionLinkId
+                    : interactionLinkId;
+                RegisterInteractionTarget(resolved);
+                return resolved;
+            }
+            set
+            {
+                var normalized = IsLegacyDefaultLinkId(value) ? string.Empty : value ?? string.Empty;
+                if (Set(ref interactionLinkId, normalized))
+                {
+                    RegisterInteractionTarget();
+                }
+            }
+        }
+        string interactionLinkId = string.Empty;
+
+        [Browsable(false)]
+        public string AutoInteractionLinkId
+        {
+            get => string.IsNullOrWhiteSpace(autoInteractionLinkId) ? autoInteractionLinkId = Guid.NewGuid().ToString("N") : autoInteractionLinkId;
+            set
+            {
+                if (Set(ref autoInteractionLinkId, value ?? string.Empty))
+                {
+                    RegisterInteractionTarget();
+                }
+            }
+        }
+        string autoInteractionLinkId = Guid.NewGuid().ToString("N");
+
+        [Display(GroupName = "連携", Name = "キャラクター名", Description = "複数キャラクター時にターゲットポイント/ヒットボックスから選ぶための表示名")]
+        public string InteractionDisplayName
+        {
+            get => ResolveInteractionDisplayName();
+            set
+            {
+                if (Set(ref interactionDisplayName, value ?? string.Empty))
+                {
+                    RegisterInteractionTarget();
+                }
+            }
+        }
+        string interactionDisplayName = string.Empty;
+
+        private void RegisterInteractionTarget(string? resolvedLinkId = null)
+        {
+            var linkId = string.IsNullOrWhiteSpace(resolvedLinkId)
+                ? (string.IsNullOrWhiteSpace(interactionLinkId) || IsLegacyDefaultLinkId(interactionLinkId) ? AutoInteractionLinkId : interactionLinkId)
+                : resolvedLinkId;
+            var displayName = ResolveInteractionDisplayName(linkId);
+
+            if (!string.IsNullOrWhiteSpace(_lastRegisteredInteractionLinkId) &&
+                !string.Equals(_lastRegisteredInteractionLinkId, linkId, System.StringComparison.Ordinal))
+            {
+                Live2DInteractionStore.RemoveInteractionTarget(_lastRegisteredInteractionLinkId);
+            }
+
+            Live2DInteractionStore.UpdateInteractionTarget(linkId, displayName, File);
+            _lastRegisteredInteractionLinkId = linkId;
+        }
+
+        private string ResolveDefaultDisplayName(string? modelFilePath = null, string? resolvedLinkId = null)
+        {
+            var sourceFile = string.IsNullOrWhiteSpace(modelFilePath) ? File : modelFilePath;
+            if (string.IsNullOrWhiteSpace(sourceFile))
+            {
+                return resolvedLinkId ?? InteractionLinkId;
+            }
+
+            var fileName = Path.GetFileName(sourceFile);
+            if (fileName.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return fileName[..^".model3.json".Length];
+            }
+
+            return Path.GetFileNameWithoutExtension(fileName);
+        }
+
+        private string ResolveInteractionDisplayName(string? resolvedLinkId = null)
+        {
+            var defaultDisplayName = ResolveDefaultDisplayName(File, resolvedLinkId);
+            if (string.IsNullOrWhiteSpace(interactionDisplayName))
+            {
+                return defaultDisplayName;
+            }
+
+            if (IsLegacyAutoDisplayName(interactionDisplayName))
+            {
+                return defaultDisplayName;
+            }
+
+            return interactionDisplayName;
+        }
+
+        private static bool IsLegacyDefaultLinkId(string? value)
+        {
+            return string.Equals(value, Live2DInteractionDefaults.DefaultLinkId, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsLegacyAutoDisplayName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(File))
+            {
+                return false;
+            }
+
+            var fileName = Path.GetFileName(File);
+            var legacyName = Path.GetFileNameWithoutExtension(fileName);
+            return string.Equals(value, legacyName, System.StringComparison.OrdinalIgnoreCase);
+        }
 
         [Display(GroupName = "目パチ", Name = "自動まばたき", Description = "自動でまばたきを行います")]
         [ToggleSlider]
@@ -52,12 +195,17 @@ namespace VTuberKitForYMM4.Plugin
         public bool AutoLipSync { get => autoLipSync; set => Set(ref autoLipSync, value); }
         bool autoLipSync = true;
 
-        [Display(GroupName = "口パク", Name = "口パク感度", Description = "口パクの感度を調整します")]
+        [Display(GroupName = "口パク", Name = "口パク感度", Description = "口パクの感度を調整します。通常は 1.0 を推奨します")]
         [TextBoxSlider("F2", "", 0.0, 5.0, Delay = -1)]
         [Range(0.0, 5.0)]
         [DefaultValue(1.0)]
         public double LipSyncGain { get => lipSyncGain; set => Set(ref lipSyncGain, value); }
         double lipSyncGain = 1.0;
+
+        [Display(GroupName = "口パク", Name = "口形パラメータのみ", Description = "ONで ParamMouthOpenY / ParamMouthForm を更新せず、A / I / U / E / O の口形パラメータのみを更新します")]
+        [ToggleSlider]
+        public bool LipSyncVowelsOnly { get => lipSyncVowelsOnly; set => Set(ref lipSyncVowelsOnly, value); }
+        bool lipSyncVowelsOnly = true;
 
         [Display(GroupName = "物理演算", Name = "物理演算有効", Description = "物理演算による風揺れを有効にします")]
         [ToggleSlider]

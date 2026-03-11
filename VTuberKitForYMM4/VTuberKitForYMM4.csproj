@@ -8,17 +8,17 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Platforms>x64</Platforms>
 		<PlatformTarget>x64</PlatformTarget>
-		<Version>1.1.1</Version>
-		<AssemblyVersion>1.1.1.0</AssemblyVersion>
-		<FileVersion>1.1.1.0</FileVersion>
-		<InformationalVersion>1.1.1</InformationalVersion>
+		<Version>2.0.0</Version>
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+		<FileVersion>2.0.0.0</FileVersion>
+		<InformationalVersion>2.0.0</InformationalVersion>
 		
 		<!--Pdb内にソースコードのフルパスを含めない-->
 		<RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</RepoRoot>
 		<PathMap>$(RepoRoot)=.</PathMap>
 	</PropertyGroup>
 
-	<ItemGroup>	
+	<ItemGroup>
 		<Reference Include="YukkuriMovieMaker.Controls">
 			<HintPath>$(YMM4DirPath)YukkuriMovieMaker.Controls.dll</HintPath>
 		</Reference>
@@ -51,8 +51,15 @@
 		</Reference>
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')">
 		<ProjectReference Include="..\VTuberKitForNative\VTuberKitForNative.vcxproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="!Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props') and Exists('$(MSBuildThisFileDirectory)bin\$(Configuration)\VTuberKitForNative.dll')">
+		<Reference Include="VTuberKitForNative">
+			<HintPath>$(MSBuildThisFileDirectory)bin\$(Configuration)\VTuberKitForNative.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>

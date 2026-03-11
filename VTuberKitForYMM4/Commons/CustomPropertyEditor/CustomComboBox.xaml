@@ -23,7 +23,12 @@
            x:Name="PART_ReloadButton"
            Click="ReloadButton_Click"
            IsEnabled="{Binding ElementName=this, Path=CustomViewModel.IsEnabled}">
-            ↻
+            <TextBlock x:Name="PART_ReloadIcon"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Text="&#xE72C;" />
         </Button>
     </Grid>
 </UserControl>

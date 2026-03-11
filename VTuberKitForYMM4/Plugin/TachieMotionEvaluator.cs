@@ -10,11 +10,15 @@ namespace VTuberKitForYMM4.Plugin
         public static void UpdateMotionToCurrentTime(
             Live2DModelWrapper nativeModel,
             TachieSourceDescription description,
+            string? modelPath,
             Live2DFaceParameter? activeFace,
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
             float lipSyncGain,
-            bool autoLipSync,
+            bool lipSyncVowelsOnly,
+            string? interactionMotionGroup = null,
+            int interactionMotionIndex = -1,
+            float interactionMotionTimeSeconds = 0.0f,
             float? itemTimeSecondsOverride = null)
         {
             if (nativeModel == null || description == null)
@@ -22,7 +26,11 @@ namespace VTuberKitForYMM4.Plugin
                 return;
             }
 
-            if (activeFace?.UseMotion == true &&
+            if (TryResolveInteractionMotionSelection(nativeModel, interactionMotionGroup, interactionMotionIndex, out var interactionGroup, out var interactionIndex))
+            {
+                nativeModel.EvaluateMotion(interactionGroup, interactionIndex, Math.Max(0, interactionMotionTimeSeconds), false);
+            }
+            else if (activeFace != null &&
                 TryResolveMotionSelection(nativeModel, activeFace, out var motionGroup, out var motionIndex))
             {
                 nativeModel.EvaluateMotion(motionGroup, motionIndex, Math.Max(0, activeFaceTimeSeconds), activeFace.MotionLoop);
@@ -32,194 +40,140 @@ namespace VTuberKitForYMM4.Plugin
                 var itemTimeSeconds = itemTimeSecondsOverride ?? (float)Math.Max(0.0, description.ItemPosition.Time.TotalSeconds);
                 nativeModel.EvaluateMotion(itemGroup, itemIndex, Math.Max(0, itemTimeSeconds), itemParam?.MotionLoop ?? true);
             }
-            else if (activeFace?.UseMotion == true)
+            else if (activeFace != null)
             {
                 nativeModel.StopAllMotions();
             }
 
             var (lipValue, mouthForm) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
             if (activeFace == null)
             {
-                nativeModel.SetLipSyncValue(lipValue);
-                nativeModel.AddParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
-                nativeModel.AddParameterValue(Live2DManager.ParamMouthForm, mouthForm);
+                if (!useVowelOnlyLipSync)
+                {
+                    nativeModel.SetLipSyncValue(lipValue);
+                }
             }
         }
 
         public static float ApplyFaceAndLipSync(
             Live2DModelWrapper model,
             TachieSourceDescription description,
+            string? modelPath,
             Live2DFaceParameter activeFace,
             double faceLocalFrame,
             double faceDurationFrame,
             float lipSyncGain,
-            bool applyManualFaceParameters)
+            bool lipSyncVowelsOnly)
         {
             var frame = Math.Max(0L, (long)Math.Round(faceLocalFrame));
             var length = Math.Max(1L, (long)Math.Round(faceDurationFrame));
-            var fps = description.FPS;
-
-            var eyeLOpen = activeFace.EyeLOpen.GetValue(frame, length, fps);
-            var eyeROpen = activeFace.EyeROpen.GetValue(frame, length, fps);
-            var mouthOpen = activeFace.MouthOpen.GetValue(frame, length, fps);
-            var mouthForm = activeFace.MouthForm.GetValue(frame, length, fps);
-            var angleX = activeFace.AngleX.GetValue(frame, length, fps);
-            var angleY = activeFace.AngleY.GetValue(frame, length, fps);
-            var angleZ = activeFace.AngleZ.GetValue(frame, length, fps);
-            var bodyAngleX = activeFace.BodyAngleX.GetValue(frame, length, fps);
-            var eyeBallX = activeFace.EyeBallX.GetValue(frame, length, fps);
-            var eyeBallY = activeFace.EyeBallY.GetValue(frame, length, fps);
-            var cheek = activeFace.Cheek.GetValue(frame, length, fps);
-            var armLA = activeFace.ArmLA.GetValue(frame, length, fps);
-            var armRA = activeFace.ArmRA.GetValue(frame, length, fps);
-
-            if (applyManualFaceParameters)
-            {
-                ApplyStandardFaceParameters(
-                    model,
-                    activeFace.AdditiveParameters,
-                    (float)eyeLOpen,
-                    (float)eyeROpen,
-                    (float)mouthOpen,
-                    (float)mouthForm,
-                    (float)angleX,
-                    (float)angleY,
-                    (float)angleZ,
-                    (float)bodyAngleX,
-                    (float)eyeBallX,
-                    (float)eyeBallY,
-                    (float)cheek,
-                    (float)armLA,
-                    (float)armRA);
-            }
 
             var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
-            model.SetLipSyncValue(lipValue);
-            ApplyParameterValue(model, Live2DManager.ParamMouthOpenY, lipValue, activeFace.AdditiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamMouthForm, mouthFormValue, activeFace.AdditiveParameters);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
+            if (!useVowelOnlyLipSync)
+            {
+                model.SetLipSyncValue(lipValue);
+            }
+            if (!useVowelOnlyLipSync)
+            {
+                model.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
+                model.SetParameterValue(Live2DManager.ParamMouthForm, mouthFormValue);
+            }
+            if (useVowelOnlyLipSync)
+            {
+                ApplyVowelLipSyncParameters(model, modelPath, description.MouthShape, lipValue);
+            }
 
-            ApplyCustomFaceParts(model, activeFace, frame, length, fps);
-            ApplyCustomFaceParameters(model, activeFace, frame, length, fps);
+            ApplyDynamicFaceParameters(model, activeFace, frame, length, description.FPS);
             return lipValue;
         }
 
-        private static void ApplyCustomFaceParts(
+        public static void ApplyItemLipSyncPostPhysics(
+            Live2DModelWrapper model,
+            TachieSourceDescription description,
+            string? modelPath,
+            float lipSyncGain,
+            bool lipSyncVowelsOnly)
+        {
+            var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
+            if (!useVowelOnlyLipSync)
+            {
+                model.SetParameterValue(Live2DManager.ParamMouthOpenY, lipValue);
+                model.SetParameterValue(Live2DManager.ParamMouthForm, mouthFormValue);
+                return;
+            }
+
+            ApplyVowelLipSyncParameters(model, modelPath, description.MouthShape, lipValue);
+        }
+
+        public static void ApplyDynamicFaceParts(
             Live2DModelWrapper model,
             Live2DFaceParameter activeFace,
             long frame,
             long length,
             int fps)
         {
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart1Id, activeFace.CustomPart1Opacity, frame, length, fps, activeFace.AdditiveParameters);
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart2Id, activeFace.CustomPart2Opacity, frame, length, fps, activeFace.AdditiveParameters);
-            ApplyCustomFacePartOpacity(model, activeFace.CustomPart3Id, activeFace.CustomPart3Opacity, frame, length, fps, activeFace.AdditiveParameters);
-        }
-
-        private static void ApplyCustomFacePartOpacity(
-            Live2DModelWrapper model,
-            string? partId,
-            Animation animation,
-            long frame,
-            long length,
-            int fps,
-            bool additiveParameters)
-        {
-            if (string.IsNullOrWhiteSpace(partId))
+            foreach (var row in activeFace.DynamicOverrides.PartRows.ToArray())
             {
-                return;
-            }
+                if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
 
-            var value = (float)animation.GetValue(frame, length, fps);
-            var currentOpacity = model.GetPartOpacity(partId);
-            var opacity = additiveParameters
-                ? (float)Math.Clamp(currentOpacity + value, 0.0, 1.0)
-                : (float)Math.Clamp(currentOpacity * (1.0f + value), 0.0, 1.0);
-            model.SetPartOpacity(partId, opacity);
+                var value = (float)row.Opacity.GetValue(frame, length, fps);
+                model.SetPartOpacity(row.Id, Math.Clamp(value, 0.0f, 1.0f));
+            }
         }
 
-        private static void ApplyCustomFaceParameters(
+        private static void ApplyDynamicFaceParameters(
             Live2DModelWrapper model,
             Live2DFaceParameter activeFace,
             long frame,
             long length,
             int fps)
         {
-            ApplyCustomFaceParameter(model, activeFace.CustomParam1Id, activeFace.CustomParam1Value, frame, length, fps, activeFace.AdditiveParameters);
-            ApplyCustomFaceParameter(model, activeFace.CustomParam2Id, activeFace.CustomParam2Value, frame, length, fps, activeFace.AdditiveParameters);
-            ApplyCustomFaceParameter(model, activeFace.CustomParam3Id, activeFace.CustomParam3Value, frame, length, fps, activeFace.AdditiveParameters);
+            foreach (var row in activeFace.DynamicOverrides.ParameterRows.ToArray())
+            {
+                if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
+
+                var value = row.GetValue(frame, length, fps);
+                model.SetParameterValue(row.Id, value);
+            }
         }
 
-        private static void ApplyCustomFaceParameter(
-            Live2DModelWrapper model,
-            string? paramId,
-            Animation animation,
-            long frame,
-            long length,
-            int fps,
-            bool additiveParameters)
+        private static void ApplyVowelLipSyncParameters(Live2DModelWrapper model, string? modelPath, MouthShape shape, float lipValue)
         {
-            if (string.IsNullOrWhiteSpace(paramId))
+            var vowelParameters = ModelMetadataCatalog.GetLipSyncVowelParameters(modelPath);
+            if (!vowelParameters.HasAny)
             {
                 return;
             }
 
-            var value = (float)animation.GetValue(frame, length, fps);
-            ApplyParameterValue(model, paramId, value, additiveParameters);
+            SetVowelParameter(model, vowelParameters.A, shape == MouthShape.A ? lipValue : 0.0f);
+            SetVowelParameter(model, vowelParameters.I, shape == MouthShape.I ? lipValue : 0.0f);
+            SetVowelParameter(model, vowelParameters.U, shape == MouthShape.U ? lipValue : 0.0f);
+            SetVowelParameter(model, vowelParameters.E, shape == MouthShape.E ? lipValue : 0.0f);
+            SetVowelParameter(model, vowelParameters.O, shape == MouthShape.O ? lipValue : 0.0f);
         }
 
-        private static void ApplyStandardFaceParameters(
-            Live2DModelWrapper model,
-            bool additiveParameters,
-            float eyeLOpen,
-            float eyeROpen,
-            float mouthOpenY,
-            float mouthForm,
-            float angleX,
-            float angleY,
-            float angleZ,
-            float bodyAngleX,
-            float eyeBallX,
-            float eyeBallY,
-            float cheek,
-            float armLA,
-            float armRA)
+        private static void SetVowelParameter(Live2DModelWrapper model, string parameterId, float value)
         {
-            ApplyParameterValue(model, Live2DManager.ParamEyeLOpen, NormalizeAbsoluteValue(eyeLOpen, additiveParameters, 1.0f), additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamEyeROpen, NormalizeAbsoluteValue(eyeROpen, additiveParameters, 1.0f), additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamMouthOpenY, mouthOpenY, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamMouthForm, mouthForm, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamAngleX, angleX, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamAngleY, angleY, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamAngleZ, angleZ, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamBodyAngleX, bodyAngleX, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamEyeBallX, eyeBallX, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamEyeBallY, eyeBallY, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamCheek, cheek, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamArmLA, armLA, additiveParameters);
-            ApplyParameterValue(model, Live2DManager.ParamArmRA, armRA, additiveParameters);
-        }
-
-        private static float NormalizeAbsoluteValue(float value, bool additiveParameters, float neutralValue)
-        {
-            return additiveParameters ? value : neutralValue + value;
-        }
-
-        private static void ApplyParameterValue(Live2DModelWrapper model, string parameterId, float value, bool additiveParameters)
-        {
-            if (additiveParameters)
+            if (string.IsNullOrWhiteSpace(parameterId))
             {
-                model.AddParameterValue(parameterId, value);
+                return;
             }
-            else
-            {
-                model.SetParameterValue(parameterId, value);
-            }
+
+            model.SetParameterValue(parameterId, value);
         }
 
-        public static bool ShouldApplyManualFaceParameters(Live2DFaceParameter activeFace)
+        private static bool ShouldBypassNativeLipSync(string? modelPath, bool lipSyncVowelsOnly)
         {
-            var hasMotion = activeFace.UseMotion && activeFace.MotionIndex >= 0;
-            return !hasMotion;
+            return lipSyncVowelsOnly && ModelMetadataCatalog.GetLipSyncVowelParameters(modelPath).HasAny;
         }
 
         private static bool TryResolveMotionSelection(Live2DModelWrapper nativeModel, Live2DFaceParameter activeFace, out string group, out int index)
@@ -255,6 +209,50 @@ namespace VTuberKitForYMM4.Plugin
             {
                 group = motions[motionIndex].Group ?? string.Empty;
                 index = Math.Max(0, motions[motionIndex].Index);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryResolveInteractionMotionSelection(
+            Live2DModelWrapper nativeModel,
+            string? selectedGroup,
+            int selectedIndex,
+            out string group,
+            out int index)
+        {
+            group = string.Empty;
+            index = -1;
+            if (selectedIndex < 0)
+            {
+                return false;
+            }
+
+            var motionGroup = selectedGroup ?? string.Empty;
+            var motionIndex = Math.Max(0, selectedIndex);
+            if (!string.IsNullOrWhiteSpace(motionGroup))
+            {
+                group = motionGroup;
+                index = motionIndex;
+                return true;
+            }
+
+            var motions = nativeModel.GetMotions();
+            if (motionIndex >= 0 && motionIndex < motions.Length)
+            {
+                var motion = motions[motionIndex];
+                group = motion.Group ?? string.Empty;
+                index = Math.Max(0, motion.Index);
+                return true;
+            }
+
+            var catalog = ModelMetadataCatalog.Motions;
+            if (motionIndex >= 0 && motionIndex < catalog.Count)
+            {
+                var motion = catalog[motionIndex];
+                group = motion.Group ?? string.Empty;
+                index = Math.Max(0, motion.Index);
                 return true;
             }
 

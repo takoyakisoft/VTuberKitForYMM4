@@ -103,6 +103,18 @@ void Live2DModelWrapper::Update(float deltaTime) {
     }
 }
 
+void Live2DModelWrapper::UpdatePrePhysics(float deltaTime) {
+    if (_nativeModel != nullptr && _isLoaded) {
+        _nativeModel->UpdatePrePhysics(deltaTime);
+    }
+}
+
+void Live2DModelWrapper::UpdatePostPhysics(float deltaTime) {
+    if (_nativeModel != nullptr && _isLoaded) {
+        _nativeModel->UpdatePostPhysics(deltaTime);
+    }
+}
+
 void Live2DModelWrapper::Draw(CubismMatrix44& matrix) {
     if (_nativeModel != nullptr && _isLoaded) {
         _nativeModel->Draw(matrix);
@@ -458,10 +470,23 @@ array<Live2DHitArea^>^ Live2DModelWrapper::GetHitAreas() {
         areas[i] = gcnew Live2DHitArea();
         areas[i]->Id = Utf8ToManagedString(setting->GetHitAreaId(i)->GetString().GetRawString());
         areas[i]->Name = Utf8ToManagedString(setting->GetHitAreaName(i));
-        areas[i]->X = 0.0f;
-        areas[i]->Y = 0.0f;
-        areas[i]->Width = 0.0f;
-        areas[i]->Height = 0.0f;
+        float centerX = 0.0f;
+        float centerY = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
+        const auto hitAreaId = ManagedStringToUtf8(areas[i]->Id);
+        if (_nativeModel->TryGetHitAreaBounds(hitAreaId.c_str(), centerX, centerY, width, height)) {
+            areas[i]->X = centerX;
+            areas[i]->Y = centerY;
+            areas[i]->Width = width;
+            areas[i]->Height = height;
+        }
+        else {
+            areas[i]->X = 0.0f;
+            areas[i]->Y = 0.0f;
+            areas[i]->Width = 0.0f;
+            areas[i]->Height = 0.0f;
+        }
     }
 
     return areas;
@@ -579,6 +604,14 @@ Live2DSize Live2DModelWrapper::GetModelSize() {
     size.Width = static_cast<int>(GetCanvasWidth() * 100);
     size.Height = static_cast<int>(GetCanvasHeight() * 100);
     return size;
+}
+
+Live2DBounds Live2DModelWrapper::GetModelBounds() {
+    Live2DBounds bounds{};
+    if (_nativeModel != nullptr) {
+        _nativeModel->TryGetModelBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+    }
+    return bounds;
 }
 
 int Live2DModelWrapper::GetTextureWidth() {

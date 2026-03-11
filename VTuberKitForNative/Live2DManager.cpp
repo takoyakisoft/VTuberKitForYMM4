@@ -6,14 +6,34 @@
 #include <CubismDefaultParameterId.hpp>
 #include <Rendering/D3D11/CubismRenderer_D3D11.hpp>
 #include <d3d11.h>
+#include <mutex>
 
 using namespace System::Threading;
 using namespace Live2D::Cubism::Framework;
 using namespace Live2D::Cubism::Framework::DefaultParameterId;
 
-// Global D3D11 Device pointers for NativeModel access
+// Global D3D11 Device pointers for NativeModel access.
+// The native side keeps an extra COM reference while these pointers are cached.
 ID3D11Device* g_d3d11Device = nullptr;
 ID3D11DeviceContext* g_d3d11Context = nullptr;
+std::mutex g_d3d11Mutex;
+namespace
+{
+    void ResetGlobalD3D11Pointers()
+    {
+        if (g_d3d11Context != nullptr)
+        {
+            g_d3d11Context->Release();
+            g_d3d11Context = nullptr;
+        }
+
+        if (g_d3d11Device != nullptr)
+        {
+            g_d3d11Device->Release();
+            g_d3d11Device = nullptr;
+        }
+    }
+}
 
 namespace VTuberKitForNative {
 
@@ -135,6 +155,8 @@ void Live2DManager::Release() {
             _option = nullptr;
         }
 
+        std::lock_guard<std::mutex> deviceLock(g_d3d11Mutex);
+        ResetGlobalD3D11Pointers();
         _initialized = false;
     }
     finally {
@@ -146,9 +168,35 @@ bool Live2DManager::IsInitialized() {
     return _initialized;
 }
 
+bool Live2DManager::HasD3D11Device() {
+    std::lock_guard<std::mutex> deviceLock(g_d3d11Mutex);
+    return g_d3d11Device != nullptr && g_d3d11Context != nullptr;
+}
+
 void Live2DManager::SetD3D11Device(IntPtr device, IntPtr context) {
-    g_d3d11Device = static_cast<ID3D11Device*>(device.ToPointer());
-    g_d3d11Context = static_cast<ID3D11DeviceContext*>(context.ToPointer());
+    std::lock_guard<std::mutex> deviceLock(g_d3d11Mutex);
+    auto* newDevice = static_cast<ID3D11Device*>(device.ToPointer());
+    auto* newContext = static_cast<ID3D11DeviceContext*>(context.ToPointer());
+
+    if (g_d3d11Device == newDevice && g_d3d11Context == newContext)
+    {
+        return;
+    }
+
+    ResetGlobalD3D11Pointers();
+
+    if (newContext != nullptr)
+    {
+        newContext->AddRef();
+        g_d3d11Context = newContext;
+    }
+
+    if (newDevice != nullptr)
+    {
+        newDevice->AddRef();
+        g_d3d11Device = newDevice;
+    }
+
     // レンダラーの静的設定（モデルロード前に一度だけ必要）
     if (g_d3d11Device) {
         Live2D::Cubism::Framework::Rendering::CubismRenderer_D3D11::InitializeConstantSettings(1, g_d3d11Device);

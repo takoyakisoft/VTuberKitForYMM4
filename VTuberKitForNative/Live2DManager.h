@@ -56,6 +56,7 @@ public:
     bool Initialize();
     void Release();
     bool IsInitialized();
+    bool HasD3D11Device();
 
     // デバイス設定（D3D11用）
     void SetD3D11Device(IntPtr device, IntPtr context);

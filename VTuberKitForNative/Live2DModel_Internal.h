@@ -30,6 +30,8 @@ public:
     void ReloadRenderer();
     void ResetAnimationState();
     void Update(float deltaTime);
+    void UpdatePrePhysics(float deltaTime);
+    void UpdatePostPhysics(float deltaTime);
     void EvaluateMotion(const char* group, int no, float timeSeconds, bool loop);
     void Draw(CubismMatrix44& matrix);                                     // 後方互換
     bool DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix); // StartFrame込み
@@ -89,6 +91,8 @@ public:
     void SetDragging(float x, float y);
     float GetCanvasWidth();
     float GetCanvasHeight();
+    bool TryGetModelBounds(float& centerX, float& centerY, float& width, float& height);
+    bool TryGetHitAreaBounds(const char* hitAreaNameOrId, float& centerX, float& centerY, float& width, float& height);
     ICubismModelSetting* GetModelSetting() { return _modelSetting; }
     
     // テクスチャサイズ取得

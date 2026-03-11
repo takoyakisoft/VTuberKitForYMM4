@@ -21,6 +21,13 @@ public value struct Live2DSize {
     int Height;
 };
 
+public value struct Live2DBounds {
+    float X;
+    float Y;
+    float Width;
+    float Height;
+};
+
 public value struct Live2DColor {
     float R;
     float G;
@@ -90,6 +97,8 @@ public:
 
     // 更新と描画
     void Update(float deltaTime);
+    void UpdatePrePhysics(float deltaTime);
+    void UpdatePostPhysics(float deltaTime);
     void Draw(CubismMatrix44& matrix);
     void Draw(); // デフォルト描画（画面にフィット）
     void Draw(int screenWidth, int screenHeight); // 画面サイズを考慮した描画（BeginFrame別途呼ぶ旧方式）
@@ -176,6 +185,7 @@ public:
     float GetCanvasWidth();
     float GetCanvasHeight();
     Live2DSize GetModelSize();
+    Live2DBounds GetModelBounds();
     
     // テクスチャサイズ（ピクセル単位）
     int GetTextureWidth();

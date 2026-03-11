@@ -114,8 +114,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                var selected = Motion?.SelectedGroup;
-                return string.IsNullOrWhiteSpace(selected) ? motionGroup : selected;
+                return Motion?.SelectedGroup ?? string.Empty;
             }
             set
             {
@@ -131,8 +130,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         {
             get
             {
-                var selected = Motion?.SelectedIndex ?? -1;
-                return selected >= 0 ? selected : motionIndex;
+                return Motion?.SelectedIndex ?? -1;
             }
             set
             {

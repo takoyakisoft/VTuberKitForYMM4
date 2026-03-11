@@ -310,10 +310,16 @@ namespace VTuberKitForYMM4.Plugin
             HitAreaRects.TryRemove(sourceId, out _);
         }
 
-        internal static void ClearHitAreaResults()
+        internal static void ClearHitAreaResults(string? linkId = null)
         {
             foreach (var pair in HitAreaRects)
             {
+                if (!string.IsNullOrWhiteSpace(linkId) &&
+                    !string.Equals(pair.Value.LinkId, linkId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
                 HitAreaRects[pair.Key] = pair.Value with { IsHit = false };
             }
         }

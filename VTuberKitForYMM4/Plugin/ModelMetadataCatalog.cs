@@ -167,6 +167,14 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
+        public static LipSyncVowelParameterIds GetLipSyncVowelParameters(string? modelPath)
+        {
+            lock (LockObj)
+            {
+                return GetSnapshotCore(modelPath)?.LipSyncVowelParameters ?? default;
+            }
+        }
+
         public static void UpdateFromModelPath(string? modelPath)
         {
             lock (LockObj)

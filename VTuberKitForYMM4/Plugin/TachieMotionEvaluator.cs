@@ -10,6 +10,7 @@ namespace VTuberKitForYMM4.Plugin
         public static void UpdateMotionToCurrentTime(
             Live2DModelWrapper nativeModel,
             TachieSourceDescription description,
+            string? modelPath,
             Live2DFaceParameter? activeFace,
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
@@ -45,7 +46,7 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             var (lipValue, mouthForm) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
-            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(lipSyncVowelsOnly);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
             if (activeFace == null)
             {
                 if (!useVowelOnlyLipSync)
@@ -64,6 +65,7 @@ namespace VTuberKitForYMM4.Plugin
         public static float ApplyFaceAndLipSync(
             Live2DModelWrapper model,
             TachieSourceDescription description,
+            string? modelPath,
             Live2DFaceParameter activeFace,
             double faceLocalFrame,
             double faceDurationFrame,
@@ -89,7 +91,7 @@ namespace VTuberKitForYMM4.Plugin
             var armRA = activeFace.ArmRA.GetValue(frame, length, fps);
 
             var (lipValue, mouthFormValue) = ComputeLipSync(description.MouthShape, description.VoiceVolume, lipSyncGain);
-            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(lipSyncVowelsOnly);
+            var useVowelOnlyLipSync = ShouldBypassNativeLipSync(modelPath, lipSyncVowelsOnly);
             if (!useVowelOnlyLipSync)
             {
                 model.SetLipSyncValue(lipValue);
@@ -232,9 +234,9 @@ namespace VTuberKitForYMM4.Plugin
             model.SetParameterValue(parameterId, value);
         }
 
-        private static bool ShouldBypassNativeLipSync(bool lipSyncVowelsOnly)
+        private static bool ShouldBypassNativeLipSync(string? modelPath, bool lipSyncVowelsOnly)
         {
-            return lipSyncVowelsOnly && ModelMetadataCatalog.LipSyncVowelParameters.HasAny;
+            return lipSyncVowelsOnly && ModelMetadataCatalog.GetLipSyncVowelParameters(modelPath).HasAny;
         }
 
         private static bool TryResolveMotionSelection(Live2DModelWrapper nativeModel, Live2DFaceParameter activeFace, out string group, out int index)

@@ -2,6 +2,7 @@ using System.Numerics;
 using System.ComponentModel;
 using System.Windows;
 using VTuberKitForYMM4.Commons.CustomPropertyEditor;
+using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 using VTuberKitForYMM4.Plugin;
 using VTuberKitForYMM4.Plugin.Shape;
 using YukkuriMovieMaker.Player.Video;
@@ -69,6 +70,26 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
+    public void ClearHitAreaResults_OnlyClearsSpecifiedLinkId()
+    {
+        var firstLinkId = Guid.NewGuid().ToString("N");
+        var secondLinkId = Guid.NewGuid().ToString("N");
+        Live2DInteractionStore.UpdateHitAreaRect("ha-first", firstLinkId, "Body", "exp-first", string.Empty, -1, 0, 0, 0.2f, 0.2f, 1);
+        Live2DInteractionStore.UpdateHitAreaRect("ha-second", secondLinkId, "Body", "exp-second", string.Empty, -1, 0, 0, 0.2f, 0.2f, 1);
+        Live2DInteractionStore.SetHitAreaResult("ha-first", true);
+        Live2DInteractionStore.SetHitAreaResult("ha-second", true);
+
+        Live2DInteractionStore.ClearHitAreaResults(firstLinkId);
+
+        Assert.True(Live2DInteractionStore.TryGetHitAreaRect("ha-first", out var firstState));
+        Assert.True(Live2DInteractionStore.TryGetHitAreaRect("ha-second", out var secondState));
+        Assert.NotNull(firstState);
+        Assert.NotNull(secondState);
+        Assert.False(firstState!.IsHit);
+        Assert.True(secondState!.IsHit);
+    }
+
+    [Fact]
     public void ResolveActiveFace_UsesHighestLayerAmongOverlappingFaces()
     {
         var lowFace = new Live2DFaceParameter();
@@ -121,6 +142,30 @@ public class InteractionShapeTransformTests
         Assert.Equal(299.0, resolved.LocalFrame);
         Assert.Equal(300.0, resolved.DurationFrame);
         Assert.Equal(299.0 / 30.0f, resolved.RelativeTimeSeconds, 3);
+    }
+
+    [Fact]
+    public void HitAreaMotionSelection_ClearedSelectionReturnsEmptyReaction()
+    {
+        var parameter = new HitAreaShapeParameter();
+        parameter.MotionGroup = "TapBody";
+        parameter.MotionIndex = 2;
+
+        parameter.Motion.SelectedValue = parameter.Motion.ItemsSource.OfType<MotionItem>().First(x => x.IsNone);
+
+        Assert.Equal(string.Empty, parameter.MotionGroup);
+        Assert.Equal(-1, parameter.MotionIndex);
+    }
+
+    [Theory]
+    [InlineData(-1.0, true)]
+    [InlineData(0.0, false)]
+    [InlineData(1.0, false)]
+    [InlineData(1.01, true)]
+    [InlineData(10.0, true)]
+    public void RequiresReplayForFrameJump_DetectsDiscontinuousSeeking(double deltaFrames, bool expected)
+    {
+        Assert.Equal(expected, Live2DTachieSource.RequiresReplayForFrameJump(deltaFrames));
     }
 
     [Fact]

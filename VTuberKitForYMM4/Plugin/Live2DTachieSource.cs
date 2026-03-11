@@ -246,7 +246,7 @@ namespace VTuberKitForYMM4.Plugin
                                     loadedModel.CommitParameters();
                                     _model = loadedModel;
                                     ModelMetadataCatalog.UpdateFromModelPath(_currentModelPath);
-                                    ClearInteractionState();
+                                    ClearInteractionState(charParam?.InteractionLinkId);
                                 }
                                 _hasLastItemFrame = false;
                                 _needsInitialFrameUpdate = true;
@@ -260,8 +260,9 @@ namespace VTuberKitForYMM4.Plugin
                                 _model?.Dispose();
                                 _model = null;
                                 _currentModelPath = string.Empty;
-                                ClearInteractionState();
-                                Commons.ConsoleManager.Error($"Live2Dモデルが見つかりませんでした。\n\n対象: {charParam.File}\n\n.model3.json の場所を確認してください。");
+                                ClearInteractionState(charParam?.InteractionLinkId);
+                                var missingModelPath = charParam?.File ?? "(null)";
+                                Commons.ConsoleManager.Error($"Live2Dモデルが見つかりませんでした。\n\n対象: {missingModelPath}\n\n.model3.json の場所を確認してください。");
                             }
                         }
                     }
@@ -274,7 +275,7 @@ namespace VTuberKitForYMM4.Plugin
                         {
                             _model.ResetAnimationState();
                             _model.ClearExpression();
-                            ClearInteractionState();
+                            ClearInteractionState(charParam?.InteractionLinkId);
                             _appliedExpressionId = string.Empty;
                             _hasCachedCharacterSettings = false;
                             _hasCachedItemSettings = false;
@@ -359,6 +360,7 @@ namespace VTuberKitForYMM4.Plugin
                         TachieMotionEvaluator.UpdateMotionToCurrentTime(
                             _model,
                             desc,
+                            _currentModelPath,
                             faceParam,
                             itemParam,
                             Math.Max(activeFace.RelativeTimeSeconds, (float)itemTimeSeconds),
@@ -467,6 +469,7 @@ namespace VTuberKitForYMM4.Plugin
                             ReplayModelToCurrentTime(
                                 _model,
                                 desc,
+                                _currentModelPath,
                                 faceParam,
                                 itemParam,
                                 Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
@@ -486,6 +489,7 @@ namespace VTuberKitForYMM4.Plugin
                             TachieMotionEvaluator.ApplyFaceAndLipSync(
                                 _model,
                                 desc,
+                                _currentModelPath,
                                 faceParam,
                                 faceFrame,
                                 faceLength,
@@ -609,7 +613,7 @@ namespace VTuberKitForYMM4.Plugin
             var deltaFrames = targetFrame - _lastItemFrame;
             _lastItemFrame = targetFrame;
 
-            if (deltaFrames < 0.0)
+            if (RequiresReplayForFrameJump(deltaFrames))
             {
                 rewound = true;
                 _needsInitialFrameUpdate = false;
@@ -629,6 +633,11 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             return (float)Math.Min(deltaSeconds, 0.25);
+        }
+
+        internal static bool RequiresReplayForFrameJump(double deltaFrames)
+        {
+            return deltaFrames < 0.0 || deltaFrames > 1.0;
         }
 
         private static void ApplyDragging(Live2DModelWrapper model, double windStrength, float timeSeconds)
@@ -666,6 +675,7 @@ namespace VTuberKitForYMM4.Plugin
         private static void ReplayModelToCurrentTime(
             Live2DModelWrapper model,
             TachieSourceDescription desc,
+            string? modelPath,
             Live2DFaceParameter? faceParam,
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
@@ -692,6 +702,7 @@ namespace VTuberKitForYMM4.Plugin
                 TachieMotionEvaluator.UpdateMotionToCurrentTime(
                     model,
                     desc,
+                    modelPath,
                     faceParam,
                     itemParam,
                     Math.Min(activeFaceTimeSeconds, next),
@@ -712,6 +723,7 @@ namespace VTuberKitForYMM4.Plugin
                     TachieMotionEvaluator.ApplyFaceAndLipSync(
                         model,
                         desc,
+                        modelPath,
                         faceParam,
                         faceFrame,
                         faceLength,
@@ -815,10 +827,10 @@ namespace VTuberKitForYMM4.Plugin
             return new System.Numerics.Vector2(x, y);
         }
 
-        private void ClearInteractionState()
+        private void ClearInteractionState(string? linkId)
         {
             _hitAreaActiveSinceSeconds.Clear();
-            Live2DInteractionStore.ClearHitAreaResults();
+            Live2DInteractionStore.ClearHitAreaResults(linkId);
         }
 
         private void PruneInactiveHitAreaState(string? linkId)

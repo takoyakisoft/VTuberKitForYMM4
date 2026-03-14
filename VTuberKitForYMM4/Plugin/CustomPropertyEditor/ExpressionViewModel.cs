@@ -27,14 +27,16 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
         {
             get
             {
-                var id = (SelectedValue as ExpressionItem)?.Id ?? string.Empty;
-                return string.IsNullOrEmpty(id) || id == NoneExpressionId ? selectedExpressionId : id;
+                var item = SelectedValue as ExpressionItem;
+                var id = item?.Id ?? string.Empty;
+                return string.IsNullOrEmpty(id) || item?.IsNone == true ? selectedExpressionId : id;
             }
             set
             {
                 selectedExpressionId = string.IsNullOrWhiteSpace(value) ? string.Empty : value;
-                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpressionId : selectedExpressionId;
-                var found = ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => x.Id == normalized);
+                var found = string.IsNullOrWhiteSpace(selectedExpressionId)
+                    ? ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => x.IsNone)
+                    : ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => !x.IsNone && x.Id == selectedExpressionId);
                 if (found != null)
                 {
                     SelectedValue = found;
@@ -50,13 +52,14 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
             {
                 var previousSelectedExpressionId = selectedExpressionId;
                 base.SelectedValue = value;
-                var id = (value as ExpressionItem)?.Id ?? string.Empty;
-                if (isRefreshing && (string.IsNullOrEmpty(id) || id == NoneExpressionId) && !string.IsNullOrEmpty(previousSelectedExpressionId))
+                var item = value as ExpressionItem;
+                var id = item?.Id ?? string.Empty;
+                if (isRefreshing && (item?.IsNone == true || string.IsNullOrEmpty(id)) && !string.IsNullOrEmpty(previousSelectedExpressionId))
                 {
                     return;
                 }
 
-                selectedExpressionId = id == NoneExpressionId ? string.Empty : id;
+                selectedExpressionId = item?.IsNone == true ? string.Empty : id;
                 if (!isRefreshing)
                 {
                     OnPropertyChanged(nameof(SelectedExpressionId));
@@ -90,10 +93,9 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
                     return;
                 }
 
-                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpressionId : selectedExpressionId;
-                var found = !string.IsNullOrEmpty(normalized)
-                    ? ItemsSource.FirstOrDefault(x => (x as ExpressionItem)?.Id == normalized)
-                    : null;
+                var found = string.IsNullOrWhiteSpace(selectedExpressionId)
+                    ? ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => x.IsNone)
+                    : ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => !x.IsNone && x.Id == selectedExpressionId);
 
                 SelectedValue = found ?? ItemsSource.First();
             }

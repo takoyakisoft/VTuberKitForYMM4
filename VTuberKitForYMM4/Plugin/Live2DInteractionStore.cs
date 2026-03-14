@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Collections.Concurrent;
 using System.Linq;
 
@@ -48,8 +49,8 @@ namespace VTuberKitForYMM4.Plugin
             string ExpressionId,
             string MotionGroup,
             int MotionIndex,
-            HitAreaParameterOverrideState[] ParameterOverrides,
-            HitAreaPartOverrideState[] PartOverrides,
+            ImmutableArray<HitAreaParameterOverrideState> ParameterOverrides,
+            ImmutableArray<HitAreaPartOverrideState> PartOverrides,
             float X,
             float Y,
             float Width,
@@ -251,8 +252,12 @@ namespace VTuberKitForYMM4.Plugin
                 expressionId ?? string.Empty,
                 motionGroup ?? string.Empty,
                 motionIndex,
-                parameterOverrides?.ToArray() ?? [],
-                partOverrides?.ToArray() ?? [],
+                parameterOverrides is { Length: > 0 }
+                    ? ImmutableArray.CreateRange(parameterOverrides)
+                    : ImmutableArray<HitAreaParameterOverrideState>.Empty,
+                partOverrides is { Length: > 0 }
+                    ? ImmutableArray.CreateRange(partOverrides)
+                    : ImmutableArray<HitAreaPartOverrideState>.Empty,
                 x,
                 y,
                 Math.Abs(width),
@@ -292,8 +297,8 @@ namespace VTuberKitForYMM4.Plugin
                 .Where(x =>
                     !string.IsNullOrWhiteSpace(x.ExpressionId) ||
                     x.MotionIndex >= 0 ||
-                    x.ParameterOverrides.Length > 0 ||
-                    x.PartOverrides.Length > 0)
+                    !x.ParameterOverrides.IsDefaultOrEmpty ||
+                    !x.PartOverrides.IsDefaultOrEmpty)
                 .Select(x => new
                 {
                     HitArea = x,

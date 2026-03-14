@@ -216,8 +216,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             BindingOperations.EnableCollectionSynchronization(newValue.ParameterRows, newValue.ParameterRowsSyncRoot);
             BindingOperations.EnableCollectionSynchronization(newValue.PartRows, newValue.PartRowsSyncRoot);
 
-            EnsureModelFile(newValue);
-            if (ParameterExpander.IsExpanded || PartExpander.IsExpanded)
+            if ((ParameterExpander.IsExpanded || PartExpander.IsExpanded) && EnsureModelFile(newValue))
             {
                 RefreshMetadata(newValue);
             }
@@ -446,7 +445,10 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void RefreshMetadata(Live2DFaceDynamicOverrides overrides)
         {
-            EnsureModelFile(overrides);
+            if (!EnsureModelFile(overrides))
+            {
+                return;
+            }
 
             if (Dispatcher.CheckAccess())
             {
@@ -589,18 +591,9 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             AttachSliderValueWatchers(slider);
         }
 
-        private static void EnsureModelFile(Live2DFaceDynamicOverrides overrides)
+        private static bool EnsureModelFile(Live2DFaceDynamicOverrides overrides)
         {
-            if (!string.IsNullOrWhiteSpace(overrides.ModelFile))
-            {
-                return;
-            }
-
-            var fallbackModelPath = ModelMetadataCatalog.CurrentModelPath;
-            if (!string.IsNullOrWhiteSpace(fallbackModelPath))
-            {
-                overrides.ModelFile = fallbackModelPath;
-            }
+            return !string.IsNullOrWhiteSpace(overrides.ModelFile);
         }
 
         private void RefreshMetadataCore(Live2DFaceDynamicOverrides overrides)

@@ -4,24 +4,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:YukkuriMovieMaker.Controls;assembly=YukkuriMovieMaker.Plugin"
+             xmlns:plugin="clr-namespace:VTuberKitForYMM4.Plugin"
+             xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
              mc:Ignorable="d"
              x:Name="this"
-             d:DesignWidth="640"
-             MinWidth="360">
+             d:DesignWidth="640">
     <UserControl.Resources>
-        <Style x:Key="AnimationSliderHoldCheckBoxStyle" TargetType="CheckBox">
-            <Setter Property="Width" Value="26" />
+        <Style x:Key="AnimationSliderHoldToggleButtonStyle" TargetType="controls:ToggleSlider">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
     </UserControl.Resources>
-    <Grid MinWidth="360">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,6" MinWidth="360">
+        <Grid Grid.Row="0" Margin="0,0,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -36,34 +36,41 @@
                     Click="ReloadButton_Click" />
         </Grid>
 
-        <TabControl Grid.Row="1" MinWidth="360">
-            <TabItem Header="Param">
+        <TabControl Grid.Row="1">
+            <TabItem Header="{x:Static plugin:Translate.Ui_Tab_Param}">
                 <Expander x:Name="ParameterExpander"
                           Margin="0,0,0,6"
                           IsExpanded="False"
                           Expanded="ParameterExpander_Expanded"
                           Collapsed="ParameterExpander_Collapsed">
                     <Expander.Header>
-                        <TextBlock Text="Param一覧" />
+                        <TextBlock Text="{x:Static plugin:Translate.Ui_ParamList_Name}" />
                     </Expander.Header>
                     <ListBox x:Name="ParameterList"
                              Margin="0,4,0,0"
                              MaxHeight="720"
                              Background="Transparent"
                              BorderThickness="0"
+                             SizeChanged="ParameterList_SizeChanged"
                              ScrollViewer.CanContentScroll="True"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <primitives:UniformGrid Columns="{Binding ElementName=this, Path=ParameterColumns}" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
                             </Style>
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="0,0,0,6"
-                                        Padding="2,2,0,2"
+                                        Padding="2,2,2,2"
                                         Background="Transparent">
                                     <Grid>
                                         <Grid.RowDefinitions>
@@ -98,12 +105,11 @@
                                                                   DefaultMax="{Binding Max}"
                                                                   Loaded="DetailAnimationSlider_Loaded"
                                                                   DataContextChanged="DetailAnimationSlider_DataContextChanged" />
-                                        <CheckBox Grid.Row="1"
-                                                  Grid.Column="1"
-                                                  Style="{StaticResource AnimationSliderHoldCheckBoxStyle}"
-                                                  IsChecked="{Binding Hold, Mode=TwoWay}"
-                                                  Checked="CheckBox_Changed"
-                                                  Unchecked="CheckBox_Changed" />
+                                        <controls:ToggleSlider Grid.Row="1"
+                                                               Grid.Column="1"
+                                                               Margin="0,0,6,0"
+                                                               Style="{StaticResource AnimationSliderHoldToggleButtonStyle}"
+                                                               Value="{Binding Hold, Mode=TwoWay}" />
                                         <Button Grid.Row="1"
                                                 Grid.Column="2"
                                                 Width="26"
@@ -117,33 +123,40 @@
                     </ListBox>
                 </Expander>
             </TabItem>
-            <TabItem Header="Part">
+            <TabItem Header="{x:Static plugin:Translate.Ui_Tab_Part}">
                 <Expander x:Name="PartExpander"
                           Margin="0,0,0,6"
                           IsExpanded="False"
                           Expanded="PartExpander_Expanded"
                           Collapsed="PartExpander_Collapsed">
                     <Expander.Header>
-                        <TextBlock Text="Part一覧" />
+                        <TextBlock Text="{x:Static plugin:Translate.Ui_PartList_Name}" />
                     </Expander.Header>
                     <ListBox x:Name="PartList"
                              Margin="0,4,0,0"
                              MaxHeight="720"
                              Background="Transparent"
                              BorderThickness="0"
+                             SizeChanged="PartList_SizeChanged"
                              ScrollViewer.CanContentScroll="True"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <primitives:UniformGrid Columns="{Binding ElementName=this, Path=PartColumns}" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
                             </Style>
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="0,0,0,6"
-                                        Padding="2,2,0,2"
+                                        Padding="2,2,2,2"
                                         Background="Transparent">
                                     <Grid>
                                         <Grid.RowDefinitions>
@@ -178,12 +191,11 @@
                                                                   DefaultMax="1"
                                                                   Loaded="DetailAnimationSlider_Loaded"
                                                                   DataContextChanged="DetailAnimationSlider_DataContextChanged" />
-                                        <CheckBox Grid.Row="1"
-                                                  Grid.Column="1"
-                                                  Style="{StaticResource AnimationSliderHoldCheckBoxStyle}"
-                                                  IsChecked="{Binding Hold, Mode=TwoWay}"
-                                                  Checked="CheckBox_Changed"
-                                                  Unchecked="CheckBox_Changed" />
+                                        <controls:ToggleSlider Grid.Row="1"
+                                                               Grid.Column="1"
+                                                               Margin="0,0,6,0"
+                                                               Style="{StaticResource AnimationSliderHoldToggleButtonStyle}"
+                                                               Value="{Binding Hold, Mode=TwoWay}" />
                                         <Button Grid.Row="1"
                                                 Grid.Column="2"
                                                 Width="26"

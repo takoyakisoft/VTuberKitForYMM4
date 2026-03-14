@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>es-es</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>Activa el parpadeo automático.</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>Parpadeo automático</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>Mueve la boca según el audio.</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>Sincronización labial automática</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>Nombre para mostrar usado al seleccionar desde puntos objetivo o cajas de impacto.</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>Nombre del personaje</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>Permite el movimiento respiratorio.</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>Habilitar respiración</value></data>
+<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>Mejora la calidad de la reducción de escala final cuando está activado. Más suave pero puede parecer un poco más suave. El valor predeterminado es APAGADO.</value></data>
+<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Habilita MSAA cuando está activado. Mejora los bordes con mayor costo. Se puede combinar con FXAA.</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Habilita la física Live2D.</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>Permitir</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>Configura el intervalo de parpadeo en segundos.</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>Intervalo de parpadeo</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>Selecciona una carpeta de modelo Live2D o un archivo .model3.json.</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>Carpeta del modelo</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>Agrega entrada física similar a un arrastre mientras una reacción de hit box está activa.</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>Física de la caja de impacto</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>Escala de renderizado interno. Los valores más altos mejoran la calidad superior (predeterminado: 2,0).</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>Escala interna</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>ID usado para asociar puntos objetivo y cajas de impacto. Se genera automáticamente si se deja vacío.</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>ID de vínculo</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>Ajusta la sensibilidad de la sincronización labial. Se recomienda 1.0.</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>Sensibilidad de sincronización labial</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>Solo parámetros de vocales</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>Mejora los bordes con menor costo.</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>Mayor calidad con más costo.</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>Recuento de muestras cuando MSAA está habilitado (2x / 4x).</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA Muestras</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 es estándar</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>Fuerza física</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Tamaño máximo del objetivo de renderizado interno en píxeles. Los valores más grandes mejoran la calidad pero utilizan más VRAM (predeterminado: 8192).</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>Tamaño máximo RT</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 lo desactiva. Los valores más altos aumentan la entrada aleatoria de viento.</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>Fuerza del viento</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>Verifique el contenido del .model3.json y todos los archivos a los que se hace referencia.</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>Seleccione una carpeta de modelo Live2D o un archivo .model3.json.</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json puede no ser válido</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>No se pudo cargar el modelo Live2D.</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Hay elementos que se deben verificar al cargar el modelo Live2D.</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>Verifique la ubicación del archivo .model3.json.</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>Hay elementos que se deben verificar al seleccionar el modelo Live2D.</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>Objetivo</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>Edita los parámetros estándar Cubism y los valores Param/Part específicos del modelo en una lista.</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>Lista</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>Selecciona una expresión de model3.json Expressions.</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>Desactiva la visibilidad cuando está activada.</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>Los bucles se enfrentan al movimiento cuando están activados.</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion Bucle</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>Selecciona un movimiento de model3.json Motions</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Compensación temporal agregada a la posición del artículo X.</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X Compensación</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>Compensación temporal agregada a la posición del artículo Y.</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Y Compensación</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>Desplazamiento temporal agregado a la rotación de artículos.</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>Desplazamiento de rotación</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>Compensación temporal agregada a la escala del artículo.</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>Desplazamiento de escala</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>Parpadeo</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>Respiración</value></data>
+<data name="Group_Link" xml:space="preserve"><value>Vinculación</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>Sincronización labial</value></data>
+<data name="Group_Model" xml:space="preserve"><value>Modelo</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>Parámetros</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>Física</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>Calidad de renderizado</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>Selecciona el carácter Live2D vinculado.</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>Personaje</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>Edita los valores Param / Part aplicados temporalmente mientras el hit está activo.</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>Lista</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>Expression se anula temporalmente cuando se activa el cuadro de impacto.</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>Altura del rectángulo.</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>Altura</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>Selecciona el objetivo de reacción de HitAreas en model3.json. Utiliza Id cuando Name está vacío.</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>Área de impacto</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>ID de enlace</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>Motion se reproduce una vez cuando se activa el cuadro de impacto.</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>Ancho del rectángulo.</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>Ancho</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>Centro del rectángulo X.</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>Centro del rectángulo Y.</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>Edita los valores Param / Part aplicados continuamente a todo el modelo. Los ajustes del lado frontal tienen prioridad cuando están presentes.</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>Lista</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>Selecciona una expresión de model3.json Expressions.</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>Desactiva la visibilidad cuando está activada.</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>Realiza un bucle del movimiento cuando está activado.</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion Bucle</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>Selecciona el movimiento para realizar un bucle mientras el modelo está visible</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>Modelo multiplicar color A.</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>Opacidad</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>Modelo multiplicar color B.</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>Multiplicar color B</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>Modelo multiplicar color G.</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>Multiplicar color G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>Modelo multiplicar color R.</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>Multiplicar color R</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>X desplazamiento para la colocación del modelo.</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>Y desplazamiento para la colocación del modelo.</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>Ángulo de rotación de la pantalla del modelo.</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>Rotación</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>Escala de visualización del modelo.</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>Escala</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>D3D11 error en la inicialización del dispositivo: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>Live2D error de inicialización: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() devolvió nulo.</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>Se produjo un error al actualizar Live2D: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>ModelMetadataCatalog.{0} falló: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>Área de impacto de Live2D</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>Punto objetivo de Live2D</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>Ángulo X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>Ángulo Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>Ángulo Z</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>brazo izquierdo A</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>brazo izquierdo B</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>brazo derecho A</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>brazo derecho B</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>General izquierda/derecha</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>General arriba/abajo</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>Rotación del cuerpo X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>Rotación del cuerpo Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>Rotación del cuerpo Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>Aliento</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>Ángulo de la ceja izquierda</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>Deformación de la ceja izquierda</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>Ceja izquierda Izquierda/Derecha</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>Ceja izquierda arriba/abajo</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>Ángulo de la ceja derecha</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>Deformación de la ceja derecha</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>Ceja derecha Izquierda/Derecha</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>Ceja derecha arriba/abajo</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>Física mamaria X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>Física mamaria Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>Mejilla</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>Escala del globo ocular</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>Globo ocular X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>Globo ocular Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>Ojo izquierdo abrir/cerrar</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>Ojo izquierdo Sonriendo</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>Ojo derecho abrir/cerrar</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>Ojo derecho Sonriendo</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>Movimiento del cabello hacia atrás</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>Columpio de pelo esponjoso</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>Oscilación del cabello frente</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>Movimiento del cabello hacia los lados</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>mano izquierda</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>Derecha</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>Deformación de la boca</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>Boca abierta/cerrada</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>Encogimiento de hombros</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>Selecciona el carácter Live2D vinculado.</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>Personaje</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>ID de enlace</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>Tamaño de visualización de la guía.</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>Tamaño</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>Objetivo X en el espacio modelo.</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>Objetivo Y en el espacio modelo.</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(Ninguno)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Lista Param</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Lista Part</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>DisplayInfo archivo no encontrado: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>Expression archivo no encontrado: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression Falta la configuración del archivo: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>Falta FileReferences</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>Hay un elemento HitAreas sin Id configurado.</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>Moc archivo no encontrado: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>Moc no está configurado.</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>Se produjo una excepción al analizar model3.json.</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>Motion archivo no encontrado: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion Falta la configuración del archivo: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Se encontraron varios archivos .model3.json en la carpeta</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(Sin nombre)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>Archivo de física no encontrado: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>Texture archivo no encontrado: {0}</value></data>
+</root>

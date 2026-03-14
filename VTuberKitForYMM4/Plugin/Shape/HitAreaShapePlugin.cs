@@ -17,7 +17,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
 {
     public class HitAreaShapePlugin : IShapePlugin
     {
-        public string Name => "Live2Dヒットボックス";
+        public string Name => Translate.Plugin_HitArea_Name;
         public bool IsExoShapeSupported => false;
         public bool IsExoMaskSupported => false;
 
@@ -28,7 +28,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
     {
         private InteractionTargetViewModel? targetCharacter;
 
-        [Display(GroupName = "連携", Name = "対象キャラクター", Description = "連携する Live2D キャラクターを選択します")]
+        [Display(Name = nameof(Translate.Hit_Character_Name), Description = nameof(Translate.Hit_Character_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public InteractionTargetViewModel TargetCharacter
         {
@@ -56,7 +56,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             }
         }
 
-        [Display(GroupName = "連携", Name = "リンクID", Description = "内部識別子。通常は対象キャラクター選択で自動設定されます")]
+        [Display(Name = nameof(Translate.Hit_LinkId_Name), Description = nameof(Translate.Hit_LinkId_Desc), ResourceType = typeof(Translate))]
         public string LinkId
         {
             get
@@ -81,7 +81,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         }
         string linkId = string.Empty;
 
-        [Display(GroupName = "連携", Name = "キャラクターヒットエリア", Description = "model3.json の HitAreas から反応対象を選択します。Name が空のモデルでは Id を使います")]
+        [Display(Name = nameof(Translate.Hit_HitArea_Name), Description = nameof(Translate.Hit_HitArea_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public HitAreaIdViewModel HitArea { get; set; }
 
@@ -105,7 +105,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         }
         string hitAreaName = string.Empty;
 
-        [Display(GroupName = "反応", Name = "モーション", Description = "ヒットボックスが当たった時に1回再生するモーション", Order = 1)]
+        [Display(Name = nameof(Translate.Hit_Motion_Name), Description = nameof(Translate.Hit_Motion_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public MotionViewModel Motion { get; set; }
 
@@ -152,7 +152,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         }
         int motionIndex = -1;
 
-        [Display(GroupName = "反応", Name = "表情", Description = "ヒットボックスが当たった時に一時的に上書きする表情", Order = 2)]
+        [Display(Name = nameof(Translate.Hit_Expression_Name), Description = nameof(Translate.Hit_Expression_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public ExpressionViewModel Expression { get; set; }
 
@@ -176,21 +176,39 @@ namespace VTuberKitForYMM4.Plugin.Shape
         }
         string expressionId = string.Empty;
 
-        [Display(Name = "X", Description = "矩形中心X")]
-        [AnimatedHoldSlider("F2", "", -1.0, 1.0)]
-        public Animation X { get; } = new Animation(0, -1, 1);
+        [Display(Name = nameof(Translate.Hit_IsHidden_Name), Description = nameof(Translate.Hit_IsHidden_Desc), ResourceType = typeof(Translate))]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool IsHidden { get => isHidden; set => Set(ref isHidden, value); }
+        bool isHidden;
 
-        [Display(Name = "Y", Description = "矩形中心Y")]
-        [AnimatedHoldSlider("F2", "", -1.0, 1.0)]
-        public Animation Y { get; } = new Animation(0, -1, 1);
+        [Display(Name = nameof(Translate.Hit_X_Name), Description = nameof(Translate.Hit_X_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation X { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "幅", Description = "矩形幅")]
-        [AnimatedHoldSlider("F2", "", 0.02, 2.0)]
-        public Animation Width { get; } = new Animation(0.2, 0.02, 2.0);
+        [Display(Name = nameof(Translate.Hit_Y_Name), Description = nameof(Translate.Hit_Y_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation Y { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "高さ", Description = "矩形高さ")]
-        [AnimatedHoldSlider("F2", "", 0.02, 2.0)]
-        public Animation Height { get; } = new Animation(0.2, 0.02, 2.0);
+        [Display(Name = nameof(Translate.Hit_Width_Name), Description = nameof(Translate.Hit_Width_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", 0.0, 500.0)]
+        public Animation Width { get; } = new Animation(200, 0, 100000);
+
+        [Display(Name = nameof(Translate.Hit_Height_Name), Description = nameof(Translate.Hit_Height_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", 0.0, 500.0)]
+        public Animation Height { get; } = new Animation(200, 0, 100000);
+
+        [Display(GroupName = nameof(Translate.Group_Parameter), Name = nameof(Translate.Hit_DynamicOverrides_Name), Description = nameof(Translate.Hit_DynamicOverrides_Desc), ResourceType = typeof(Translate))]
+        [DynamicFaceOverridesEditor(PropertyEditorSize = PropertyEditorSize.FullWidth)]
+        public Live2DFaceDynamicOverrides DynamicOverrides { get; } = new();
+
+        [Browsable(false)]
+        public int DynamicOverridesRevision
+        {
+            get => dynamicOverridesRevision;
+            private set => Set(ref dynamicOverridesRevision, value);
+        }
+        int dynamicOverridesRevision;
 
         public HitAreaShapeParameter(SharedDataStore? sharedData) : base(sharedData)
         {
@@ -198,6 +216,11 @@ namespace VTuberKitForYMM4.Plugin.Shape
             Motion = new MotionViewModel("Idle", modelPathProvider: ResolveTargetModelFile);
             Expression = new ExpressionViewModel("exp", ResolveTargetModelFile);
             TargetCharacter = CreateTargetCharacter();
+            HitArea.PropertyChanged += HitArea_PropertyChanged;
+            Motion.PropertyChanged += Motion_PropertyChanged;
+            Expression.PropertyChanged += Expression_PropertyChanged;
+            DynamicOverrides.PropertyChanged += DynamicOverrides_PropertyChanged;
+            SyncDynamicOverridesModelFile();
         }
 
         public HitAreaShapeParameter() : this(null)
@@ -210,7 +233,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
 
         public override IShapeSource CreateShapeSource(IGraphicsDevicesAndContext devices) => new HitAreaShapeSource(devices, this);
 
-        protected override IEnumerable<IAnimatable> GetAnimatables() => [X, Y, Width, Height];
+        protected override IEnumerable<IAnimatable> GetAnimatables() => [X, Y, Width, Height, DynamicOverrides];
 
         protected override void LoadSharedData(SharedDataStore store)
         {
@@ -226,6 +249,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             Y.CopyFrom(data.Y);
             Width.CopyFrom(data.Width);
             Height.CopyFrom(data.Height);
+            IsHidden = data.IsHidden;
         }
 
         protected override void SaveSharedData(SharedDataStore store)
@@ -287,13 +311,64 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 Motion.UpdateSelectedValue();
                 Expression.UpdateItemsSource();
                 Expression.UpdateSelectedValue();
+                SyncDynamicOverridesModelFile();
             }
+
+            OnPropertyChanged(nameof(TargetCharacter));
+            OnPropertyChanged(nameof(LinkId));
+        }
+
+        private void HitArea_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(HitAreaIdViewModel.SelectedId))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(HitArea));
+            OnPropertyChanged(nameof(HitAreaName));
+        }
+
+        private void Motion_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(MotionViewModel.SelectedGroup) &&
+                e.PropertyName != nameof(MotionViewModel.SelectedIndex) &&
+                e.PropertyName != nameof(MotionViewModel.SelectedValue))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(Motion));
+            OnPropertyChanged(nameof(MotionGroup));
+            OnPropertyChanged(nameof(MotionIndex));
+        }
+
+        private void Expression_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(ExpressionViewModel.SelectedExpressionId))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(Expression));
+            OnPropertyChanged(nameof(ExpressionId));
         }
 
         private string ResolveTargetModelFile()
         {
             var resolvedLinkId = LinkId;
             return Live2DInteractionStore.GetInteractionTargetModelFile(resolvedLinkId);
+        }
+
+        private void SyncDynamicOverridesModelFile()
+        {
+            DynamicOverrides.ModelFile = ResolveTargetModelFile();
+        }
+
+        private void DynamicOverrides_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            DynamicOverridesRevision++;
+            OnPropertyChanged(nameof(DynamicOverrides));
         }
 
         private void ClearReactionSelections()
@@ -342,6 +417,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             public Animation Y { get; } = new Animation(0, -1, 1);
             public Animation Width { get; } = new Animation(0.2, 0.02, 2.0);
             public Animation Height { get; } = new Animation(0.2, 0.02, 2.0);
+            public bool IsHidden { get; set; }
 
             public SharedData(HitAreaShapeParameter parameter)
             {
@@ -354,6 +430,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 Y.CopyFrom(parameter.Y);
                 Width.CopyFrom(parameter.Width);
                 Height.CopyFrom(parameter.Height);
+                IsHidden = parameter.IsHidden;
             }
         }
     }
@@ -384,6 +461,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         private float transformHitTestScaleY = 1.0f;
         private float transformHitTestTranslateX;
         private float transformHitTestTranslateY;
+        private bool isHidden;
 
         public ID2D1Image Output => commandList ?? throw new InvalidOperationException($"{nameof(commandList)} is null.");
 
@@ -410,6 +488,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var newScreenWidth = Math.Max(1, timelineItemSourceDescription.ScreenSize.Width);
             var newScreenHeight = Math.Max(1, timelineItemSourceDescription.ScreenSize.Height);
             var transform = GetTransformState(newLinkId);
+            var newIsHidden = parameter.IsHidden;
 
             var newIsHit = isHit;
             if (string.IsNullOrWhiteSpace(newLinkId))
@@ -426,6 +505,8 @@ namespace VTuberKitForYMM4.Plugin.Shape
                     parameter.ExpressionId,
                     parameter.MotionGroup,
                     parameter.MotionIndex,
+                    ResolveParameterOverrides(frame, length, fps),
+                    ResolvePartOverrides(frame, length, fps),
                     newX,
                     newY,
                     newWidth,
@@ -455,7 +536,8 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 transformHitTestScaleY == transform.HitTestScaleY &&
                 transformHitTestTranslateX == transform.HitTestTranslateX &&
                 transformHitTestTranslateY == transform.HitTestTranslateY &&
-                this.isHit == newIsHit)
+                this.isHit == newIsHit &&
+                isHidden == newIsHidden)
                 return;
 
             var dc = devices.DeviceContext;
@@ -491,23 +573,25 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 transformHitTestScaleY = transform.HitTestScaleY;
                 transformHitTestTranslateX = transform.HitTestTranslateX;
                 transformHitTestTranslateY = transform.HitTestTranslateY;
+                isHidden = newIsHidden;
                 return;
             }
-
-            var topLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var topRight = TransformPoint(transform, newX + newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var bottomRight = TransformPoint(transform, newX + newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var bottomLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
-            var activeBrush = newIsHit ? hitBrush : missBrush;
-            var center = TransformPoint(transform, newX, newY, newScreenWidth, newScreenHeight);
 
             dc.Target = commandList;
             dc.BeginDraw();
             dc.Clear(null);
-            dc.DrawLine(topLeft, topRight, activeBrush, 4.0f);
-            dc.DrawLine(topRight, bottomRight, activeBrush, 4.0f);
-            dc.DrawLine(bottomRight, bottomLeft, activeBrush, 4.0f);
-            dc.DrawLine(bottomLeft, topLeft, activeBrush, 4.0f);
+            if (!newIsHidden)
+            {
+                var topLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
+                var topRight = TransformPoint(transform, newX + newWidth / 2.0f, newY + newHeight / 2.0f, newScreenWidth, newScreenHeight);
+                var bottomRight = TransformPoint(transform, newX + newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
+                var bottomLeft = TransformPoint(transform, newX - newWidth / 2.0f, newY - newHeight / 2.0f, newScreenWidth, newScreenHeight);
+                var activeBrush = newIsHit ? hitBrush : missBrush;
+                dc.DrawLine(topLeft, topRight, activeBrush, 4.0f);
+                dc.DrawLine(topRight, bottomRight, activeBrush, 4.0f);
+                dc.DrawLine(bottomRight, bottomLeft, activeBrush, 4.0f);
+                dc.DrawLine(bottomLeft, topLeft, activeBrush, 4.0f);
+            }
             dc.EndDraw();
             dc.Target = null;
             commandList.Close();
@@ -530,11 +614,31 @@ namespace VTuberKitForYMM4.Plugin.Shape
             transformHitTestScaleY = transform.HitTestScaleY;
             transformHitTestTranslateX = transform.HitTestTranslateX;
             transformHitTestTranslateY = transform.HitTestTranslateY;
+            isHidden = newIsHidden;
         }
 
         private static Vector2 TransformPoint(Live2DInteractionStore.InteractionTransformState state, float x, float y, int screenWidth, int screenHeight)
         {
-            return InteractionShapeTransform.TransformHitBoxPointToPixel(new Vector2(x, y), Vector2.Zero, state, screenWidth, screenHeight);
+            var localPoint = InteractionShapeTransform.PixelToLocal(new Vector2(x, y), screenWidth, screenHeight);
+            return InteractionShapeTransform.TransformHitBoxPointToPixel(localPoint, Vector2.Zero, state, screenWidth, screenHeight);
+        }
+
+        private Live2DInteractionStore.HitAreaParameterOverrideState[] ResolveParameterOverrides(long frame, long length, int fps)
+        {
+            return parameter.DynamicOverrides.GetParameterRowsSnapshot()
+                .Where(x => x.Hold && !string.IsNullOrWhiteSpace(x.Id))
+                .Select(x => new Live2DInteractionStore.HitAreaParameterOverrideState(x.Id, x.GetValue(frame, length, fps)))
+                .ToArray();
+        }
+
+        private Live2DInteractionStore.HitAreaPartOverrideState[] ResolvePartOverrides(long frame, long length, int fps)
+        {
+            return parameter.DynamicOverrides.GetPartRowsSnapshot()
+                .Where(x => x.Hold && !string.IsNullOrWhiteSpace(x.Id))
+                .Select(x => new Live2DInteractionStore.HitAreaPartOverrideState(
+                    x.Id,
+                    Math.Clamp((float)x.Opacity.GetValue(frame, length, fps), 0.0f, 1.0f)))
+                .ToArray();
         }
 
         private static Live2DInteractionStore.InteractionTransformState GetTransformState(string linkId)
@@ -544,7 +648,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 return state;
             }
 
-            return new Live2DInteractionStore.InteractionTransformState(0, 0, 1, 0, 0, 0, 1, 1, 0, 0);
+            return new Live2DInteractionStore.InteractionTransformState(0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1920, 1080);
         }
 
         public void Dispose()

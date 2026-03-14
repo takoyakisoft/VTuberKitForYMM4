@@ -7,36 +7,16 @@ namespace VTuberKitForYMM4.Plugin
 {
     public class Live2DTachiePlugin : ITachiePlugin, IDisposable
     {
-        public string Name => "VTuberKit Live2D";
+        public string Name => Translate.Plugin_Live2D_Name;
 
         public bool HasScriptFile => false;
 
-        private bool _isLive2DInitialized = false;
-
         public Live2DTachiePlugin()
         {
-            try
-            {
-                var manager = Live2DManager.GetInstance();
-                if (manager != null)
-                {
-                    manager.Initialize();
-                    _isLive2DInitialized = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Commons.ConsoleManager.Error($"Live2D Plugin Init Error: {ex.Message}");
-            }
         }
 
         public void Dispose()
         {
-            if (_isLive2DInitialized)
-            {
-                Live2DManager.GetInstance()?.Release();
-                _isLive2DInitialized = false;
-            }
         }
 
         public ITachieCharacterParameter CreateCharacterParameter()

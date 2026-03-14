@@ -17,11 +17,11 @@ namespace VTuberKitForYMM4.Plugin
             DynamicOverrides.PropertyChanged += DynamicOverrides_PropertyChanged;
         }
 
-        [Display(Name = "モーション", Description = "model3.json の Motions から選択（Idle含む）")]
+        [Display(Name = nameof(Translate.Face_Motion_Name), Description = nameof(Translate.Face_Motion_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public MotionViewModel Motion { get; set; }
 
-        [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
+        [Display(Name = nameof(Translate.Face_Expression_Name), Description = nameof(Translate.Face_Expression_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public ExpressionViewModel Expression { get; set; }
 
@@ -70,19 +70,17 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
-        [Display(Name = "モーションループ", Description = "ONで face モーションを繰り返し再生します")]
+        [Display(Name = nameof(Translate.Face_MotionLoop_Name), Description = nameof(Translate.Face_MotionLoop_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         [DefaultValue(false)]
         public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
         bool motionLoop = false;
 
-        [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
-        [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
-        public Animation Opacity { get; } = new(1, 0, 1);
-
-        [Browsable(false)]
-        public bool OpacityHold { get => opacityHold; set => Set(ref opacityHold, value); }
-        bool opacityHold;
+        [Display(Name = nameof(Translate.Face_IsHidden_Name), Description = nameof(Translate.Face_IsHidden_Desc), ResourceType = typeof(Translate))]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool IsHidden { get => isHidden; set => Set(ref isHidden, value); }
+        bool isHidden;
 
         [Browsable(false)]
         [AnimatedHoldSlider("F3", "", 0.0, 1.0)]
@@ -188,23 +186,23 @@ namespace VTuberKitForYMM4.Plugin
         public bool ArmRAHold { get => armRAHold; set => Set(ref armRAHold, value); }
         bool armRAHold;
 
-        [Display(Name = "表示位置Xオフセット", Description = "Itemの位置Xに加算する一時オフセット")]
-        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
-        public Animation OffsetPositionX { get; } = new Animation(0, -2, 2);
+        [Display(Name = nameof(Translate.Face_OffsetPositionX_Name), Description = nameof(Translate.Face_OffsetPositionX_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation OffsetPositionX { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "表示位置Yオフセット", Description = "Itemの位置Yに加算する一時オフセット")]
-        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
-        public Animation OffsetPositionY { get; } = new Animation(0, -2, 2);
+        [Display(Name = nameof(Translate.Face_OffsetPositionY_Name), Description = nameof(Translate.Face_OffsetPositionY_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation OffsetPositionY { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "表示拡大率オフセット", Description = "Itemの拡大率に加算する一時オフセット")]
-        [AnimatedHoldSlider("F3", "x", -2.0, 2.0)]
-        public Animation OffsetScale { get; } = new Animation(0, -2, 2);
+        [Display(Name = nameof(Translate.Face_OffsetScale_Name), Description = nameof(Translate.Face_OffsetScale_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 400.0)]
+        public Animation OffsetScale { get; } = new Animation(100, 0, 100000);
 
-        [Display(Name = "表示回転オフセット", Description = "Itemの回転に加算する一時オフセット")]
-        [AnimatedHoldSlider("F1", "°", -180.0, 180.0)]
-        public Animation OffsetRotation { get; } = new Animation(0, -180, 180);
+        [Display(Name = nameof(Translate.Face_OffsetRotation_Name), Description = nameof(Translate.Face_OffsetRotation_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "°", -360.0, 360.0)]
+        public Animation OffsetRotation { get; } = new Animation(0, -360, 360);
 
-        [Display(GroupName = "パラメータ", Name = "一覧", Description = "Cubism標準パラメータとモデル固有のParam/Partを一覧で編集します。")]
+        [Display(GroupName = nameof(Translate.Group_Parameter), Name = nameof(Translate.Face_DynamicOverrides_Name), Description = nameof(Translate.Face_DynamicOverrides_Desc), ResourceType = typeof(Translate))]
         [DynamicFaceOverridesEditor(PropertyEditorSize = PropertyEditorSize.FullWidth)]
         public Live2DFaceDynamicOverrides DynamicOverrides { get; } = new();
 
@@ -218,7 +216,6 @@ namespace VTuberKitForYMM4.Plugin
 
         protected override IEnumerable<IAnimatable> GetAnimatables() =>
         [
-            Opacity,
             OffsetPositionX,
             OffsetPositionY,
             OffsetScale,

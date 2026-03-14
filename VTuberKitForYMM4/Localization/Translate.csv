@@ -1,0 +1,203 @@
+﻿Key,comment,ja-jp,en-us,zh-cn,zh-tw,ko-kr,es-es,ar-sa,id-id
+Character_AutoEyeBlink_Desc,desc,自動でまばたきを行います,Enables automatic blinking.,自动执行眨眼。,自動進行眨眼。,자동으로 눈을 깜빡입니다.,Activa el parpadeo automático.,يُفعّل الرمش التلقائي.,Mengaktifkan kedipan otomatis.
+Character_AutoEyeBlink_Name,name,自動まばたき,Auto Blink,自动眨眼,自動眨眼,자동 눈깜빡임,Parpadeo automático,رمش تلقائي,Kedipan otomatis
+Character_AutoLipSync_Desc,desc,音声に連動して口を動かします,Moves the mouth based on audio.,根据音频驱动嘴部动作。,根據音訊驅動嘴部動作。,오디오에 맞춰 입을 움직입니다.,Mueve la boca según el audio.,يحرك الفم بناءً على الصوت.,Menggerakkan mulut berdasarkan audio.
+Character_AutoLipSync_Name,name,自動口パク,Auto Lip Sync,自动口型同步,自動口型同步,자동 립싱크,Sincronización labial automática,مزامنة شفاه تلقائية,Sinkronisasi bibir otomatis
+Character_DisplayName_Desc,desc,複数キャラクター時にターゲットポイント/ヒットボックスから選ぶための表示名,Display name used when selecting from target points or hit boxes.,多角色时用于在目标点或命中框中选择的显示名称。,多角色時用於在目標點或命中框中選擇的顯示名稱。,여러 캐릭터가 있을 때 타깃 포인트/히트박스에서 선택할 표시 이름입니다.,Nombre para mostrar usado al seleccionar desde puntos objetivo o cajas de impacto.,اسم عرض يُستخدم عند الاختيار من نقاط الهدف أو صناديق الإصابة.,Nama tampilan yang digunakan saat memilih dari titik target atau hit box.
+Character_DisplayName_Name,name,キャラクター名,Character Name,角色名,角色名稱,캐릭터 이름,Nombre del personaje,اسم الشخصية,Nama karakter
+Character_EnableBreath_Desc,desc,呼吸モーションを有効にします,Enables breathing motion.,启用呼吸动作。,啟用呼吸動作。,호흡 모션을 활성화합니다.,Permite el movimiento respiratorio.,تمكن من حركة التنفس.,Memungkinkan gerakan pernapasan.
+Character_EnableBreath_Name,name,呼吸有効,Enable Breath,启用呼吸,啟用呼吸,호흡 활성화,Habilitar respiración,تمكين التنفس,Aktifkan Nafas
+Character_EnableFxaa_Desc,desc,ONで最終縮小時の補間を高品質化（滑らか寄り、ややソフトになる場合あり）。既定はOFF,Improves final downscale quality when ON. Smoother but can look slightly softer. Default is OFF.,开启后提高最终缩小时的质量。更平滑，但可能稍微变软。默认关闭。,開啟後提高最終縮小時的品質。較平滑，但可能稍微偏柔。預設關閉。,켜면 최종 축소 시 품질이 향상됩니다. 더 부드럽지만 약간 흐려질 수 있습니다. 기본값은 OFF입니다.,Mejora la calidad de la reducción de escala final cuando está activado. Más suave pero puede parecer un poco más suave. El valor predeterminado es APAGADO.,يعمل على تحسين جودة التصغير النهائية عند التشغيل. أكثر سلاسة ولكن يمكن أن تبدو أكثر ليونة قليلاً. الافتراضي هو إيقاف.,Meningkatkan kualitas penurunan akhir saat AKTIF. Lebih halus tetapi bisa terlihat sedikit lebih lembut. Standarnya MATI.
+Character_EnableFxaa_Name,name,FXAA,FXAA,FXAA,FXAA,FXAA,FXAA,FXAA,FXAA
+Character_EnableMsaa_Desc,desc,ONでMSAAを有効化（エッジ改善、負荷増）。FXAAと併用可,Enables MSAA when ON. Improves edges with higher cost. Can be combined with FXAA.,开启后启用 MSAA。改善边缘但会增加负载。可与 FXAA 同时使用。,開啟後啟用 MSAA。改善邊緣但會增加負載。可與 FXAA 併用。,켜면 MSAA를 활성화합니다. 가장자리를 개선하지만 부하가 증가합니다. FXAA와 함께 사용할 수 있습니다.,Habilita MSAA cuando está activado. Mejora los bordes con mayor costo. Se puede combinar con FXAA.,تمكين MSAA عند التشغيل. يحسن الحواف بتكلفة أعلى. يمكن دمجه مع FXAA.,Mengaktifkan MSAA saat AKTIF. Meningkatkan tepian dengan biaya lebih tinggi. Dapat dikombinasikan dengan FXAA.
+Character_EnableMsaa_Name,name,MSAA,MSAA,MSAA,MSAA,MSAA,MSAA,MSAA,MSAA
+Character_EnablePhysics_Desc,desc,Live2D の物理演算を有効にします,Enables Live2D physics.,启用 Live2D 物理演算。,啟用 Live2D 物理演算。,Live2D 물리 연산을 활성화합니다.,Habilita la física Live2D.,تمكين فيزياء Live2D.,Mengaktifkan fisika Live2D.
+Character_EnablePhysics_Name,name,使う,Enable,启用,啟用,사용,Permitir,يُمكَِن,Memungkinkan
+Character_EyeBlinkInterval_Desc,desc,まばたきの間隔を秒単位で設定します,Sets blink interval in seconds.,以秒设置眨眼间隔。,以秒設定眨眼間隔。,눈깜빡임 간격을 초 단위로 설정합니다.,Configura el intervalo de parpadeo en segundos.,يضبط فاصل الرمش بالثواني.,Mengatur interval kedipan dalam detik.
+Character_EyeBlinkInterval_Name,name,目パチ間隔,Blink Interval,眨眼间隔,眨眼間隔,눈깜빡임 간격,Intervalo de parpadeo,فاصل الرمش,Interval kedipan
+Character_File_Desc,desc,Live2Dモデルのフォルダ、または .model3.json ファイルを指定してください,Select a Live2D model folder or .model3.json file.,请选择 Live2D 模型文件夹或 .model3.json 文件。,請選擇 Live2D 模型資料夾或 .model3.json 檔案。,Live2D 모델 폴더 또는 .model3.json 파일을 선택하세요.,Selecciona una carpeta de modelo Live2D o un archivo .model3.json.,حدد مجلد نموذج Live2D أو ملف .model3.json.,Pilih folder model Live2D atau file .model3.json.
+Character_File_Name,name,モデルフォルダ,Model Folder,模型文件夹,模型資料夾,모델 폴더,Carpeta del modelo,مجلد النموذج,Folder model
+Character_HitAreaPhysicsStrength_Desc,desc,ヒットボックス反応中にドラッグ相当の物理入力を追加します,Adds drag-like physics input while a hit box reaction is active.,命中框反应期间添加类似拖拽的物理输入。,命中框反應期間加入類似拖曳的物理輸入。,히트박스 반응 중 드래그에 해당하는 물리 입력을 추가합니다.,Agrega entrada física similar a un arrastre mientras una reacción de hit box está activa.,يضيف مدخلات فيزيائية تشبه السحب بينما يكون تفاعل مربع النقر نشطًا.,Menambahkan masukan fisika seperti tarikan saat reaksi kotak hit aktif.
+Character_HitAreaPhysicsStrength_Name,name,ヒットボックス時の物理演算,Hit Box Physics,模型拖拽物理演算,拖曳物理效果,끌기 물리,Física de la caja de impacto,هيت بوكس ​​فيزياء,Fisika Kotak Pukulan
+Character_InternalRenderScale_Desc,desc,内部描画倍率。大きいほど拡大に強い（既定: 2.0）,Internal rendering scale. Larger values improve upscale quality (default: 2.0).,内部渲染倍率。越大越适合放大显示（默认 2.0）。,內部渲染倍率。越大越適合放大顯示（預設 2.0）。,내부 렌더링 배율입니다. 값이 클수록 확대에 강합니다(기본값: 2.0).,"Escala de renderizado interno. Los valores más altos mejoran la calidad superior (predeterminado: 2,0).",مقياس التقديم الداخلي. تعمل القيم الأكبر على تحسين الجودة العالية (الافتراضي: 2.0).,Skala rendering internal. Nilai yang lebih besar meningkatkan kualitas kelas atas (default: 2.0).
+Character_InternalRenderScale_Name,name,内部倍率,Internal Scale,内部倍率,內部倍率,내부 배율,Escala interna,مقياس داخلي,Skala Internal
+Character_LinkId_Desc,desc,ターゲットポイント/ヒットボックス図形と関連付けるID。空欄なら自動採番します,ID used to associate target points and hit boxes. Auto-generated when empty.,用于关联目标点和命中框图形的ID。留空时自动生成。,用於關聯目標點與命中框圖形的ID。留空時會自動產生。,타깃 포인트/히트박스와 연결할 ID입니다. 비워 두면 자동 생성됩니다.,ID usado para asociar puntos objetivo y cajas de impacto. Se genera automáticamente si se deja vacío.,معرّف يُستخدم لربط نقاط الهدف وصناديق الإصابة. يتم إنشاؤه تلقائيًا إذا تُرك فارغًا.,ID yang digunakan untuk mengaitkan titik target dan hit box. Dibuat otomatis jika kosong.
+Character_LinkId_Name,name,リンクID,Link ID,链接ID,連結ID,링크 ID,ID de vínculo,معرّف الربط,ID tautan
+Character_LipSyncGain_Desc,desc,口パクの感度を調整します。通常は 1.0 を推奨します,Adjusts lip sync sensitivity. 1.0 is recommended.,调整口型同步灵敏度。通常推荐 1.0。,調整口型同步靈敏度。通常建議 1.0。,립싱크 감도를 조정합니다. 보통 1.0을 권장합니다.,Ajusta la sensibilidad de la sincronización labial. Se recomienda 1.0.,يضبط حساسية مزامنة الشفاه. يوصى باستخدام 1.0.,Menyesuaikan sensitivitas sinkronisasi bibir. Disarankan 1.0.
+Character_LipSyncGain_Name,name,口パク感度,Lip Sync Gain,口型同步灵敏度,口型同步靈敏度,립싱크 감도,Sensibilidad de sincronización labial,حساسية مزامنة الشفاه,Sensitivitas sinkronisasi bibir
+Character_LipSyncVowelsOnly_Desc,desc,ONで ParamMouthOpenY / ParamMouthForm を更新せず、A / I / U / E / O の口形パラメータのみを更新します,When ON,updates only A / I / U / E / O vowel parameters instead of ParamMouthOpenY / ParamMouthForm.,开启后不会更新 ParamMouthOpenY / ParamMouthForm，而只更新 A / I / U / E / O 口形参数。,開啟後不更新 ParamMouthOpenY / ParamMouthForm，而只更新 A / I / U / E / O 口形參數。,Cuando está encendido,عندما تكون في وضع التشغيل,Saat AKTIF
+Character_LipSyncVowelsOnly_Name,name,口形パラメータのみ,Vowel Parameters Only,仅口形参数,僅口形參數,모음 파라미터만,Solo parámetros de vocales,معلمات حروف العلة فقط,Hanya parameter vokal
+Character_Msaa2x_Desc,preset desc,負荷を抑えつつ輪郭を改善,Improves edges with lower cost.,在较低负载下改善边缘。,以較低負載改善邊緣。,낮은 부하로 가장자리를 개선합니다.,Mejora los bordes con menor costo.,يحسن الحواف مع حمل أقل.,Memperbaiki tepi dengan beban lebih rendah.
+Character_Msaa2x_Name,preset,2x,2x,2x,2x,2x,2x,2x,2x
+Character_Msaa4x_Desc,preset desc,より高品質。負荷が増加,Higher quality with more cost.,更高质量，但负载更高。,更高品質，但負載更高。,더 높은 품질이지만 부하가 증가합니다.,Mayor calidad con más costo.,جودة أعلى مع حمل أكبر.,Kualitas lebih tinggi dengan beban lebih besar.
+Character_Msaa4x_Name,preset,4x,4x,4x,4x,4x,4x,4x,4x
+Character_MsaaSamplePreset_Desc,desc,MSAA ON時のサンプル数（2x / 4x）,Sample count when MSAA is enabled (2x / 4x).,MSAA 开启时的采样数（2x / 4x）。,MSAA 開啟時的取樣數（2x / 4x）。,MSAA 사용 시 샘플 수입니다(2x / 4x).,Recuento de muestras cuando MSAA está habilitado (2x / 4x).,عدد العينات عند تمكين MSAA (2x / 4x).,Jumlah sampel saat MSAA diaktifkan (2x / 4x).
+Character_MsaaSamplePreset_Name,name,MSAAサンプル,MSAA Samples,MSAA采样数,MSAA取樣數,MSAA 샘플 수,MSAA Muestras,MSAA العينات,MSAA Sampel
+Character_PhysicsStrength_Desc,desc,50 で標準、0 で物理結果を見えなくし、100 で約2倍まで強めます,50 is standard,0 hides physics effect,and 100 boosts it to about 2x.,50 为标准，0 为不显示物理效果，100 约为 2 倍强度。,50 es estándar,50 هو المعيار,50 adalah standar
+Character_PhysicsStrength_Name,name,物理の倍率,Physics Strength,物理强度,物理演算強度,물리 강도,Fuerza física,قوة الفيزياء,Kekuatan Fisika
+Character_RenderTargetMaxSize_Desc,desc,内部描画の最大ピクセルサイズ。大きいほど高品質だがVRAM消費増（既定: 8192）,Maximum internal render target size in pixels. Larger values improve quality but use more VRAM (default: 8192).,内部渲染目标的最大像素尺寸。越大质量越高，但会增加 VRAM 占用（默认 8192）。,內部渲染目標的最大像素尺寸。越大品質越高，但會增加 VRAM 使用量（預設 8192）。,내부 렌더 타깃의 최대 픽셀 크기입니다. 클수록 품질은 좋아지지만 VRAM 사용량이 증가합니다(기본값: 8192).,Tamaño máximo del objetivo de renderizado interno en píxeles. Los valores más grandes mejoran la calidad pero utilizan más VRAM (predeterminado: 8192).,الحد الأقصى لحجم هدف العرض الداخلي بالبكسل. تعمل القيم الأكبر على تحسين الجودة ولكنها تستخدم المزيد من VRAM (الافتراضي: 8192).,Ukuran target render internal maksimum dalam piksel. Nilai yang lebih besar meningkatkan kualitas tetapi menggunakan lebih banyak VRAM (default: 8192).
+Character_RenderTargetMaxSize_Name,name,RT最大サイズ,Max RT Size,RT最大尺寸,RT最大尺寸,RT 최대 크기,Tamaño máximo RT,الحجم الأقصى RT,Maks RT Ukuran
+Character_WindStrength_Desc,desc,0 で無効。値を上げるほどランダムな風入力を強めます,0 disables it. Higher values increase random wind input.,0 为禁用。值越高随机风输入越强。,0 為停用。數值越高隨機風輸入越強。,0이면 비활성화됩니다. 값이 높을수록 랜덤 바람 입력이 강해집니다.,0 lo desactiva. Los valores más altos aumentan la entrada aleatoria de viento.,0 تعطيله. تعمل القيم الأعلى على زيادة مدخلات الرياح العشوائية.,0 menonaktifkannya. Nilai yang lebih tinggi meningkatkan masukan angin acak.
+Character_WindStrength_Name,name,風の強さ,Wind Strength,风模拟,風力強度,바람 강도,Fuerza del viento,قوة الرياح,Kekuatan Angin
+Error_CheckModelFiles,error,.model3.json の内容と、参照しているファイル一式を確認してください。,Check the contents of the .model3.json and all referenced files.,请检查 .model3.json 的内容以及它引用的所有文件。,請檢查 .model3.json 的內容以及其參照的所有檔案。,.model3.json 내용과 참조 중인 파일 일체를 확인하세요.,Verifique el contenido del .model3.json y todos los archivos a los que se hace referencia.,تحقق من محتويات .model3.json وجميع الملفات المشار إليها.,Periksa konten .model3.json dan semua file yang direferensikan.
+Error_InvalidModelSelection,error,Live2Dモデルのフォルダ、または .model3.json を指定してください。,Select a Live2D model folder or .model3.json file.,请选择 Live2D 模型文件夹或 .model3.json 文件。,請選擇 Live2D 模型資料夾或 .model3.json 檔案。,Live2D 모델 폴더 또는 .model3.json 파일을 선택하세요.,Seleccione una carpeta de modelo Live2D o un archivo .model3.json.,حدد مجلد نموذج Live2D أو ملف .model3.json.,Pilih folder model Live2D atau file .model3.json.
+Error_ModelFilesMayBeInvalid,error,model3.json が壊れているか、参照先の moc3 / texture / motion ファイルが不足している可能性があります。,model3.json may be invalid,or referenced moc3 / texture / motion files may be missing.,model3.json 可能已损坏，或引用的 moc3 / texture / motion 文件可能缺失。,model3.json 可能已損壞，或參照的 moc3 / texture / motion 檔案可能缺失。,model3.json puede no ser válido,model3.json قد يكون غير صالح,model3.json mungkin tidak valid
+Error_ModelLoadFailed_Title,error,Live2Dモデルを読み込めませんでした。,Could not load the Live2D model.,无法加载 Live2D 模型。,無法載入 Live2D 模型。,Live2D 모델을 불러올 수 없습니다.,No se pudo cargar el modelo Live2D.,تعذر تحميل النموذج Live2D.,Tidak dapat memuat model Live2D.
+Error_ModelLoadWarnings_Title,error,Live2Dモデルの読込時に確認したい項目があります。,There are items to check when loading the Live2D model.,加载 Live2D 模型时有需要确认的项目。,載入 Live2D 模型時有需要確認的項目。,Live2D 모델 로드 시 확인할 항목이 있습니다.,Hay elementos que se deben verificar al cargar el modelo Live2D.,هناك عناصر يجب التحقق منها عند تحميل الطراز Live2D.,Ada item yang perlu diperiksa saat memuat model Live2D.
+Error_ModelPathCheck,error,.model3.json の場所を確認してください。,Check the location of the .model3.json file.,请确认 .model3.json 文件的位置。,請確認 .model3.json 檔案的位置。,.model3.json 파일 위치를 확인하세요.,Verifique la ubicación del archivo .model3.json.,تحقق من موقع الملف .model3.json.,Periksa lokasi file .model3.json.
+Error_ModelSelectionWarnings_Title,error,Live2Dモデル選択時に確認したい項目があります。,There are items to check when selecting the Live2D model.,选择 Live2D 模型时有需要确认的项目。,選擇 Live2D 模型時有需要確認的項目。,Live2D 모델 선택 시 확인할 항목이 있습니다.,Hay elementos que se deben verificar al seleccionar el modelo Live2D.,هناك عناصر يجب التحقق منها عند اختيار طراز Live2D.,Ada item yang perlu diperiksa saat memilih model Live2D.
+Error_TargetPath_Label,error,対象,Target,对象,對象,대상,Objetivo,هدف,Target
+Face_DynamicOverrides_Desc,desc,Cubism標準パラメータとモデル固有のParam/Partを一覧で編集します,Edits Cubism standard parameters and model-specific Param/Part values in a list.,以列表形式编辑 Cubism 标准参数和模型固有的 Param / Part。,以列表方式編輯 Cubism 標準參數與模型固有的 Param / Part。,Cubism 표준 파라미터와 모델 고유 Param / Part 를 목록으로 편집합니다.,Edita los parámetros estándar Cubism y los valores Param/Part específicos del modelo en una lista.,يقوم بتحرير المعلمات القياسية Cubism وقيم Param/Part الخاصة بالطراز في القائمة.,Mengedit parameter standar Cubism dan nilai Param/Part khusus model dalam daftar.
+Face_DynamicOverrides_Name,name,一覧,List,列表,列表,목록,Lista,قائمة,Daftar
+Face_Expression_Desc,desc,model3.json の Expressions から選択,Selects an expression from model3.json Expressions.,从 model3.json 的 Expressions 中选择。,從 model3.json 的 Expressions 中選擇。,model3.json 의 Expressions 에서 선택합니다.,Selecciona una expresión de model3.json Expressions.,تحديد تعبير من model3.json Expressions.,Memilih ekspresi dari model3.json Expressions.
+Face_Expression_Name,name,表情,Expression,表情,表情,표정,Expression,Expression,Expression
+Face_IsHidden_Desc,desc,ONで非表示、OFFで表示します,Turns visibility off when ON.,开启时隐藏，关闭时显示。,開啟時隱藏，關閉時顯示。,켜면 숨기고 끄면 표시합니다.,Desactiva la visibilidad cuando está activada.,يقوم بإيقاف الرؤية عند التشغيل.,Menonaktifkan visibilitas saat AKTIF.
+Face_IsHidden_Name,name,非表示,Hide,隐藏,隱藏,숨기기,Esconder,يخفي,Bersembunyi
+Face_MotionLoop_Desc,desc,ONで face モーションを繰り返し再生します,Loops face motion when ON.,开启后循环播放 face 动作。,開啟後循環播放 face 動作。,켜면 face 모션을 반복 재생합니다.,Los bucles se enfrentan al movimiento cuando están activados.,تواجه الحلقات الحركة عند التشغيل.,Loop gerakan wajah saat AKTIF.
+Face_MotionLoop_Name,name,モーションループ,Motion Loop,动作循环,動作循環,모션 루프,Motion Bucle,Motion حلقة,Motion Lingkaran
+Face_Motion_Desc,desc,model3.json の Motions から選択（Idle含む）,Selects a motion from model3.json Motions,including Idle.,从 model3.json 的 Motions 中选择（含 Idle）。,從 model3.json 的 Motions 中選擇（含 Idle）。,Selecciona un movimiento de model3.json Motions,تحديد حركة من model3.json Motions,Memilih gerakan dari model3.json Motions
+Face_Motion_Name,name,モーション,Motion,动作,動作,모션,Motion,Motion,Motion
+Face_OffsetPositionX_Desc,desc,Itemの位置Xに加算する一時オフセット,Temporary offset added to item X position.,加到 Item 的位置 X 上的临时偏移。,加到 Item 的位置 X 上的臨時偏移。,Item 위치 X 에 더하는 임시 오프셋입니다.,Compensación temporal agregada a la posición del artículo X.,تمت إضافة الإزاحة المؤقتة إلى موضع العنصر X.,Offset sementara ditambahkan ke posisi item X.
+Face_OffsetPositionX_Name,name,Xオフセット,X Offset,X偏移,X偏移,X 오프셋,X Compensación,X إزاحة,X Mengimbangi
+Face_OffsetPositionY_Desc,desc,Itemの位置Yに加算する一時オフセット,Temporary offset added to item Y position.,加到 Item 的位置 Y 上的临时偏移。,加到 Item 的位置 Y 上的臨時偏移。,Item 위치 Y 에 더하는 임시 오프셋입니다.,Compensación temporal agregada a la posición del artículo Y.,تمت إضافة الإزاحة المؤقتة إلى موضع العنصر Y.,Offset sementara ditambahkan ke posisi item Y.
+Face_OffsetPositionY_Name,name,Yオフセット,Y Offset,Y偏移,Y偏移,Y 오프셋,Y Compensación,Y إزاحة,Y Mengimbangi
+Face_OffsetRotation_Desc,desc,Itemの回転に加算する一時オフセット,Temporary offset added to item rotation.,加到 Item 旋转角上的临时偏移。,加到 Item 旋轉角上的臨時偏移。,Item 회전에 더하는 임시 오프셋입니다.,Desplazamiento temporal agregado a la rotación de artículos.,تمت إضافة الإزاحة المؤقتة لتدوير العنصر.,Offset sementara ditambahkan ke rotasi item.
+Face_OffsetRotation_Name,name,回転角オフセット,Rotation Offset,旋转偏移,旋轉偏移,회전각 오프셋,Desplazamiento de rotación,إزاحة التناوب,Perimbangan Rotasi
+Face_OffsetScale_Desc,desc,Itemの拡大率に加算する一時オフセット,Temporary offset added to item scale.,加到 Item 缩放率上的临时偏移。,加到 Item 縮放率上的臨時偏移。,Item 배율에 더하는 임시 오프셋입니다.,Compensación temporal agregada a la escala del artículo.,تمت إضافة الإزاحة المؤقتة إلى مقياس الصنف.,Offset sementara ditambahkan ke skala item.
+Face_OffsetScale_Name,name,拡大率オフセット,Scale Offset,缩放偏移,縮放偏移,배율 오프셋,Desplazamiento de escala,إزاحة النطاق,Perimbangan Skala
+Group_Blink,group,目パチ,Eye Blink,眨眼,眨眼,눈깜빡임,Parpadeo,الرمش,Kedipan
+Group_Breath,group,呼吸,Breath,呼吸,呼吸,호흡,Respiración,التنفس,Pernapasan
+Group_Link,group,連携,Link,联动,連動,연동,Vinculación,الربط,Tautan
+Group_LipSync,group,口パク,Lip Sync,口型同步,口型同步,립싱크,Sincronización labial,مزامنة الشفاه,Sinkronisasi bibir
+Group_Model,group,モデル,Model,模型,模型,모델,Modelo,النموذج,Model
+Group_Parameter,group,パラメータ,Parameters,参数,參數,파라미터,Parámetros,المعلمات,Parameter
+Group_Physics,group,物理演算,Physics,物理演算,物理演算,물리 연산,Física,الفيزياء,Fisika
+Group_Quality,group,描画品質,Render Quality,渲染质量,渲染品質,렌더링 품질,Calidad de renderizado,جودة العرض,Kualitas render
+Hit_Character_Desc,desc,連携する Live2D キャラクターを選択します,Selects the linked Live2D character.,选择联动的 Live2D 角色。,選擇要連動的 Live2D 角色。,연동할 Live2D 캐릭터를 선택합니다.,Selecciona el carácter Live2D vinculado.,تحديد الحرف المرتبط Live2D.,Memilih karakter Live2D yang tertaut.
+Hit_Character_Name,name,キャラクター,Character,角色,角色,캐릭터,Personaje,شخصية,Karakter
+Hit_DynamicOverrides_Desc,desc,ヒット中に一時適用する Param / Part を編集します,Edits Param / Part values applied temporarily while the hit is active.,编辑命中期间临时应用的 Param / Part。,編輯命中期間暫時套用的 Param / Part。,히트 중에 일시 적용할 Param / Part 를 편집합니다.,Edita los valores Param / Part aplicados temporalmente mientras el hit está activo.,تم تطبيق قيم التعديلات Param / Part مؤقتًا أثناء تنشيط النتيجة.,Mengedit nilai Param / Part yang diterapkan sementara saat hit aktif.
+Hit_DynamicOverrides_Name,name,一覧,List,列表,列表,목록,Lista,قائمة,Daftar
+Hit_Expression_Desc,desc,ヒットボックスが当たった時に一時的に上書きする表情,Expression temporarily overridden when the hit box is triggered.,命中框触发时临时覆盖的表情。,命中框觸發時暫時覆蓋的表情。,히트박스가 반응했을 때 일시적으로 덮어쓸 표정입니다.,Expression se anula temporalmente cuando se activa el cuadro de impacto.,تم تجاوز Expression مؤقتًا عند تشغيل مربع النقر.,Expression untuk sementara ditimpa ketika kotak hit dipicu.
+Hit_Expression_Name,name,表情,Expression,表情,表情,표정,Expression,Expression,Expression
+Hit_Height_Desc,desc,矩形高さ,Rectangle height.,矩形高度。,矩形高度。,사각형 높이입니다.,Altura del rectángulo.,ارتفاع المستطيل.,Tinggi persegi panjang.
+Hit_Height_Name,name,高さ,Height,高度,高度,높이,Altura,ارتفاع,Tinggi
+Hit_HitArea_Desc,desc,model3.json の HitAreas から反応対象を選択します。Name が空のモデルでは Id を使います,Selects the reaction target from HitAreas in model3.json. Uses Id when Name is empty.,从 model3.json 的 HitAreas 中选择反应目标。若 Name 为空则使用 Id。,從 model3.json 的 HitAreas 中選擇反應目標。若 Name 為空則使用 Id。,model3.json 의 HitAreas 에서 반응 대상을 선택합니다. Name 이 비어 있으면 Id 를 사용합니다.,Selecciona el objetivo de reacción de HitAreas en model3.json. Utiliza Id cuando Name está vacío.,يحدد هدف التفاعل من HitAreas في model3.json. يستخدم Id عندما يكون Name فارغًا.,Memilih target reaksi dari HitAreas di model3.json. Menggunakan Id ketika Name kosong.
+Hit_HitArea_Name,name,ヒットエリア,Hit Area,命中区域,命中區域,히트 영역,Área de impacto,منطقة الضرب,Daerah Pukulan
+Hit_IsHidden_Desc,desc,ONでガイド図形のみ非表示にします。ヒット判定と反応は有効です,When ON,only the guide shape is hidden. Hit detection and reactions stay active.,开启时仅隐藏引导图形，命中判定和反应仍然有效。,開啟時僅隱藏導引圖形，命中判定與反應仍然有效。,Cuando está encendido,عندما تكون في وضع التشغيل,Saat AKTIF
+Hit_IsHidden_Name,name,非表示,Hide,隐藏,隱藏,숨기기,Esconder,يخفي,Bersembunyi
+Hit_LinkId_Desc,desc,内部識別子。通常は対象キャラクター選択で自動設定されます,Internal identifier. Usually set automatically by target character selection.,内部标识符。通常会在选择目标角色时自动设置。,內部識別碼。通常會在選擇目標角色時自動設定。,내부 식별자입니다. 보통 대상 캐릭터 선택 시 자동으로 설정됩니다.,Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.,معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.,Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.
+Hit_LinkId_Name,name,リンクID,Link ID,链接ID,連結ID,링크 ID,ID de enlace,معرف الارتباط,ID Tautan
+Hit_Motion_Desc,desc,ヒットボックスが当たった時に1回再生するモーション,Motion played once when the hit box is triggered.,命中框触发时播放一次的动作。,命中框觸發時播放一次的動作。,히트박스가 반응했을 때 한 번 재생할 모션입니다.,Motion se reproduce una vez cuando se activa el cuadro de impacto.,Motion يتم لعبها مرة واحدة عند تفعيل مربع الضرب.,Motion dimainkan sekali ketika kotak hit dipicu.
+Hit_Motion_Name,name,モーション,Motion,动作,動作,모션,Motion,Motion,Motion
+Hit_Width_Desc,desc,矩形幅,Rectangle width.,矩形宽度。,矩形寬度。,사각형 너비입니다.,Ancho del rectángulo.,عرض المستطيل.,Lebar persegi panjang.
+Hit_Width_Name,name,幅,Width,宽度,寬度,너비,Ancho,عرض,Lebar
+Hit_X_Desc,desc,矩形中心X,Rectangle center X.,矩形中心 X。,矩形中心 X。,사각형 중심 X 입니다.,Centro del rectángulo X.,مركز المستطيل X.,Pusat persegi panjang X.
+Hit_X_Name,name,X,X,X,X,X,X,X,X
+Hit_Y_Desc,desc,矩形中心Y,Rectangle center Y.,矩形中心 Y。,矩形中心 Y。,사각형 중심 Y 입니다.,Centro del rectángulo Y.,مركز المستطيل Y.,Pusat persegi panjang Y.
+Hit_Y_Name,name,Y,Y,Y,Y,Y,Y,Y,Y
+Item_DynamicOverrides_Desc,desc,モデル全体に継続適用する Param / Part を編集します。face 側の設定がある場合はそちらが優先されます,Edits Param / Part values applied continuously to the whole model. Face-side settings take priority when present.,编辑持续作用于整个模型的 Param / Part。存在 face 侧设置时以其为优先。,編輯持續作用於整個模型的 Param / Part。存在 face 側設定時會優先使用。,모델 전체에 지속 적용할 Param / Part 를 편집합니다. face 쪽 설정이 있으면 그쪽이 우선됩니다.,Edita los valores Param / Part aplicados continuamente a todo el modelo. Los ajustes del lado frontal tienen prioridad cuando están presentes.,يتم تطبيق قيم التحرير Param / Part بشكل مستمر على النموذج بأكمله. تأخذ إعدادات جانب الوجه الأولوية عند وجودها.,Pengeditan nilai Param / Part diterapkan secara terus menerus ke seluruh model. Pengaturan sisi muka menjadi prioritas saat ada.
+Item_DynamicOverrides_Name,name,一覧,List,列表,列表,목록,Lista,قائمة,Daftar
+Item_Expression_Desc,desc,model3.json の Expressions から選択,Selects an expression from model3.json Expressions.,从 model3.json 的 Expressions 中选择。,從 model3.json 的 Expressions 中選擇。,model3.json 의 Expressions 에서 선택합니다.,Selecciona una expresión de model3.json Expressions.,تحديد تعبير من model3.json Expressions.,Memilih ekspresi dari model3.json Expressions.
+Item_Expression_Name,name,表情,Expression,表情,表情,표정,Expression,Expression,Expression
+Item_IsHidden_Desc,desc,ONで非表示、OFFで表示します,Turns visibility off when ON.,开启时隐藏，关闭时显示。,開啟時隱藏，關閉時顯示。,켜면 숨기고 끄면 표시합니다.,Desactiva la visibilidad cuando está activada.,يقوم بإيقاف الرؤية عند التشغيل.,Menonaktifkan visibilitas saat AKTIF.
+Item_IsHidden_Name,name,非表示,Hide,隐藏,隱藏,숨기기,Esconder,يخفي,Bersembunyi
+Item_MotionLoop_Desc,desc,ONでモーションを繰り返し再生します,Loops the motion when ON.,开启后循环播放动作。,開啟後循環播放動作。,켜면 모션을 반복 재생합니다.,Realiza un bucle del movimiento cuando está activado.,حلقات الحركة عند التشغيل.,Mengulang gerakan saat AKTIF.
+Item_MotionLoop_Name,name,モーションループ,Motion Loop,动作循环,動作循環,모션 루프,Motion Bucle,Motion حلقة,Motion Lingkaran
+Item_Motion_Desc,desc,モデル表示中に継続再生するモーションを選択（Idle含む）,Selects the motion to loop while the model is visible,including Idle.,选择模型显示期间持续播放的动作（含 Idle）。,選擇模型顯示期間持續播放的動作（含 Idle）。,Selecciona el movimiento para realizar un bucle mientras el modelo está visible,يحدد الحركة التي سيتم تكرارها أثناء ظهور النموذج,Memilih gerakan yang akan diulang saat model terlihat
+Item_Motion_Name,name,モーション,Motion,动作,動作,모션,Motion,Motion,Motion
+Item_MultiplyA_Desc,desc,モデルカラー乗算のA,Model multiply color A.,模型颜色乘算的 A。,模型顏色乘算的 A。,모델 색상 곱셈의 A 입니다.,Modelo multiplicar color A.,نموذج مضاعفة اللون أ.,Model kalikan warna A.
+Item_MultiplyA_Name,name,不透明度,Opacity,不透明度,不透明度,불투명도,Opacidad,العتامة,Kegelapan
+Item_MultiplyB_Desc,desc,モデルカラー乗算のB,Model multiply color B.,模型颜色乘算的 B。,模型顏色乘算的 B。,모델 색상 곱셈의 B 입니다.,Modelo multiplicar color B.,نموذج مضاعفة اللون ب.,Model perbanyak warna B.
+Item_MultiplyB_Name,name,乗算色B,Multiply Color B,乘算色B,乘算色B,곱색 B,Multiplicar color B,ضرب اللون ب,Perbanyak Warna B
+Item_MultiplyG_Desc,desc,モデルカラー乗算のG,Model multiply color G.,模型颜色乘算的 G。,模型顏色乘算的 G。,모델 색상 곱셈의 G 입니다.,Modelo multiplicar color G.,نموذج مضاعفة اللون G.,Model kalikan warna G.
+Item_MultiplyG_Name,name,乗算色G,Multiply Color G,乘算色G,乘算色G,곱색 G,Multiplicar color G,مضاعفة اللون G,Perbanyak Warna G
+Item_MultiplyR_Desc,desc,モデルカラー乗算のR,Model multiply color R.,模型颜色乘算的 R。,模型顏色乘算的 R。,모델 색상 곱셈의 R 입니다.,Modelo multiplicar color R.,نموذج مضاعفة اللون R.,Model kalikan warna R.
+Item_MultiplyR_Name,name,乗算色R,Multiply Color R,乘算色R,乘算色R,곱색 R,Multiplicar color R,مضاعفة اللون ر,Perbanyak Warna R
+Item_PositionX_Desc,desc,モデル表示位置のXオフセット,X offset for model placement.,模型显示位置的 X 偏移。,模型顯示位置的 X 偏移。,모델 표시 위치의 X 오프셋입니다.,X desplazamiento para la colocación del modelo.,X إزاحة لوضع النموذج.,X offset untuk penempatan model.
+Item_PositionX_Name,name,X,X,X,X,X,X,X,X
+Item_PositionY_Desc,desc,モデル表示位置のYオフセット,Y offset for model placement.,模型显示位置的 Y 偏移。,模型顯示位置的 Y 偏移。,모델 표시 위치의 Y 오프셋입니다.,Y desplazamiento para la colocación del modelo.,Y إزاحة لوضع النموذج.,Y offset untuk penempatan model.
+Item_PositionY_Name,name,Y,Y,Y,Y,Y,Y,Y,Y
+Item_Rotation_Desc,desc,モデル表示の回転角度,Model display rotation angle.,模型显示的旋转角度。,模型顯示的旋轉角度。,모델 표시 회전 각도입니다.,Ángulo de rotación de la pantalla del modelo.,زاوية دوران عرض النموذج.,Sudut rotasi tampilan model.
+Item_Rotation_Name,name,回転角,Rotation,旋转角,旋轉角,회전각,Rotación,تناوب,Rotasi
+Item_Scale_Desc,desc,モデル表示スケール,Model display scale.,模型显示缩放。,模型顯示縮放。,모델 표시 배율입니다.,Escala de visualización del modelo.,مقياس عرض النموذج.,Skala tampilan model.
+Item_Scale_Name,name,拡大率,Scale,缩放率,縮放率,배율,Escala,حجم,Skala
+Log_D3D11InitializationFailed,log,D3D11 デバイスの初期化に失敗しました: {0},D3D11 device initialization failed: {0},D3D11 设备初始化失败: {0},D3D11 裝置初始化失敗: {0},D3D11 디바이스 초기화에 실패했습니다: {0},D3D11 error en la inicialización del dispositivo: {0},فشل تهيئة جهاز D3D11: {0},D3D11 inisialisasi perangkat gagal: {0}
+Log_Live2DInitializationError,log,Live2D の初期化に失敗しました: {0},Live2D initialization failed: {0},Live2D 初始化失败: {0},Live2D 初始化失敗: {0},Live2D 초기화에 실패했습니다: {0},Live2D error de inicialización: {0},فشل تهيئة Live2D: {0},Inisialisasi Live2D gagal: {0}
+Log_Live2DManagerNull,log,Live2DManager.GetInstance() が null を返しました。,Live2DManager.GetInstance() returned null.,Live2DManager.GetInstance() 返回了 null。,Live2DManager.GetInstance() 回傳了 null。,Live2DManager.GetInstance() 가 null 을 반환했습니다.,Live2DManager.GetInstance() devolvió nulo.,Live2DManager.GetInstance() تم إرجاعه فارغًا.,Live2DManager.GetInstance() mengembalikan nol.
+Log_Live2DUpdateError,log,Live2D の更新中にエラーが発生しました: {0},An error occurred while updating Live2D: {0},更新 Live2D 时发生错误: {0},更新 Live2D 時發生錯誤: {0},Live2D 업데이트 중 오류가 발생했습니다: {0},Se produjo un error al actualizar Live2D: {0},حدث خطأ أثناء تحديث Live2D: {0},Terjadi kesalahan saat memperbarui Live2D: {0}
+Log_ModelMetadataCatalogFailed,log,ModelMetadataCatalog.{0} で失敗しました: {1}\n{2},ModelMetadataCatalog.{0} failed: {1}\n{2},ModelMetadataCatalog.{0} 失败: {1}\n{2},ModelMetadataCatalog.{0} 失敗: {1}\n{2},ModelMetadataCatalog.{0} 에서 실패했습니다: {1}\n{2},ModelMetadataCatalog.{0} falló: {1}\n{2},فشل ModelMetadataCatalog.{0}: {1}\n{2},ModelMetadataCatalog.{0} gagal: {1}\n{2}
+Plugin_HitArea_Name,shape plugin name,Live2Dヒットボックス,Live2D Hit Box,Live2D命中框,Live2D命中框,Live2D 히트박스,Área de impacto de Live2D,منطقة إصابة Live2D,Kotak Hit Live2D
+Plugin_Live2D_Name,plugin name,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D,VTuberKit Live2D
+Plugin_TargetPoint_Name,shape plugin name,Live2Dターゲットポイント,Live2D Target Point,Live2D目标点,Live2D目標點,Live2D 타깃 포인트,Punto objetivo de Live2D,نقطة استهداف Live2D,Titik Target Live2D
+StdParam_AngleX,name,角度 X,Angle X,角度X,角度X,각도 X,Ángulo X,الزاوية X,Sudut X
+StdParam_AngleY,name,角度 Y,Angle Y,角度Y,角度Y,각도 Y,Ángulo Y,الزاوية Y,Sudut Y
+StdParam_AngleZ,name,角度 Z,Angle Z,角度Z,角度Z,각도 Z,Ángulo Z,الزاوية ز,Sudut Z
+StdParam_ArmLA,name,左腕 A,Left arm A,左臂 A,左臂 A,왼팔 A,brazo izquierdo A,الذراع اليسرى أ,Lengan kiri A
+StdParam_ArmLB,name,左腕 B,Left arm B,左臂 B,左臂 B,왼팔 B,brazo izquierdo B,الذراع اليسرى ب,Lengan kiriB
+StdParam_ArmRA,name,右腕 A,Right arm A,右臂 A,右臂 A,오른팔 A,brazo derecho A,الذراع اليمنى أ,Lengan kanan A
+StdParam_ArmRB,name,右腕 B,Right arm B,右臂 B,右臂 B,오른팔 B,brazo derecho B,الذراع اليمنى ب,Lengan kananB
+StdParam_BaseX,name,全体の左右,Overall Left/right,全体左右,全體左右,전체의 좌우,General izquierda/derecha,إجمالي اليسار / اليمين,Secara keseluruhan Kiri/kanan
+StdParam_BaseY,name,全体の上下,Overall Up/down,全体上下,全體上下,전체 상하,General arriba/abajo,إجمالي أعلى/أسفل,Secara keseluruhan Naik/turun
+StdParam_BodyAngleX,name,体の回転 X,Body rotation X,身体旋转 X,身體旋轉 X,몸의 회전 X,Rotación del cuerpo X,دوران الجسم X,Rotasi tubuh X
+StdParam_BodyAngleY,name,体の回転 Y,Body rotation Y,身体旋转 Y,身體旋轉 Y,몸의 회전 Y,Rotación del cuerpo Y,دوران الجسم Y,Rotasi tubuh Y
+StdParam_BodyAngleZ,name,体の回転 Z,Body rotation Z,身体旋转 Z,身體旋轉 Z,몸의 회전 Z,Rotación del cuerpo Z,دوران الجسم Z,Rotasi tubuh Z
+StdParam_Breath,name,呼吸,Breath,呼吸,呼吸,호흡,Aliento,يتنفس,Napas
+StdParam_BrowLAngle,name,左眉 角度,Left eyebrow Angle,左眉 角度,左眉 角度,왼쪽 눈썹 각도,Ángulo de la ceja izquierda,زاوية الحاجب الأيسر,Sudut alis kiri
+StdParam_BrowLForm,name,左眉 変形,Left eyebrow Deformation,左眉 变换,左眉 變換,왼쪽 눈썹 변형,Deformación de la ceja izquierda,تشوه الحاجب الأيسر,Deformasi alis kiri
+StdParam_BrowLX,name,左眉 左右,Left eyebrow Left/Right,左眉 左右,左眉 左右,왼쪽 눈썹 좌우,Ceja izquierda Izquierda/Derecha,الحاجب الأيسر يمين/يسار,Alis kiri Kiri/Kanan
+StdParam_BrowLY,name,左眉 上下,Left eyebrow Up/Down,左眉 上下,左眉 上下,왼쪽 눈썹 상하,Ceja izquierda arriba/abajo,الحاجب الأيسر لأعلى/لأسفل,Alis kiri Atas/Bawah
+StdParam_BrowRAngle,name,右眉 角度,Right eyebrow Angle,右眉 角度,右眉 角度,오른쪽 눈썹 각도,Ángulo de la ceja derecha,زاوية الحاجب الأيمن,Sudut alis kanan
+StdParam_BrowRForm,name,右眉 変形,Right eyebrow Deformation,右眉 变换,右眉 變換,오른쪽 눈썹 변형,Deformación de la ceja derecha,تشوه الحاجب الأيمن,Deformasi alis kanan
+StdParam_BrowRX,name,右眉 左右,Right eyebrow Left/Right,右眉 左右,右眉 左右,오른쪽 눈썹 좌우,Ceja derecha Izquierda/Derecha,الحاجب الأيمن يسار / يمين,Alis kanan Kiri/Kanan
+StdParam_BrowRY,name,右眉 上下,Right eyebrow Up/Down,右眉 上下,右眉 上下,오른쪽 눈썹 상하,Ceja derecha arriba/abajo,الحاجب الأيمن لأعلى/لأسفل,Alis kanan Atas/Bawah
+StdParam_BustX,name,胸揺れ X,Breast physics X,胸部摇动 X,胸部搖動 X,가슴 흔들림 X,Física mamaria X,فيزياء الثدي X,Fisika payudara X
+StdParam_BustY,name,胸揺れ Y,Breast physics Y,胸部摇动 Y,胸部搖動 Y,가슴 흔들림 Y,Física mamaria Y,فيزياء الثدي Y,Fisika payudara Y
+StdParam_Cheek,name,照れ,Cheek,脸颊泛红,臉頰泛紅,수줍음,Mejilla,خدّ,Pipi
+StdParam_EyeBallForm,name,目玉の拡大縮小,Eyeball scaling,眼珠的放大/缩小,眼珠的放大/縮小,눈알 확대・축소,Escala del globo ocular,تحجيم مقلة العين,Penskalaan bola mata
+StdParam_EyeBallX,name,目玉 X,Eyeball X,眼珠 X,眼珠 X,눈알 X,Globo ocular X,مقلة العين X,Bola mata X
+StdParam_EyeBallY,name,目玉 Y,Eyeball Y,眼珠 Y,眼珠 Y,눈알 Y,Globo ocular Y,مقلة العين Y,Bola mata Y
+StdParam_EyeLOpen,name,左目 開閉,Left eye Open/Close,左眼 开合,左眼 開合,왼쪽 눈 개폐,Ojo izquierdo abrir/cerrar,العين اليسرى مفتوحة/مغلقة,Mata kiri Buka/Tutup
+StdParam_EyeLSmile,name,左目 笑顔,Left eye Smiling,左眼 微笑,左眼 微笑,왼쪽 눈 미소,Ojo izquierdo Sonriendo,العين اليسرى مبتسمة,Mata kiri Tersenyum
+StdParam_EyeROpen,name,右目 開閉,Right eye Open/Close,右眼 开合,右眼 開合,오른쪽 눈 개폐,Ojo derecho abrir/cerrar,العين اليمنى مفتوحة/مغلقة,Mata kanan Buka/Tutup
+StdParam_EyeRSmile,name,右目 笑顔,Right eye Smiling,右眼 微笑,右眼 微笑,오른쪽 눈 미소,Ojo derecho Sonriendo,العين اليمنى تبتسم,Mata kanan Tersenyum
+StdParam_HairBack,name,髪揺れ 後,Hair swing Back,头发摇动 后,頭髮搖動 後,머리카락 흔들림: 뒤,Movimiento del cabello hacia atrás,تأرجح الشعر للخلف,Ayunan rambut ke belakang
+StdParam_HairFluffy,name,髪揺れ ふわ,Hair swing Fluffy,头发摇动 蓬松,頭髮搖動 蓬鬆,머리카락 흔들림: 둥실,Columpio de pelo esponjoso,أرجوحة الشعر رقيق,Ayunan rambut Halus
+StdParam_HairFront,name,髪揺れ 前,Hair swing Front,头发摇动 前,頭髮搖動 前,머리카락 흔들림: 앞,Oscilación del cabello frente,أرجوحة شعر أمامية,Ayunan rambut Depan
+StdParam_HairSide,name,髪揺れ 横,Hair swing Sideways,头发摇动 水平,頭髮搖動 水平,머리카락 흔들림: 옆,Movimiento del cabello hacia los lados,تأرجح الشعر على الجانبين,Ayunan rambut ke samping
+StdParam_HandL,name,左手,Left hand,左手,左手,왼손,mano izquierda,اليد اليسرى,Tangan kiri
+StdParam_HandR,name,右手,Right hand,右手,右手,오른손,Derecha,اليد اليمنى,Tangan kanan
+StdParam_MouthForm,name,口 変形,Mouth Deformation,嘴巴 变换,嘴巴 變換,입 변형,Deformación de la boca,تشوه الفم,Deformasi Mulut
+StdParam_MouthOpenY,name,口 開閉,Mouth Open/Close,嘴巴 开合,嘴巴 開合,입 개폐,Boca abierta/cerrada,الفم مفتوح/مغلق,Mulut Buka/Tutup
+StdParam_ShoulderY,name,肩すくめる,Shrug,耸肩,聳肩,어깨 으쓱,Encogimiento de hombros,تتغاضى,Mengangkat bahu
+Target_Character_Desc,desc,連携する Live2D キャラクターを選択します,Selects the linked Live2D character.,选择联动的 Live2D 角色。,選擇要連動的 Live2D 角色。,연동할 Live2D 캐릭터를 선택합니다.,Selecciona el carácter Live2D vinculado.,تحديد الحرف المرتبط Live2D.,Memilih karakter Live2D yang tertaut.
+Target_Character_Name,name,キャラクター,Character,角色,角色,캐릭터,Personaje,شخصية,Karakter
+Target_IsHidden_Desc,desc,ONでガイド図形のみ非表示にします。ターゲットポイント連携は有効です,When ON,only the guide shape is hidden. Target point linkage remains active.,开启时仅隐藏引导图形，目标点联动仍然有效。,開啟時僅隱藏導引圖形，目標點連動仍然有效。,Cuando está encendido,عندما تكون في وضع التشغيل,Saat AKTIF
+Target_IsHidden_Name,name,非表示,Hide,隐藏,隱藏,숨기기,Esconder,يخفي,Bersembunyi
+Target_LinkId_Desc,desc,内部識別子。通常は対象キャラクター選択で自動設定されます,Internal identifier. Usually set automatically by target character selection.,内部标识符。通常会在选择目标角色时自动设置。,內部識別碼。通常會在選擇目標角色時自動設定。,내부 식별자입니다. 보통 대상 캐릭터 선택 시 자동으로 설정됩니다.,Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.,معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.,Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.
+Target_LinkId_Name,name,リンクID,Link ID,链接ID,連結ID,링크 ID,ID de enlace,معرف الارتباط,ID Tautan
+Target_Size_Desc,desc,ガイド表示サイズ,Guide display size.,引导显示大小。,導引顯示大小。,가이드 표시 크기입니다.,Tamaño de visualización de la guía.,دليل حجم العرض.,Ukuran tampilan panduan.
+Target_Size_Name,name,サイズ,Size,大小,大小,크기,Tamaño,مقاس,Ukuran
+Target_X_Desc,desc,モデル空間のターゲットX,Target X in model space.,模型空间中的目标 X。,模型空間中的目標 X。,모델 공간의 타깃 X 입니다.,Objetivo X en el espacio modelo.,الهدف X في مساحة النموذج.,Targetkan X di ruang model.
+Target_X_Name,name,X,X,X,X,X,X,X,X
+Target_Y_Desc,desc,モデル空間のターゲットY,Target Y in model space.,模型空间中的目标 Y。,模型空間中的目標 Y。,모델 공간의 타깃 Y 입니다.,Objetivo Y en el espacio modelo.,الهدف Y في مساحة النموذج.,Targetkan Y di ruang model.
+Target_Y_Name,name,Y,Y,Y,Y,Y,Y,Y,Y
+Ui_DefaultGroup,name,(Default),(Default),(默认),(預設),(기본값),(Default),(Default),(Default)
+Ui_NoneSelected,name,(未選択),(None),(未选择),(未選擇),(선택 안 함),(Ninguno),(لا أحد),(Tidak ada)
+Ui_ParamList_Name,name,Param一覧,Param List,Param列表,Param列表,Param 목록,Lista Param,Param قائمة,Param Daftar
+Ui_PartList_Name,name,Part一覧,Part List,Part列表,Part列表,Part 목록,Lista Part,Part قائمة,Part Daftar
+Ui_Tab_Param,name,Param,Param,Param,Param,Param,Param,Param,Param
+Ui_Tab_Part,name,Part,Part,Part,Part,Part,Part,Part,Part
+Warning_DisplayInfoFileMissing,warning,DisplayInfo ファイルが見つかりません: {0},DisplayInfo file not found: {0},未找到 DisplayInfo 文件: {0},找不到 DisplayInfo 檔案: {0},DisplayInfo 파일을 찾을 수 없습니다: {0},DisplayInfo archivo no encontrado: {0},لم يتم العثور على ملف DisplayInfo: {0},File DisplayInfo tidak ditemukan: {0}
+Warning_ExpressionFileMissing,warning,Expression ファイルが見つかりません: {0},Expression file not found: {0},未找到 Expression 文件: {0},找不到 Expression 檔案: {0},Expression 파일을 찾을 수 없습니다: {0},Expression archivo no encontrado: {0},لم يتم العثور على ملف Expression: {0},File Expression tidak ditemukan: {0}
+Warning_ExpressionFileSettingMissing,warning,Expression の File 設定がありません: {0},Expression File setting is missing: {0},Expression 缺少 File 设置: {0},Expression 缺少 File 設定: {0},Expression 의 File 설정이 없습니다: {0},Expression Falta la configuración del archivo: {0},Expression إعداد الملف مفقود: {0},Expression Pengaturan file tidak ada: {0}
+Warning_FileReferencesMissing,warning,FileReferences が無いため、関連ファイルの解決に失敗する可能性があります。,FileReferences is missing,so resolving related files may fail.,缺少 FileReferences，相关文件解析可能失败。,缺少 FileReferences，相關檔案解析可能失敗。,Falta FileReferences,FileReferences مفقود,FileReferences hilang
+Warning_HitAreaIdMissing,warning,HitAreas に Id 未設定の項目があります。,There is a HitAreas item with no Id set.,HitAreas 中存在未设置 Id 的项目。,HitAreas 中有未設定 Id 的項目。,HitAreas 에 Id 가 설정되지 않은 항목이 있습니다.,Hay un elemento HitAreas sin Id configurado.,يوجد عنصر HitAreas بدون مجموعة Id.,Ada item HitAreas tanpa set Id.
+Warning_MocFileMissing,warning,Moc ファイルが見つかりません: {0},Moc file not found: {0},未找到 Moc 文件: {0},找不到 Moc 檔案: {0},Moc 파일을 찾을 수 없습니다: {0},Moc archivo no encontrado: {0},لم يتم العثور على ملف Moc: {0},File Moc tidak ditemukan: {0}
+Warning_MocMissing,warning,Moc の設定がありません。,Moc is not configured.,未配置 Moc。,未設定 Moc。,Moc 설정이 없습니다.,Moc no está configurado.,Moc لم يتم تكوينه.,Moc tidak dikonfigurasi.
+Warning_ModelParseException,warning,model3.json の解析時に例外が発生しました。,An exception occurred while parsing model3.json.,解析 model3.json 时发生异常。,解析 model3.json 時發生例外。,model3.json 을 파싱하는 중 예외가 발생했습니다.,Se produjo una excepción al analizar model3.json.,حدث استثناء أثناء تحليل model3.json.,Pengecualian terjadi saat menguraikan model3.json.
+Warning_MotionFileMissing,warning,Motion ファイルが見つかりません: {0},Motion file not found: {0},未找到 Motion 文件: {0},找不到 Motion 檔案: {0},Motion 파일을 찾을 수 없습니다: {0},Motion archivo no encontrado: {0},لم يتم العثور على ملف Motion: {0},File Motion tidak ditemukan: {0}
+Warning_MotionFileSettingMissing,warning,Motion の File 設定がありません: {0},Motion File setting is missing: {0},Motion 缺少 File 设置: {0},Motion 缺少 File 設定: {0},Motion 의 File 설정이 없습니다: {0},Motion Falta la configuración del archivo: {0},Motion إعداد الملف مفقود: {0},Motion Pengaturan file tidak ada: {0}
+Warning_MultipleModel3Json,warning,フォルダ内に複数の .model3.json が見つかったため、名前順で先頭のモデルを使います。,Multiple .model3.json files were found in the folder,so the first one in name order will be used.,文件夹中发现多个 .model3.json 文件，因此将使用按名称排序后的第一个模型。,資料夾中找到多個 .model3.json 檔案，因此將使用依名稱排序的第一個模型。,Se encontraron varios archivos .model3.json en la carpeta,تم العثور على ملفات .model3.json متعددة في المجلد,Beberapa file .model3.json ditemukan di folder tersebut
+Warning_NameUnset,warning,(名前未設定),(Unnamed),(未设置名称),(未設定名稱),(이름 없음),(Sin nombre),(غير مسمى),(Tanpa nama)
+Warning_PhysicsFileMissing,warning,Physics ファイルが見つかりません: {0},Physics file not found: {0},未找到 Physics 文件: {0},找不到 Physics 檔案: {0},Physics 파일을 찾을 수 없습니다: {0},Archivo de física no encontrado: {0},لم يتم العثور على ملف الفيزياء: {0},File Fisika tidak ditemukan: {0}
+Warning_TextureFileMissing,warning,Texture ファイルが見つかりません: {0},Texture file not found: {0},未找到 Texture 文件: {0},找不到 Texture 檔案: {0},Texture 파일을 찾을 수 없습니다: {0},Texture archivo no encontrado: {0},لم يتم العثور على ملف Texture: {0},File Texture tidak ditemukan: {0}

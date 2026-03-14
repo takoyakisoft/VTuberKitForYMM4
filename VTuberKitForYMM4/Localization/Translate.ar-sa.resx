@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>ar-sa</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>يُفعّل الرمش التلقائي.</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>رمش تلقائي</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>يحرك الفم بناءً على الصوت.</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>مزامنة شفاه تلقائية</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>اسم عرض يُستخدم عند الاختيار من نقاط الهدف أو صناديق الإصابة.</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>اسم الشخصية</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>تمكن من حركة التنفس.</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>تمكين التنفس</value></data>
+<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>يعمل على تحسين جودة التصغير النهائية عند التشغيل. أكثر سلاسة ولكن يمكن أن تبدو أكثر ليونة قليلاً. الافتراضي هو إيقاف.</value></data>
+<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>تمكين MSAA عند التشغيل. يحسن الحواف بتكلفة أعلى. يمكن دمجه مع FXAA.</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>تمكين فيزياء Live2D.</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>يُمكَِن</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>يضبط فاصل الرمش بالثواني.</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>فاصل الرمش</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>حدد مجلد نموذج Live2D أو ملف .model3.json.</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>مجلد النموذج</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>يضيف مدخلات فيزيائية تشبه السحب بينما يكون تفاعل مربع النقر نشطًا.</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>هيت بوكس ​​فيزياء</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>مقياس التقديم الداخلي. تعمل القيم الأكبر على تحسين الجودة العالية (الافتراضي: 2.0).</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>مقياس داخلي</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>معرّف يُستخدم لربط نقاط الهدف وصناديق الإصابة. يتم إنشاؤه تلقائيًا إذا تُرك فارغًا.</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>معرّف الربط</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>يضبط حساسية مزامنة الشفاه. يوصى باستخدام 1.0.</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>حساسية مزامنة الشفاه</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>معلمات حروف العلة فقط</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>يحسن الحواف مع حمل أقل.</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>جودة أعلى مع حمل أكبر.</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>عدد العينات عند تمكين MSAA (2x / 4x).</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA العينات</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 هو المعيار</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>قوة الفيزياء</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>الحد الأقصى لحجم هدف العرض الداخلي بالبكسل. تعمل القيم الأكبر على تحسين الجودة ولكنها تستخدم المزيد من VRAM (الافتراضي: 8192).</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>الحجم الأقصى RT</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 تعطيله. تعمل القيم الأعلى على زيادة مدخلات الرياح العشوائية.</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>قوة الرياح</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>تحقق من محتويات .model3.json وجميع الملفات المشار إليها.</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>حدد مجلد نموذج Live2D أو ملف .model3.json.</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json قد يكون غير صالح</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>تعذر تحميل النموذج Live2D.</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>هناك عناصر يجب التحقق منها عند تحميل الطراز Live2D.</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>تحقق من موقع الملف .model3.json.</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>هناك عناصر يجب التحقق منها عند اختيار طراز Live2D.</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>هدف</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>يقوم بتحرير المعلمات القياسية Cubism وقيم Param/Part الخاصة بالطراز في القائمة.</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>قائمة</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>تحديد تعبير من model3.json Expressions.</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>يقوم بإيقاف الرؤية عند التشغيل.</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>تواجه الحلقات الحركة عند التشغيل.</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion حلقة</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>تحديد حركة من model3.json Motions</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>تمت إضافة الإزاحة المؤقتة إلى موضع العنصر X.</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X إزاحة</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>تمت إضافة الإزاحة المؤقتة إلى موضع العنصر Y.</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Y إزاحة</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>تمت إضافة الإزاحة المؤقتة لتدوير العنصر.</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>إزاحة التناوب</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>تمت إضافة الإزاحة المؤقتة إلى مقياس الصنف.</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>إزاحة النطاق</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>الرمش</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>التنفس</value></data>
+<data name="Group_Link" xml:space="preserve"><value>الربط</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>مزامنة الشفاه</value></data>
+<data name="Group_Model" xml:space="preserve"><value>النموذج</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>المعلمات</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>الفيزياء</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>جودة العرض</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>تحديد الحرف المرتبط Live2D.</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>شخصية</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>تم تطبيق قيم التعديلات Param / Part مؤقتًا أثناء تنشيط النتيجة.</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>قائمة</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>تم تجاوز Expression مؤقتًا عند تشغيل مربع النقر.</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>ارتفاع المستطيل.</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>ارتفاع</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>يحدد هدف التفاعل من HitAreas في model3.json. يستخدم Id عندما يكون Name فارغًا.</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>منطقة الضرب</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>معرف الارتباط</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>Motion يتم لعبها مرة واحدة عند تفعيل مربع الضرب.</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>عرض المستطيل.</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>عرض</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>مركز المستطيل X.</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>مركز المستطيل Y.</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>يتم تطبيق قيم التحرير Param / Part بشكل مستمر على النموذج بأكمله. تأخذ إعدادات جانب الوجه الأولوية عند وجودها.</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>قائمة</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>تحديد تعبير من model3.json Expressions.</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>يقوم بإيقاف الرؤية عند التشغيل.</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>حلقات الحركة عند التشغيل.</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion حلقة</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>يحدد الحركة التي سيتم تكرارها أثناء ظهور النموذج</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>نموذج مضاعفة اللون أ.</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>العتامة</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>نموذج مضاعفة اللون ب.</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>ضرب اللون ب</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>نموذج مضاعفة اللون G.</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>مضاعفة اللون G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>نموذج مضاعفة اللون R.</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>مضاعفة اللون ر</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>X إزاحة لوضع النموذج.</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>Y إزاحة لوضع النموذج.</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>زاوية دوران عرض النموذج.</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>تناوب</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>مقياس عرض النموذج.</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>حجم</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>فشل تهيئة جهاز D3D11: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>فشل تهيئة Live2D: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() تم إرجاعه فارغًا.</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>حدث خطأ أثناء تحديث Live2D: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>فشل ModelMetadataCatalog.{0}: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>منطقة إصابة Live2D</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>نقطة استهداف Live2D</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>الزاوية X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>الزاوية Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>الزاوية ز</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>الذراع اليسرى أ</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>الذراع اليسرى ب</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>الذراع اليمنى أ</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>الذراع اليمنى ب</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>إجمالي اليسار / اليمين</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>إجمالي أعلى/أسفل</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>دوران الجسم X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>دوران الجسم Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>دوران الجسم Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>يتنفس</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>زاوية الحاجب الأيسر</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>تشوه الحاجب الأيسر</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>الحاجب الأيسر يمين/يسار</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>الحاجب الأيسر لأعلى/لأسفل</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>زاوية الحاجب الأيمن</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>تشوه الحاجب الأيمن</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>الحاجب الأيمن يسار / يمين</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>الحاجب الأيمن لأعلى/لأسفل</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>فيزياء الثدي X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>فيزياء الثدي Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>خدّ</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>تحجيم مقلة العين</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>مقلة العين X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>مقلة العين Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>العين اليسرى مفتوحة/مغلقة</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>العين اليسرى مبتسمة</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>العين اليمنى مفتوحة/مغلقة</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>العين اليمنى تبتسم</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>تأرجح الشعر للخلف</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>أرجوحة الشعر رقيق</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>أرجوحة شعر أمامية</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>تأرجح الشعر على الجانبين</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>اليد اليسرى</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>اليد اليمنى</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>تشوه الفم</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>الفم مفتوح/مغلق</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>تتغاضى</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>تحديد الحرف المرتبط Live2D.</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>شخصية</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>معرف الارتباط</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>دليل حجم العرض.</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>مقاس</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>الهدف X في مساحة النموذج.</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>الهدف Y في مساحة النموذج.</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(لا أحد)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Param قائمة</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Part قائمة</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف DisplayInfo: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Expression: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression إعداد الملف مفقود: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences مفقود</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>يوجد عنصر HitAreas بدون مجموعة Id.</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Moc: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>Moc لم يتم تكوينه.</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>حدث استثناء أثناء تحليل model3.json.</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Motion: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion إعداد الملف مفقود: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>تم العثور على ملفات .model3.json متعددة في المجلد</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(غير مسمى)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف الفيزياء: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Texture: {0}</value></data>
+</root>

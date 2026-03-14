@@ -115,7 +115,45 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            foreach (var row in activeFace.DynamicOverrides.PartRows.ToArray())
+            foreach (var row in activeFace.DynamicOverrides.GetPartRowsSnapshot())
+            {
+                if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
+
+                var value = (float)row.Opacity.GetValue(frame, length, fps);
+                model.SetPartOpacity(row.Id, Math.Clamp(value, 0.0f, 1.0f));
+            }
+        }
+
+        public static void ApplyDynamicItemParameters(
+            Live2DModelWrapper model,
+            Live2DItemParameter itemParam,
+            long frame,
+            long length,
+            int fps)
+        {
+            foreach (var row in itemParam.DynamicOverrides.GetParameterRowsSnapshot())
+            {
+                if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
+
+                var value = row.GetValue(frame, length, fps);
+                model.SetParameterValue(row.Id, value);
+            }
+        }
+
+        public static void ApplyDynamicItemParts(
+            Live2DModelWrapper model,
+            Live2DItemParameter itemParam,
+            long frame,
+            long length,
+            int fps)
+        {
+            foreach (var row in itemParam.DynamicOverrides.GetPartRowsSnapshot())
             {
                 if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
                 {
@@ -134,7 +172,7 @@ namespace VTuberKitForYMM4.Plugin
             long length,
             int fps)
         {
-            foreach (var row in activeFace.DynamicOverrides.ParameterRows.ToArray())
+            foreach (var row in activeFace.DynamicOverrides.GetParameterRowsSnapshot())
             {
                 if (!row.Hold || string.IsNullOrWhiteSpace(row.Id))
                 {

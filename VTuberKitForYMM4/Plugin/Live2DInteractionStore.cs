@@ -30,7 +30,9 @@ namespace VTuberKitForYMM4.Plugin
             float HitTestScaleX,
             float HitTestScaleY,
             float HitTestTranslateX,
-            float HitTestTranslateY);
+            float HitTestTranslateY,
+            int ScreenWidth,
+            int ScreenHeight);
 
         internal sealed record TargetPointState(
             string SourceId,
@@ -46,12 +48,22 @@ namespace VTuberKitForYMM4.Plugin
             string ExpressionId,
             string MotionGroup,
             int MotionIndex,
+            HitAreaParameterOverrideState[] ParameterOverrides,
+            HitAreaPartOverrideState[] PartOverrides,
             float X,
             float Y,
             float Width,
             float Height,
             bool IsHit,
             int Layer);
+
+        internal readonly record struct HitAreaParameterOverrideState(
+            string Id,
+            float Value);
+
+        internal readonly record struct HitAreaPartOverrideState(
+            string Id,
+            float Opacity);
 
         private static readonly ConcurrentDictionary<string, TargetPointState> TargetPoints = new();
         private static readonly ConcurrentDictionary<string, HitAreaRectState> HitAreaRects = new();
@@ -104,7 +116,9 @@ namespace VTuberKitForYMM4.Plugin
             float hitTestScaleX,
             float hitTestScaleY,
             float hitTestTranslateX,
-            float hitTestTranslateY)
+            float hitTestTranslateY,
+            int screenWidth,
+            int screenHeight)
         {
             if (string.IsNullOrWhiteSpace(linkId))
                 return;
@@ -119,7 +133,9 @@ namespace VTuberKitForYMM4.Plugin
                 hitTestScaleX,
                 hitTestScaleY,
                 hitTestTranslateX,
-                hitTestTranslateY);
+                hitTestTranslateY,
+                screenWidth,
+                screenHeight);
         }
 
         public static bool TryGetInteractionTransform(string? linkId, out InteractionTransformState? state)
@@ -216,6 +232,8 @@ namespace VTuberKitForYMM4.Plugin
             string expressionId,
             string motionGroup,
             int motionIndex,
+            HitAreaParameterOverrideState[]? parameterOverrides,
+            HitAreaPartOverrideState[]? partOverrides,
             float x,
             float y,
             float width,
@@ -233,6 +251,8 @@ namespace VTuberKitForYMM4.Plugin
                 expressionId ?? string.Empty,
                 motionGroup ?? string.Empty,
                 motionIndex,
+                parameterOverrides ?? [],
+                partOverrides ?? [],
                 x,
                 y,
                 Math.Abs(width),
@@ -269,7 +289,11 @@ namespace VTuberKitForYMM4.Plugin
             return HitAreaRects.Values
                 .Where(x => string.Equals(x.LinkId, linkId, StringComparison.Ordinal))
                 .Where(x => x.IsHit)
-                .Where(x => !string.IsNullOrWhiteSpace(x.ExpressionId) || x.MotionIndex >= 0)
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x.ExpressionId) ||
+                    x.MotionIndex >= 0 ||
+                    x.ParameterOverrides.Length > 0 ||
+                    x.PartOverrides.Length > 0)
                 .Select(x => new
                 {
                     HitArea = x,

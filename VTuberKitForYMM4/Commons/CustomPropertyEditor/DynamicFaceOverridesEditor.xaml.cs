@@ -13,14 +13,38 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 {
     public partial class DynamicFaceOverridesEditor : UserControl, IPropertyEditorControl, IPropertyEditorControl2
     {
+        public static readonly DependencyProperty ParameterColumnsProperty =
+            DependencyProperty.Register(
+                nameof(ParameterColumns),
+                typeof(int),
+                typeof(DynamicFaceOverridesEditor),
+                new PropertyMetadata(1));
+
+        public static readonly DependencyProperty PartColumnsProperty =
+            DependencyProperty.Register(
+                nameof(PartColumns),
+                typeof(int),
+                typeof(DynamicFaceOverridesEditor),
+                new PropertyMetadata(1));
+
         private readonly Dictionary<AnimationSlider, List<INotifyPropertyChanged>> sliderValueWatchers = [];
+        private readonly Dictionary<AnimationSlider, SliderConfigurationState> sliderConfigurationStates = [];
         private NotifyCollectionChangedEventHandler? parameterRowsChangedHandler;
         private NotifyCollectionChangedEventHandler? partRowsChangedHandler;
         private PropertyChangedEventHandler? overridesPropertyChangedHandler;
+        private bool isRefreshingMetadata;
         private Point dragStartPoint;
         private Live2DFaceDynamicParameterRow? draggingParameterRow;
         private Live2DFaceDynamicPartRow? draggingPartRow;
         private IEditorInfo? editorInfo;
+
+        private readonly record struct SliderConfigurationState(
+            object? DataContext,
+            object? Animation,
+            double DefaultValue,
+            double DefaultMin,
+            double DefaultMax,
+            IEditorInfo? EditorInfo);
 
         public static readonly DependencyProperty OverridesProperty =
             DependencyProperty.Register(
@@ -74,6 +98,18 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             set => SetValue(SelectedPartRowProperty, value);
         }
 
+        public int ParameterColumns
+        {
+            get => (int)GetValue(ParameterColumnsProperty);
+            set => SetValue(ParameterColumnsProperty, value);
+        }
+
+        public int PartColumns
+        {
+            get => (int)GetValue(PartColumnsProperty);
+            set => SetValue(PartColumnsProperty, value);
+        }
+
         public event EventHandler? BeginEdit;
         public event EventHandler? EndEdit;
 
@@ -81,6 +117,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         {
             InitializeComponent();
             Unloaded += DynamicFaceOverridesEditor_Unloaded;
+            Loaded += DynamicFaceOverridesEditor_Loaded;
         }
 
         public void SetEditorInfo(IEditorInfo info)
@@ -104,12 +141,18 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             ((DynamicFaceOverridesEditor)d).RefreshFilters();
         }
 
+        private void DynamicFaceOverridesEditor_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateColumnCounts();
+        }
+
         private void DynamicFaceOverridesEditor_Unloaded(object sender, RoutedEventArgs e)
         {
             foreach (var slider in sliderValueWatchers.Keys.ToList())
             {
                 DetachSliderValueWatchers(slider);
             }
+            sliderConfigurationStates.Clear();
 
             if (Overrides != null)
             {
@@ -130,6 +173,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
 
             Unloaded -= DynamicFaceOverridesEditor_Unloaded;
+            Loaded -= DynamicFaceOverridesEditor_Loaded;
         }
 
         private void BindOverrides(Live2DFaceDynamicOverrides? oldValue, Live2DFaceDynamicOverrides? newValue)
@@ -154,6 +198,8 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
             if (newValue == null)
             {
+                ParameterExpander.IsExpanded = false;
+                PartExpander.IsExpanded = false;
                 ParameterList.ItemsSource = null;
                 PartList.ItemsSource = null;
                 SelectedParameterRow = null;
@@ -161,25 +207,31 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
+            if (!ReferenceEquals(oldValue, newValue))
+            {
+                ParameterExpander.IsExpanded = false;
+                PartExpander.IsExpanded = false;
+            }
+
             BindingOperations.EnableCollectionSynchronization(newValue.ParameterRows, newValue.ParameterRowsSyncRoot);
             BindingOperations.EnableCollectionSynchronization(newValue.PartRows, newValue.PartRowsSyncRoot);
 
-            RefreshMetadata(newValue);
-            parameterRowsChangedHandler = (_, _) =>
+            EnsureModelFile(newValue);
+            if (ParameterExpander.IsExpanded || PartExpander.IsExpanded)
             {
-                AttachCallbacks(newValue);
-                ApplyEditorInfoToVisibleAnimations(newValue);
-            };
-            partRowsChangedHandler = (_, _) =>
-            {
-                AttachCallbacks(newValue);
-                ApplyEditorInfoToVisibleAnimations(newValue);
-            };
+                RefreshMetadata(newValue);
+            }
+
+            parameterRowsChangedHandler = (_, e) => HandleParameterRowsChanged(newValue, e);
+            partRowsChangedHandler = (_, e) => HandlePartRowsChanged(newValue, e);
             overridesPropertyChangedHandler = (_, e) =>
             {
                 if (e.PropertyName == nameof(Live2DFaceDynamicOverrides.ModelFile))
                 {
-                    RefreshMetadata(newValue);
+                    if (ParameterExpander.IsExpanded || PartExpander.IsExpanded)
+                    {
+                        RefreshMetadata(newValue);
+                    }
                 }
             };
             newValue.ParameterRows.CollectionChanged += parameterRowsChangedHandler;
@@ -194,28 +246,82 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 SelectedPartRow = newValue.PartRows.FirstOrDefault();
             }
-            AttachCallbacks(newValue);
+            AttachParameterCallbacks(newValue.ParameterRows);
+            AttachPartCallbacks(newValue.PartRows);
             RefreshVisibleCollections(newValue);
             ApplyEditorInfoToVisibleAnimations(newValue);
             RefreshFilters();
         }
 
-        private void AttachCallbacks(Live2DFaceDynamicOverrides overrides)
+        private void HandleParameterRowsChanged(Live2DFaceDynamicOverrides overrides, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var row in overrides.ParameterRows)
+            if (isRefreshingMetadata)
+            {
+                return;
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                AttachParameterCallbacks(overrides.ParameterRows);
+                ApplyEditorInfoToParameterRows(overrides.ParameterRows);
+                RefreshFilters();
+                return;
+            }
+
+            AttachParameterCallbacks(e.NewItems?.OfType<Live2DFaceDynamicParameterRow>());
+            ApplyEditorInfoToParameterRows(e.NewItems?.OfType<Live2DFaceDynamicParameterRow>());
+            RefreshFilters();
+        }
+
+        private void HandlePartRowsChanged(Live2DFaceDynamicOverrides overrides, NotifyCollectionChangedEventArgs e)
+        {
+            if (isRefreshingMetadata)
+            {
+                return;
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                AttachPartCallbacks(overrides.PartRows);
+                ApplyEditorInfoToPartRows(overrides.PartRows);
+                RefreshFilters();
+                return;
+            }
+
+            AttachPartCallbacks(e.NewItems?.OfType<Live2DFaceDynamicPartRow>());
+            ApplyEditorInfoToPartRows(e.NewItems?.OfType<Live2DFaceDynamicPartRow>());
+            RefreshFilters();
+        }
+
+        private void AttachParameterCallbacks(IEnumerable<Live2DFaceDynamicParameterRow>? rows)
+        {
+            if (rows == null || Overrides == null)
+            {
+                return;
+            }
+
+            foreach (var row in rows)
             {
                 row.EditedCallback = () =>
                 {
-                    overrides.NotifyRowsEdited();
+                    Overrides.NotifyRowsEdited();
                     NotifyEdited();
                 };
             }
+        }
 
-            foreach (var row in overrides.PartRows)
+        private void AttachPartCallbacks(IEnumerable<Live2DFaceDynamicPartRow>? rows)
+        {
+            if (rows == null || Overrides == null)
+            {
+                return;
+            }
+
+            foreach (var row in rows)
             {
                 row.EditedCallback = () =>
                 {
-                    overrides.NotifyRowsEdited();
+                    Overrides.NotifyRowsEdited();
                     NotifyEdited();
                 };
             }
@@ -234,20 +340,62 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
             if (ParameterExpander.IsExpanded)
             {
-                foreach (var row in overrides.ParameterRows)
-                {
-                    row.Value.SetKeyFrames(keyFrames);
-                    row.Value.SetAnimationParameters(length, fps);
-                }
+                ApplyEditorInfoToParameterRows(overrides.ParameterRows, keyFrames, length, fps);
             }
 
             if (PartExpander.IsExpanded)
             {
-                foreach (var row in overrides.PartRows)
-                {
-                    row.Opacity.SetKeyFrames(keyFrames);
-                    row.Opacity.SetAnimationParameters(length, fps);
-                }
+                ApplyEditorInfoToPartRows(overrides.PartRows, keyFrames, length, fps);
+            }
+        }
+
+        private void ApplyEditorInfoToParameterRows(IEnumerable<Live2DFaceDynamicParameterRow>? rows)
+        {
+            if (editorInfo == null || rows == null || !ParameterExpander.IsExpanded)
+            {
+                return;
+            }
+
+            var length = (int)Math.Clamp((long)editorInfo.ItemDuration.Frame, 1L, int.MaxValue);
+            var fps = Math.Max(1, editorInfo.VideoInfo.FPS);
+            ApplyEditorInfoToParameterRows(rows, editorInfo.KeyFrames, length, fps);
+        }
+
+        private static void ApplyEditorInfoToParameterRows(
+            IEnumerable<Live2DFaceDynamicParameterRow> rows,
+            KeyFrames? keyFrames,
+            int length,
+            int fps)
+        {
+            foreach (var row in rows)
+            {
+                row.Value.SetKeyFrames(keyFrames);
+                row.Value.SetAnimationParameters(length, fps);
+            }
+        }
+
+        private void ApplyEditorInfoToPartRows(IEnumerable<Live2DFaceDynamicPartRow>? rows)
+        {
+            if (editorInfo == null || rows == null || !PartExpander.IsExpanded)
+            {
+                return;
+            }
+
+            var length = (int)Math.Clamp((long)editorInfo.ItemDuration.Frame, 1L, int.MaxValue);
+            var fps = Math.Max(1, editorInfo.VideoInfo.FPS);
+            ApplyEditorInfoToPartRows(rows, editorInfo.KeyFrames, length, fps);
+        }
+
+        private static void ApplyEditorInfoToPartRows(
+            IEnumerable<Live2DFaceDynamicPartRow> rows,
+            KeyFrames? keyFrames,
+            int length,
+            int fps)
+        {
+            foreach (var row in rows)
+            {
+                row.Opacity.SetKeyFrames(keyFrames);
+                row.Opacity.SetAnimationParameters(length, fps);
             }
         }
 
@@ -298,27 +446,31 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void RefreshMetadata(Live2DFaceDynamicOverrides overrides)
         {
+            EnsureModelFile(overrides);
+
             if (Dispatcher.CheckAccess())
             {
-                overrides.SyncWithMetadata();
-                RefreshVisibleCollections(overrides);
-                ApplyEditorInfoToVisibleAnimations(overrides);
-                RefreshFilters();
+                RefreshMetadataCore(overrides);
                 return;
             }
 
-            _ = Dispatcher.BeginInvoke(new Action(() =>
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
             {
-                overrides.SyncWithMetadata();
-                RefreshVisibleCollections(overrides);
-                ApplyEditorInfoToVisibleAnimations(overrides);
-                RefreshFilters();
-            }));
+                return;
+            }
+
+            Dispatcher.Invoke(() => RefreshMetadataCore(overrides));
         }
 
         private void ParameterExpander_Expanded(object sender, RoutedEventArgs e)
         {
+            if (Overrides != null)
+            {
+                RefreshMetadata(Overrides);
+            }
+
             RefreshVisibleCollections(Overrides);
+            UpdateColumnCounts();
             ApplyEditorInfoToVisibleAnimations(Overrides);
             RefreshFilters();
         }
@@ -330,7 +482,13 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void PartExpander_Expanded(object sender, RoutedEventArgs e)
         {
+            if (Overrides != null)
+            {
+                RefreshMetadata(Overrides);
+            }
+
             RefreshVisibleCollections(Overrides);
+            UpdateColumnCounts();
             ApplyEditorInfoToVisibleAnimations(Overrides);
             RefreshFilters();
         }
@@ -358,8 +516,49 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 
         private void ConfigureDetailAnimationSlider(AnimationSlider slider)
         {
-            DetachSliderValueWatchers(slider);
+            var state = CreateSliderConfigurationState(slider);
+            if (sliderConfigurationStates.TryGetValue(slider, out var currentState) &&
+                currentState.Equals(state))
+            {
+                return;
+            }
 
+            DetachSliderValueWatchers(slider);
+            ApplySliderConfiguration(slider);
+            sliderConfigurationStates[slider] = state;
+            AttachSliderValueWatchers(slider);
+        }
+
+        private SliderConfigurationState CreateSliderConfigurationState(AnimationSlider slider)
+        {
+            return slider.DataContext switch
+            {
+                Live2DFaceDynamicParameterRow parameterRow => new SliderConfigurationState(
+                    slider.DataContext,
+                    parameterRow.Value,
+                    parameterRow.DefaultValue,
+                    parameterRow.Min,
+                    parameterRow.Max,
+                    editorInfo),
+                Live2DFaceDynamicPartRow partRow => new SliderConfigurationState(
+                    slider.DataContext,
+                    partRow.Opacity,
+                    1,
+                    0,
+                    1,
+                    editorInfo),
+                _ => new SliderConfigurationState(
+                    slider.DataContext,
+                    slider.Animation,
+                    slider.DefaultValue,
+                    slider.DefaultMin,
+                    slider.DefaultMax,
+                    editorInfo),
+            };
+        }
+
+        private void ApplySliderConfiguration(AnimationSlider slider)
+        {
             switch (slider.DataContext)
             {
                 case Live2DFaceDynamicParameterRow parameterRow:
@@ -389,6 +588,44 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
 
             AttachSliderValueWatchers(slider);
+        }
+
+        private static void EnsureModelFile(Live2DFaceDynamicOverrides overrides)
+        {
+            if (!string.IsNullOrWhiteSpace(overrides.ModelFile))
+            {
+                return;
+            }
+
+            var fallbackModelPath = ModelMetadataCatalog.CurrentModelPath;
+            if (!string.IsNullOrWhiteSpace(fallbackModelPath))
+            {
+                overrides.ModelFile = fallbackModelPath;
+            }
+        }
+
+        private void RefreshMetadataCore(Live2DFaceDynamicOverrides overrides)
+        {
+            if (!IsLoaded && PresentationSource.FromVisual(this) == null)
+            {
+                return;
+            }
+
+            isRefreshingMetadata = true;
+            try
+            {
+                overrides.SyncWithMetadata();
+            }
+            finally
+            {
+                isRefreshingMetadata = false;
+            }
+
+            AttachParameterCallbacks(overrides.ParameterRows);
+            AttachPartCallbacks(overrides.PartRows);
+            RefreshVisibleCollections(overrides);
+            ApplyEditorInfoToVisibleAnimations(overrides);
+            RefreshFilters();
         }
 
         private void AttachSliderValueWatchers(AnimationSlider slider)
@@ -424,6 +661,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
 
             sliderValueWatchers.Remove(slider);
+            sliderConfigurationStates.Remove(slider);
         }
 
         private void SliderValueViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -565,6 +803,45 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
 
             return step;
+        }
+
+        private void ParameterList_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateParameterColumns(e.NewSize.Width);
+        }
+
+        private void PartList_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdatePartColumns(e.NewSize.Width);
+        }
+
+        private void UpdateColumnCounts()
+        {
+            UpdateParameterColumns(ParameterList.ActualWidth);
+            UpdatePartColumns(PartList.ActualWidth);
+        }
+
+        private void UpdateParameterColumns(double width)
+        {
+            var columns = CalculateColumns(width);
+            if (ParameterColumns != columns)
+            {
+                ParameterColumns = columns;
+            }
+        }
+
+        private void UpdatePartColumns(double width)
+        {
+            var columns = CalculateColumns(width);
+            if (PartColumns != columns)
+            {
+                PartColumns = columns;
+            }
+        }
+
+        private static int CalculateColumns(double width)
+        {
+            return Math.Max(1, (int)Math.Floor((width - 160.0) / 260.0) + 1);
         }
     }
 }

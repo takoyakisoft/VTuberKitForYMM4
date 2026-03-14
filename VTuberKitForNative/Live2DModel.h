@@ -92,6 +92,10 @@ public:
     {
         System::String^ get();
     }
+    property array<System::String^>^ LoadWarnings
+    {
+        array<System::String^>^ get();
+    }
     void ReloadRenderer();
     void ResetAnimationState();
 
@@ -130,6 +134,8 @@ public:
     void SetLipSyncValue(float value);
     void SetPhysicsEnabled(bool enabled);
     bool GetPhysicsEnabled();
+    void SetPhysicsOutputScale(float scale);
+    void SetPhysicsWind(float x, float y);
     void SetBreathEnabled(bool enabled);
     bool GetBreathEnabled();
 

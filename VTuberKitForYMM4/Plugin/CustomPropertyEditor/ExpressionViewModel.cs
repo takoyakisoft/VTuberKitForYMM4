@@ -11,7 +11,7 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
 
     public class ExpressionViewModel : CustomComboBoxViewModelBase
     {
-        private const string NoneExpression = "(未選択)";
+        private static string NoneExpression => Translate.Ui_NoneSelected;
         private readonly Func<string?>? modelPathProvider;
         private string selectedExpressionId = string.Empty;
         private bool isRefreshing;

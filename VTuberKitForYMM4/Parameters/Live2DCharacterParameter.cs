@@ -9,10 +9,10 @@ namespace VTuberKitForYMM4.Plugin
 {
     public enum Live2DMsaaSamplePreset
     {
-        [Display(Name = "2x", Description = "負荷を抑えつつ輪郭を改善")]
+        [Display(Name = nameof(Translate.Character_Msaa2x_Name), Description = nameof(Translate.Character_Msaa2x_Desc), ResourceType = typeof(Translate))]
         X2 = 2,
 
-        [Display(Name = "4x", Description = "より高品質。負荷が増加")]
+        [Display(Name = nameof(Translate.Character_Msaa4x_Name), Description = nameof(Translate.Character_Msaa4x_Desc), ResourceType = typeof(Translate))]
         X4 = 4,
     }
 
@@ -25,34 +25,38 @@ namespace VTuberKitForYMM4.Plugin
             RegisterInteractionTarget();
         }
 
-        [Display(GroupName = "モデル", Name = "モデルファイル", Description = "Live2Dモデルのmodel3.jsonファイルを選択してください")]
-        [FileSelector(YukkuriMovieMaker.Settings.FileGroupType.None)]
+        [Display(GroupName = nameof(Translate.Group_Model), Name = nameof(Translate.Character_File_Name), Description = nameof(Translate.Character_File_Desc), ResourceType = typeof(Translate))]
+        [DirectorySelector]
         public string? File
         {
             get => file;
             set
             {
-                if (!string.IsNullOrEmpty(value) && !value.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
+                var normalized = string.IsNullOrWhiteSpace(value) ? null : value;
+                var resolution = ModelMetadataCatalog.ResolveModelSelection(normalized);
+                if (!string.IsNullOrWhiteSpace(normalized) && !resolution.IsValid)
                 {
-                    ConsoleManager.Error("Live2Dモデルには .model3.json を選択してください。");
+                    ConsoleManager.Error(Translate.Error_InvalidModelSelection);
                     return;
                 }
 
-                if (string.IsNullOrEmpty(value) || value.EndsWith(".model3.json", System.StringComparison.OrdinalIgnoreCase))
+                var resolvedValue = resolution.ResolvedModelPath;
+                if (string.IsNullOrEmpty(normalized) || !string.IsNullOrEmpty(resolvedValue))
                 {
                     var previousAutoDisplayName = ResolveDefaultDisplayName(file, _lastRegisteredInteractionLinkId);
                     var shouldRefreshAutoDisplayName =
                         string.IsNullOrWhiteSpace(interactionDisplayName) ||
                         string.Equals(interactionDisplayName, previousAutoDisplayName, System.StringComparison.OrdinalIgnoreCase);
 
-                    if (Set(ref file, value))
+                    if (Set(ref file, resolvedValue))
                     {
                         if (shouldRefreshAutoDisplayName)
                         {
                             interactionDisplayName = string.Empty;
                         }
 
-                        ModelMetadataCatalog.UpdateFromModelPath(value);
+                        ModelMetadataCatalog.UpdateFromModelPath(resolvedValue);
+                        ShowModelSelectionWarnings(resolvedValue);
                         RegisterInteractionTarget();
                     }
                 }
@@ -60,7 +64,7 @@ namespace VTuberKitForYMM4.Plugin
         }
         string? file = null;
 
-        [Display(GroupName = "連携", Name = "リンクID", Description = "ターゲットポイント/ヒットボックス図形と関連付けるID。空欄なら自動採番します")]
+        [Display(GroupName = nameof(Translate.Group_Link), Name = nameof(Translate.Character_LinkId_Name), Description = nameof(Translate.Character_LinkId_Desc), ResourceType = typeof(Translate))]
         public string InteractionLinkId
         {
             get
@@ -96,7 +100,7 @@ namespace VTuberKitForYMM4.Plugin
         }
         string autoInteractionLinkId = Guid.NewGuid().ToString("N");
 
-        [Display(GroupName = "連携", Name = "キャラクター名", Description = "複数キャラクター時にターゲットポイント/ヒットボックスから選ぶための表示名")]
+        [Display(GroupName = nameof(Translate.Group_Link), Name = nameof(Translate.Character_DisplayName_Name), Description = nameof(Translate.Character_DisplayName_Desc), ResourceType = typeof(Translate))]
         public string InteractionDisplayName
         {
             get => ResolveInteractionDisplayName();
@@ -165,6 +169,23 @@ namespace VTuberKitForYMM4.Plugin
             return string.Equals(value, Live2DInteractionDefaults.DefaultLinkId, System.StringComparison.OrdinalIgnoreCase);
         }
 
+        private static void ShowModelSelectionWarnings(string? modelPath)
+        {
+            var warnings = ModelMetadataCatalog.GetModelSelectionWarnings(modelPath);
+            if (warnings.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var warning in warnings)
+            {
+                ModelMetadataCatalog.RememberShownSelectionIssue(modelPath, warning);
+            }
+
+            ConsoleManager.Error(
+                $"{Translate.Error_ModelSelectionWarnings_Title}\n\n{Translate.Error_TargetPath_Label}: {modelPath}\n\n- {string.Join("\n- ", warnings)}");
+        }
+
         private bool IsLegacyAutoDisplayName(string value)
         {
             if (string.IsNullOrWhiteSpace(File))
@@ -177,80 +198,88 @@ namespace VTuberKitForYMM4.Plugin
             return string.Equals(value, legacyName, System.StringComparison.OrdinalIgnoreCase);
         }
 
-        [Display(GroupName = "目パチ", Name = "自動まばたき", Description = "自動でまばたきを行います")]
+        [Display(GroupName = nameof(Translate.Group_Blink), Name = nameof(Translate.Character_AutoEyeBlink_Name), Description = nameof(Translate.Character_AutoEyeBlink_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         public bool AutoEyeBlink { get => autoEyeBlink; set => Set(ref autoEyeBlink, value); }
         bool autoEyeBlink = true;
 
-        [Display(GroupName = "目パチ", Name = "目パチ間隔", Description = "まばたきの間隔を秒単位で設定します")]
+        [Display(GroupName = nameof(Translate.Group_Blink), Name = nameof(Translate.Character_EyeBlinkInterval_Name), Description = nameof(Translate.Character_EyeBlinkInterval_Desc), ResourceType = typeof(Translate))]
         [TextBoxSlider("F2", "s", 0.1, 10.0, Delay = -1)]
         [Range(0.1, 10.0)]
         [DefaultValue(3.0)]
         public double EyeBlinkInterval { get => eyeBlinkInterval; set => Set(ref eyeBlinkInterval, value); }
         double eyeBlinkInterval = 3.0;
 
-        [Display(GroupName = "口パク", Name = "自動口パク", Description = "音声に連動して口を動かします")]
+        [Display(GroupName = nameof(Translate.Group_LipSync), Name = nameof(Translate.Character_AutoLipSync_Name), Description = nameof(Translate.Character_AutoLipSync_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         [Browsable(false)]
         public bool AutoLipSync { get => autoLipSync; set => Set(ref autoLipSync, value); }
         bool autoLipSync = true;
 
-        [Display(GroupName = "口パク", Name = "口パク感度", Description = "口パクの感度を調整します。通常は 1.0 を推奨します")]
+        [Display(GroupName = nameof(Translate.Group_LipSync), Name = nameof(Translate.Character_LipSyncGain_Name), Description = nameof(Translate.Character_LipSyncGain_Desc), ResourceType = typeof(Translate))]
         [TextBoxSlider("F2", "", 0.0, 5.0, Delay = -1)]
         [Range(0.0, 5.0)]
         [DefaultValue(1.0)]
         public double LipSyncGain { get => lipSyncGain; set => Set(ref lipSyncGain, value); }
         double lipSyncGain = 1.0;
 
-        [Display(GroupName = "口パク", Name = "口形パラメータのみ", Description = "ONで ParamMouthOpenY / ParamMouthForm を更新せず、A / I / U / E / O の口形パラメータのみを更新します")]
+        [Display(GroupName = nameof(Translate.Group_LipSync), Name = nameof(Translate.Character_LipSyncVowelsOnly_Name), Description = nameof(Translate.Character_LipSyncVowelsOnly_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         public bool LipSyncVowelsOnly { get => lipSyncVowelsOnly; set => Set(ref lipSyncVowelsOnly, value); }
         bool lipSyncVowelsOnly = true;
 
-        [Display(GroupName = "物理演算", Name = "物理演算有効", Description = "物理演算による風揺れを有効にします")]
+        [Display(GroupName = nameof(Translate.Group_Physics), Name = nameof(Translate.Character_EnablePhysics_Name), Description = nameof(Translate.Character_EnablePhysics_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         public bool EnablePhysics { get => enablePhysics; set => Set(ref enablePhysics, value); }
         bool enablePhysics = true;
 
-        [Display(GroupName = "物理演算", Name = "風の強さ", Description = "0で無効、値を上げると揺れ入力を強めます")]
-        [TextBoxSlider("F2", "", 0.0, 3.0, Delay = -1)]
-        [Range(0.0, 3.0)]
+        [Display(GroupName = nameof(Translate.Group_Physics), Name = nameof(Translate.Character_PhysicsStrength_Name), Description = nameof(Translate.Character_PhysicsStrength_Desc), ResourceType = typeof(Translate))]
+        [TextBoxSlider("F0", "", 0.0, 100.0, Delay = -1)]
+        [Range(0.0, 100.0)]
+        [DefaultValue(50.0)]
+        public double PhysicsStrength { get => physicsStrength; set => Set(ref physicsStrength, value); }
+        double physicsStrength = 50.0;
+
+        [Display(GroupName = nameof(Translate.Group_Physics), Name = nameof(Translate.Character_WindStrength_Name), Description = nameof(Translate.Character_WindStrength_Desc), ResourceType = typeof(Translate))]
+        [TextBoxSlider("F0", "", 0.0, 100.0, Delay = -1)]
+        [Range(0.0, 100.0)]
         [DefaultValue(0.0)]
         public double WindStrength { get => windStrength; set => Set(ref windStrength, value); }
         double windStrength = 0.0;
 
-        [Display(GroupName = "呼吸", Name = "呼吸有効", Description = "呼吸モーションを有効にします")]
+        [Display(GroupName = nameof(Translate.Group_Physics), Name = nameof(Translate.Character_HitAreaPhysicsStrength_Name), Description = nameof(Translate.Character_HitAreaPhysicsStrength_Desc), ResourceType = typeof(Translate))]
+        [TextBoxSlider("F0", "", 0.0, 100.0, Delay = -1)]
+        [Range(0.0, 100.0)]
+        [DefaultValue(0.0)]
+        public double HitAreaPhysicsStrength { get => hitAreaPhysicsStrength; set => Set(ref hitAreaPhysicsStrength, value); }
+        double hitAreaPhysicsStrength = 0.0;
+
+        [Display(GroupName = nameof(Translate.Group_Breath), Name = nameof(Translate.Character_EnableBreath_Name), Description = nameof(Translate.Character_EnableBreath_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         public bool EnableBreath { get => enableBreath; set => Set(ref enableBreath, value); }
         bool enableBreath = true;
 
-        [Display(GroupName = "描画品質", Name = "RT最大サイズ", Description = "内部描画の最大ピクセルサイズ。大きいほど高品質だがVRAM消費増（既定: 8192）", Order = 2)]
+        [Display(GroupName = nameof(Translate.Group_Quality), Name = nameof(Translate.Character_RenderTargetMaxSize_Name), Description = nameof(Translate.Character_RenderTargetMaxSize_Desc), ResourceType = typeof(Translate))]
         [TextBoxSlider("F0", "px", 2048, 8192, Delay = -1)]
         [Range(2048, 8192)]
-        [DefaultValue(8192)]
+        [DefaultValue(4096)]
         public int RenderTargetMaxSize { get => renderTargetMaxSize; set => Set(ref renderTargetMaxSize, value); }
-        int renderTargetMaxSize = 8192;
+        int renderTargetMaxSize = 4096;
 
-        [Display(GroupName = "描画品質", Name = "内部倍率", Description = "内部描画倍率。大きいほど拡大に強い（既定: 2.0）", Order = 1)]
+        [Display(GroupName = nameof(Translate.Group_Quality), Name = nameof(Translate.Character_InternalRenderScale_Name), Description = nameof(Translate.Character_InternalRenderScale_Desc), ResourceType = typeof(Translate))]
         [TextBoxSlider("F2", "x", 1.0, 4.0, Delay = -1)]
         [Range(1.0, 4.0)]
         [DefaultValue(2.0)]
         public double InternalRenderScale { get => internalRenderScale; set => Set(ref internalRenderScale, value); }
         double internalRenderScale = 2.0;
 
-        [Display(GroupName = "描画品質", Name = "FXAA", Description = "ONで最終縮小時の補間を高品質化（滑らか寄り、ややソフトになる場合あり）", Order = 5)]
-        [ToggleSlider]
-        [DefaultValue(true)]
-        public bool EnableFxaa { get => enableFxaa; set => Set(ref enableFxaa, value); }
-        bool enableFxaa = true;
-
-        [Display(GroupName = "描画品質", Name = "MSAA", Description = "ONでMSAAを有効化（エッジ改善、負荷増）。FXAAと併用可", Order = 3)]
+        [Display(GroupName = nameof(Translate.Group_Quality), Name = nameof(Translate.Character_EnableMsaa_Name), Description = nameof(Translate.Character_EnableMsaa_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         [DefaultValue(true)]
         public bool EnableMsaa { get => enableMsaa; set => Set(ref enableMsaa, value); }
         bool enableMsaa = true;
 
-        [Display(GroupName = "描画品質", Name = "MSAAサンプル", Description = "MSAA ON時のサンプル数（2x / 4x）", Order = 4)]
+        [Display(GroupName = nameof(Translate.Group_Quality), Name = nameof(Translate.Character_MsaaSamplePreset_Name), Description = nameof(Translate.Character_MsaaSamplePreset_Desc), ResourceType = typeof(Translate))]
         [EnumComboBox]
         [DefaultValue(Live2DMsaaSamplePreset.X4)]
         public Live2DMsaaSamplePreset MsaaSamplePreset { get => msaaSamplePreset; set => Set(ref msaaSamplePreset, value); }

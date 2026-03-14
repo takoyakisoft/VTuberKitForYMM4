@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cwchar>
 #include <mutex>
+#include <algorithm>
 
 #pragma comment(lib, "Windowscodecs.lib")
 #pragma comment(lib, "Shlwapi.lib")
@@ -162,6 +163,16 @@ NativeModel::NativeModel()
     , _lastMotionPriority(0.0f) {
 }
 
+void NativeModel::AddLoadWarning(const std::string& warning) {
+    if (warning.empty()) {
+        return;
+    }
+
+    if (std::find(_loadWarnings.begin(), _loadWarnings.end(), warning) == _loadWarnings.end()) {
+        _loadWarnings.push_back(warning);
+    }
+}
+
 void NativeModel::InitializeBlinkAndBreath() {
     if (_eyeBlink) {
         CubismEyeBlink::Delete(_eyeBlink);
@@ -232,6 +243,7 @@ void NativeModel::ReleaseTextures() {
 
 bool NativeModel::LoadAssets(const char* dir, const char* fileName) {
     _lastErrorMessage.clear();
+    _loadWarnings.clear();
 
     if (_modelSetting) {
         delete _modelSetting;
@@ -260,6 +272,7 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     _updating = true;
     _initialized = false;
     _modelSetting = setting;
+    _loadWarnings.clear();
 
     if (strcmp(setting->GetModelFileName(), "") != 0) {
         std::string path;
@@ -306,11 +319,13 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
             std::string pathError;
             if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetExpressionFileName(i), expressionPath, pathError)) {
                 Live2DPal::PrintLogLn("Skipped expression '%s': %s", expressionName.GetRawString(), pathError.c_str());
+                AddLoadWarning(std::string("Expression '") + expressionName.GetRawString() + "' の参照解決に失敗しました: " + pathError);
                 continue;
             }
             unsigned int rawSize = 0;
             csmByte* buffer = Live2DPal::LoadFileAsBytes(expressionPath, &rawSize);
             if (!buffer) {
+                AddLoadWarning(std::string("Expression '") + expressionName.GetRawString() + "' のファイルを読み込めません: " + expressionPath);
                 continue;
             }
 
@@ -318,6 +333,8 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
             Live2DPal::ReleaseBytes(buffer);
             if (expressionMotion) {
                 _expressions[expressionName.GetRawString()] = expressionMotion;
+            } else {
+                AddLoadWarning(std::string("Expression '") + expressionName.GetRawString() + "' を生成できません: " + expressionPath);
             }
         }
     }
@@ -327,12 +344,15 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
         std::string pathError;
         if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPhysicsFileName(), path, pathError)) {
             Live2DPal::PrintLogLn("Skipped physics file: %s", pathError.c_str());
+            AddLoadWarning(std::string("Physics の参照解決に失敗しました: ") + pathError);
         } else {
         unsigned int rawSize = 0;
             csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
             if (buffer) {
                 LoadPhysics(buffer, static_cast<csmSizeInt>(rawSize));
                 Live2DPal::ReleaseBytes(buffer);
+            } else {
+                AddLoadWarning(std::string("Physics ファイルを読み込めません: ") + path);
             }
         }
     }
@@ -342,12 +362,15 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
         std::string pathError;
         if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetPoseFileName(), path, pathError)) {
             Live2DPal::PrintLogLn("Skipped pose file: %s", pathError.c_str());
+            AddLoadWarning(std::string("Pose の参照解決に失敗しました: ") + pathError);
         } else {
         unsigned int rawSize = 0;
             csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
             if (buffer) {
                 LoadPose(buffer, static_cast<csmSizeInt>(rawSize));
                 Live2DPal::ReleaseBytes(buffer);
+            } else {
+                AddLoadWarning(std::string("Pose ファイルを読み込めません: ") + path);
             }
         }
     }
@@ -357,12 +380,15 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
         std::string pathError;
         if (!TryResolveModelAssetPath(_modelHomeDir, setting->GetUserDataFile(), path, pathError)) {
             Live2DPal::PrintLogLn("Skipped user data file: %s", pathError.c_str());
+            AddLoadWarning(std::string("UserData の参照解決に失敗しました: ") + pathError);
         } else {
         unsigned int rawSize = 0;
             csmByte* buffer = Live2DPal::LoadFileAsBytes(path, &rawSize);
             if (buffer) {
                 LoadUserData(buffer, static_cast<csmSizeInt>(rawSize));
                 Live2DPal::ReleaseBytes(buffer);
+            } else {
+                AddLoadWarning(std::string("UserData ファイルを読み込めません: ") + path);
             }
         }
     }
@@ -389,6 +415,7 @@ bool NativeModel::SetupModel(ICubismModelSetting* setting) {
     }
 
     LoadMotions();
+    ValidateHitAreaBindings();
     if (_motionManager) {
         _motionManager->StopAllMotions();
     }
@@ -564,6 +591,9 @@ void NativeModel::ResetAnimationState() {
 
     if (_physics) {
         _physics->Reset();
+        const auto& options = _physics->GetOptions();
+        _defaultPhysicsGravity = options.Gravity;
+        _defaultPhysicsWind = options.Wind;
     }
 
     if (_pose) {
@@ -609,6 +639,7 @@ void NativeModel::LoadMotions() {
             std::string pathError;
             if (!TryResolveModelAssetPath(_modelHomeDir, fileName.GetRawString(), path, pathError)) {
                 Live2DPal::PrintLogLn("Skipped motion '%s'[%d]: %s", groupName, j, pathError.c_str());
+                AddLoadWarning(std::string("Motion '") + groupName + "[" + std::to_string(j) + "]' の参照解決に失敗しました: " + pathError);
                 continue;
             }
             unsigned int rawSize = 0;
@@ -634,10 +665,32 @@ void NativeModel::LoadMotions() {
                     _motions[groupName][j] = motion;
                 } else {
                     Live2DPal::PrintLogLn("Failed to create motion: %s", path.c_str());
+                    AddLoadWarning(std::string("Motion '") + groupName + "[" + std::to_string(j) + "]' を生成できません: " + path);
                 }
             } else {
                 Live2DPal::PrintLogLn("Failed to load motion file: %s", path.c_str());
+                AddLoadWarning(std::string("Motion '") + groupName + "[" + std::to_string(j) + "]' のファイルを読み込めません: " + path);
             }
+        }
+    }
+}
+
+void NativeModel::ValidateHitAreaBindings() {
+    if (!_modelSetting || !_model) {
+        return;
+    }
+
+    const csmInt32 count = _modelSetting->GetHitAreasCount();
+    for (csmInt32 i = 0; i < count; i++) {
+        const char* currentName = _modelSetting->GetHitAreaName(i);
+        const char* currentId = _modelSetting->GetHitAreaId(i)->GetString().GetRawString();
+        float centerX = 0.0f;
+        float centerY = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
+        if (!TryGetHitAreaBounds(currentId, centerX, centerY, width, height)) {
+            const std::string label = (currentName && currentName[0] != '\0') ? currentName : currentId;
+            AddLoadWarning(std::string("HitArea '") + label + "' の drawable / ID 解決に失敗しました。");
         }
     }
 }
@@ -761,7 +814,33 @@ void NativeModel::UpdatePostPhysics(float deltaTime) {
     }
 
     if (_physicsEnabled && _physics) {
+        const csmInt32 parameterCount = _model->GetParameterCount();
+        std::vector<csmFloat32> prePhysicsValues;
+        prePhysicsValues.reserve(parameterCount);
+        for (csmInt32 i = 0; i < parameterCount; ++i) {
+            prePhysicsValues.push_back(_model->GetParameterValue(i));
+        }
+
+        auto options = _physics->GetOptions();
+        options.Gravity = _defaultPhysicsGravity;
+        options.Wind = CubismVector2(
+            _defaultPhysicsWind.X + _physicsWindX,
+            _defaultPhysicsWind.Y + _physicsWindY);
+        _physics->SetOptions(options);
+
         _physics->Evaluate(_model, deltaTime);
+
+        if (_physicsOutputScale != 1.0f) {
+            for (csmInt32 i = 0; i < parameterCount; ++i) {
+                const auto before = prePhysicsValues[static_cast<size_t>(i)];
+                const auto after = _model->GetParameterValue(i);
+                const auto blended = before + ((after - before) * _physicsOutputScale);
+                const auto minimum = _model->GetParameterMinimumValue(i);
+                const auto maximum = _model->GetParameterMaximumValue(i);
+                const auto clamped = blended < minimum ? minimum : (blended > maximum ? maximum : blended);
+                _model->SetParameterValue(i, clamped);
+            }
+        }
     }
 
     if (_pose) {
@@ -951,6 +1030,8 @@ bool NativeModel::GetLipSyncEnabled() { return _lipSyncEnabled; }
 void NativeModel::SetLipSyncValue(float value) { _lipSyncValue = value; }
 void NativeModel::SetPhysicsEnabled(bool enabled) { _physicsEnabled = enabled; }
 bool NativeModel::GetPhysicsEnabled() { return _physicsEnabled; }
+void NativeModel::SetPhysicsOutputScale(float scale) { _physicsOutputScale = scale < 0.0f ? 0.0f : scale; }
+void NativeModel::SetPhysicsWind(float x, float y) { _physicsWindX = x; _physicsWindY = y; }
 void NativeModel::SetBreathEnabled(bool enabled) { _breathEnabled = enabled; }
 bool NativeModel::GetBreathEnabled() { return _breathEnabled; }
 

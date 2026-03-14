@@ -484,7 +484,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
-            Dispatcher.Invoke(() => RefreshMetadataCore(overrides));
+            Dispatcher.BeginInvoke(() => RefreshMetadataCore(overrides));
         }
 
         private void ParameterExpander_Expanded(object sender, RoutedEventArgs e)

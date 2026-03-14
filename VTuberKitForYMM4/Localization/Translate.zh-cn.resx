@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>zh-cn</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>自动执行眨眼。</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>自动眨眼</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>根据音频驱动嘴部动作。</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>自动口型同步</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>多角色时用于在目标点或命中框中选择的显示名称。</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>角色名</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>启用呼吸动作。</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>启用呼吸</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>开启后启用 MSAA。改善边缘，但会增加负载。</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>启用 Live2D 物理演算。</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>启用</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>以秒设置眨眼间隔。</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>眨眼间隔</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>请选择 Live2D 模型文件夹或 .model3.json 文件。</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>模型文件夹</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>命中框反应期间添加类似拖拽的物理输入。</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>模型拖拽物理演算</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>内部渲染倍率。越大越适合放大显示（默认 2.0）。</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>内部倍率</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>用于关联目标点和命中框图形的ID。留空时自动生成。</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>链接ID</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>调整口型同步灵敏度。通常推荐 1.0。</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>口型同步灵敏度</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>开启后不会更新 ParamMouthOpenY / ParamMouthForm，而只更新 A / I / U / E / O 口形参数。</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>仅口形参数</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>在较低负载下改善边缘。</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>更高质量，但负载更高。</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>MSAA 开启时的采样数（2x / 4x）。</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA采样数</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 为标准。0 为不显示物理效果，100 约为 2 倍强度。</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>物理强度</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>内部渲染目标的最大像素尺寸。越大质量越高，但会增加 VRAM 占用（默认 4096）。</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>RT最大尺寸</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 为禁用。值越高随机风输入越强。</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>风模拟</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>请检查 .model3.json 的内容以及它引用的所有文件。</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>请选择 Live2D 模型文件夹或 .model3.json 文件。</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json 可能已损坏，或引用的 moc3 / texture / motion 文件可能缺失。</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>无法加载 Live2D 模型。</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>加载 Live2D 模型时有需要确认的项目。</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>请确认 .model3.json 文件的位置。</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>选择 Live2D 模型时有需要确认的项目。</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>对象</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>以列表形式编辑 Cubism 标准参数和模型固有的 Param / Part。</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>列表</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>从 model3.json 的 Expressions 中选择。</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>开启时隐藏，关闭时显示。</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>隐藏</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>开启后循环播放 face 动作。</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>动作循环</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>从 model3.json 的 Motions 中选择（含 Idle）。</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>动作</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>加到 Item 的位置 X 上的临时偏移。</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X偏移</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>加到 Item 的位置 Y 上的临时偏移。</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Y偏移</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>加到 Item 旋转角上的临时偏移。</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>旋转偏移</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>加到 Item 缩放率上的临时偏移。</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>缩放偏移</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>眨眼</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>呼吸</value></data>
+<data name="Group_Link" xml:space="preserve"><value>联动</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>口型同步</value></data>
+<data name="Group_Model" xml:space="preserve"><value>模型</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>参数</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>物理演算</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>渲染质量</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>选择联动的 Live2D 角色。</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>角色</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>编辑命中期间临时应用的 Param / Part。</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>列表</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>命中框触发时临时覆盖的表情。</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>矩形高度。</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>高度</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>从 model3.json 的 HitAreas 中选择反应目标。若 Name 为空则使用 Id。</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>命中区域</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>开启时仅隐藏引导图形，命中判定和反应仍然有效。</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>隐藏</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>内部标识符。通常会在选择目标角色时自动设置。</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>链接ID</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>命中框触发时播放一次的动作。</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>动作</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>矩形宽度。</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>宽度</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>矩形中心 X。</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>矩形中心 Y。</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>编辑持续作用于整个模型的 Param / Part。存在 face 侧设置时以其为优先。</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>列表</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>从 model3.json 的 Expressions 中选择。</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>开启时隐藏，关闭时显示。</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>隐藏</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>开启后循环播放动作。</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>动作循环</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>选择模型显示期间持续播放的动作（含 Idle）。</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>动作</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>模型颜色乘算的 A。</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>不透明度</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>模型颜色乘算的 B。</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>乘算色B</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>模型颜色乘算的 G。</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>乘算色G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>模型颜色乘算的 R。</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>乘算色R</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>模型显示位置的 X 偏移。</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>模型显示位置的 Y 偏移。</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>模型显示的旋转角度。</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>旋转角</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>模型显示缩放。</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>缩放率</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>D3D11 设备初始化失败: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>Live2D 初始化失败: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() 返回了 null。</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>更新 Live2D 时发生错误: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>ModelMetadataCatalog.{0} 失败: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>Live2D命中框</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>Live2D目标点</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>角度X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>角度Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>角度Z</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>左臂 A</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>左臂 B</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>右臂 A</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>右臂 B</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>全体左右</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>全体上下</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>身体旋转 X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>身体旋转 Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>身体旋转 Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>呼吸</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>左眉 角度</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>左眉 变换</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>左眉 左右</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>左眉 上下</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>右眉 角度</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>右眉 变换</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>右眉 左右</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>右眉 上下</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>胸部摇动 X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>胸部摇动 Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>脸颊泛红</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>眼珠的放大/缩小</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>眼珠 X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>眼珠 Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>左眼 开合</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>左眼 微笑</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>右眼 开合</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>右眼 微笑</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>头发摇动 后</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>头发摇动 蓬松</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>头发摇动 前</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>头发摇动 水平</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>左手</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>右手</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>嘴巴 变换</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>嘴巴 开合</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>耸肩</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>选择联动的 Live2D 角色。</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>角色</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>开启时仅隐藏引导图形，目标点联动仍然有效。</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>隐藏</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>内部标识符。通常会在选择目标角色时自动设置。</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>链接ID</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>引导显示大小。</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>大小</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>模型空间中的目标 X。</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>模型空间中的目标 Y。</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(默认)</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(未选择)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Param列表</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Part列表</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>未找到 DisplayInfo 文件: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>未找到 Expression 文件: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression 缺少 File 设置: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>缺少 FileReferences，相关文件解析可能失败。</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>HitAreas 中存在未设置 Id 的项目。</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>未找到 Moc 文件: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>未配置 Moc。</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>解析 model3.json 时发生异常。</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>未找到 Motion 文件: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion 缺少 File 设置: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>文件夹中发现多个 .model3.json 文件，因此将使用按名称排序后的第一个模型。</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(未设置名称)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>未找到 Physics 文件: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>未找到 Texture 文件: {0}</value></data>
+</root>

@@ -14,13 +14,14 @@ namespace VTuberKitForYMM4.Plugin
         {
             Motion = new MotionViewModel("Idle", modelPathProvider: () => ModelFile);
             Expression = new ExpressionViewModel("exp", () => ModelFile);
+            DynamicOverrides.PropertyChanged += DynamicOverrides_PropertyChanged;
         }
 
-        [Display(Name = "モーション", Description = "モデル表示中に継続再生するモーションを選択（Idle含む）")]
+        [Display(Name = nameof(Translate.Item_Motion_Name), Description = nameof(Translate.Item_Motion_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public MotionViewModel Motion { get; set; }
 
-        [Display(Name = "表情", Description = "model3.json の Expressions から選択")]
+        [Display(Name = nameof(Translate.Item_Expression_Name), Description = nameof(Translate.Item_Expression_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public ExpressionViewModel Expression { get; set; }
 
@@ -28,7 +29,17 @@ namespace VTuberKitForYMM4.Plugin
         public string ModelFile
         {
             get => modelFile;
-            set => Set(ref modelFile, value ?? string.Empty);
+            set
+            {
+                var normalized = value ?? string.Empty;
+                if (!Set(ref modelFile, normalized))
+                {
+                    return;
+                }
+
+                ModelMetadataCatalog.UpdateFromModelPath(normalized);
+                DynamicOverrides.ModelFile = normalized;
+            }
         }
         string modelFile = string.Empty;
 
@@ -41,11 +52,17 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
-        [Display(Name = "モーションループ", Description = "ONでモーションを繰り返し再生します")]
+        [Display(Name = nameof(Translate.Item_MotionLoop_Name), Description = nameof(Translate.Item_MotionLoop_Desc), ResourceType = typeof(Translate))]
         [ToggleSlider]
         [DefaultValue(true)]
         public bool MotionLoop { get => motionLoop; set => Set(ref motionLoop, value); }
         bool motionLoop = true;
+
+        [Display(Name = nameof(Translate.Item_IsHidden_Name), Description = nameof(Translate.Item_IsHidden_Desc), ResourceType = typeof(Translate))]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool IsHidden { get => isHidden; set => Set(ref isHidden, value); }
+        bool isHidden;
 
         [Browsable(false)]
         public string MotionGroup
@@ -65,43 +82,57 @@ namespace VTuberKitForYMM4.Plugin
             }
         }
 
-        [Display(Name = "不透明度", Description = "モデル全体の不透明度")]
-        [AnimatedHoldSlider("F2", "", 0.0, 1.0)]
-        public Animation Opacity { get; } = new Animation(1, 0, 1);
+        [Display(GroupName = nameof(Translate.Group_Parameter), Name = nameof(Translate.Item_DynamicOverrides_Name), Description = nameof(Translate.Item_DynamicOverrides_Desc), ResourceType = typeof(Translate))]
+        [DynamicFaceOverridesEditor(PropertyEditorSize = PropertyEditorSize.FullWidth)]
+        public Live2DFaceDynamicOverrides DynamicOverrides { get; } = new();
 
-        [Display(Name = "乗算色R", Description = "モデルカラー乗算のR")]
-        [AnimatedHoldSlider("F2", "", 0.0, 1.0)]
-        public Animation MultiplyR { get; } = new Animation(1, 0, 1);
+        [Browsable(false)]
+        public int DynamicOverridesRevision
+        {
+            get => dynamicOverridesRevision;
+            private set => Set(ref dynamicOverridesRevision, value);
+        }
+        int dynamicOverridesRevision;
 
-        [Display(Name = "乗算色G", Description = "モデルカラー乗算のG")]
-        [AnimatedHoldSlider("F2", "", 0.0, 1.0)]
-        public Animation MultiplyG { get; } = new Animation(1, 0, 1);
+        [Display(Name = nameof(Translate.Item_MultiplyR_Name), Description = nameof(Translate.Item_MultiplyR_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 100.0)]
+        public Animation MultiplyR { get; } = new Animation(100, 0, 100);
 
-        [Display(Name = "乗算色B", Description = "モデルカラー乗算のB")]
-        [AnimatedHoldSlider("F2", "", 0.0, 1.0)]
-        public Animation MultiplyB { get; } = new Animation(1, 0, 1);
+        [Display(Name = nameof(Translate.Item_MultiplyG_Name), Description = nameof(Translate.Item_MultiplyG_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 100.0)]
+        public Animation MultiplyG { get; } = new Animation(100, 0, 100);
 
-        [Display(Name = "乗算色A", Description = "モデルカラー乗算のA")]
-        [AnimatedHoldSlider("F2", "", 0.0, 1.0)]
-        public Animation MultiplyA { get; } = new Animation(1, 0, 1);
+        [Display(Name = nameof(Translate.Item_MultiplyB_Name), Description = nameof(Translate.Item_MultiplyB_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 100.0)]
+        public Animation MultiplyB { get; } = new Animation(100, 0, 100);
 
-        [Display(Name = "位置X", Description = "モデル表示位置のXオフセット")]
-        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
-        public Animation PositionX { get; } = new Animation(0, -2, 2);
+        [Display(Name = nameof(Translate.Item_MultiplyA_Name), Description = nameof(Translate.Item_MultiplyA_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 100.0)]
+        public Animation MultiplyA { get; } = new Animation(100, 0, 100);
 
-        [Display(Name = "位置Y", Description = "モデル表示位置のYオフセット")]
-        [AnimatedHoldSlider("F3", "", -2.0, 2.0)]
-        public Animation PositionY { get; } = new Animation(0, -2, 2);
+        [Display(Name = nameof(Translate.Item_PositionX_Name), Description = nameof(Translate.Item_PositionX_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation PositionX { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "拡大率", Description = "モデル表示スケール")]
-        [AnimatedHoldSlider("F3", "x", 0.1, 5.0)]
-        public Animation Scale { get; } = new Animation(1, 0.1, 5);
+        [Display(Name = nameof(Translate.Item_PositionY_Name), Description = nameof(Translate.Item_PositionY_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation PositionY { get; } = new Animation(0, -100000, 100000);
 
-        [Display(Name = "回転", Description = "モデル表示の回転角度")]
-        [AnimatedHoldSlider("F1", "°", -180.0, 180.0)]
-        public Animation Rotation { get; } = new Animation(0, -180, 180);
+        [Display(Name = nameof(Translate.Item_Scale_Name), Description = nameof(Translate.Item_Scale_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "%", 0.0, 400.0)]
+        public Animation Scale { get; } = new Animation(100, 0, 100000);
 
-        protected override IEnumerable<IAnimatable> GetAnimatables() => [Opacity, MultiplyR, MultiplyG, MultiplyB, MultiplyA, PositionX, PositionY, Scale, Rotation];
+        [Display(Name = nameof(Translate.Item_Rotation_Name), Description = nameof(Translate.Item_Rotation_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "°", -360.0, 360.0)]
+        public Animation Rotation { get; } = new Animation(0, -360, 360);
+
+        protected override IEnumerable<IAnimatable> GetAnimatables() => [MultiplyR, MultiplyG, MultiplyB, MultiplyA, PositionX, PositionY, Scale, Rotation, DynamicOverrides];
+
+        private void DynamicOverrides_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            DynamicOverridesRevision++;
+            OnPropertyChanged(nameof(DynamicOverrides));
+        }
     }
 }
 

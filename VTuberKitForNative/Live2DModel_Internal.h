@@ -36,6 +36,7 @@ public:
     void Draw(CubismMatrix44& matrix);                                     // 後方互換
     bool DrawWithFrame(ID3D11Device* device, ID3D11DeviceContext* context, int viewportWidth, int viewportHeight, CubismMatrix44& matrix); // StartFrame込み
     const std::string& GetLastErrorMessage() const { return _lastErrorMessage; }
+    const std::vector<std::string>& GetLoadWarnings() const { return _loadWarnings; }
 
     // パラメータ制御
     void SetParameterValue(const char* paramId, float value);
@@ -55,6 +56,8 @@ public:
     void SetLipSyncValue(float value);
     void SetPhysicsEnabled(bool enabled);
     bool GetPhysicsEnabled();
+    void SetPhysicsOutputScale(float scale);
+    void SetPhysicsWind(float x, float y);
     void SetBreathEnabled(bool enabled);
     bool GetBreathEnabled();
     void SetExpression(const char* expressionId);
@@ -108,6 +111,8 @@ private:
     void SetupTextures();
     void ReleaseTextures(); // 追加
     void LoadMotions(); // モーション読み込み
+    void AddLoadWarning(const std::string& warning);
+    void ValidateHitAreaBindings();
 
     ICubismModelSetting* _modelSetting;
     csmString _modelHomeDir;
@@ -131,6 +136,9 @@ private:
     bool _lipSyncEnabled = false;
     bool _physicsEnabled = true;
     bool _breathEnabled = true;
+    float _physicsOutputScale = 1.0f;
+    float _physicsWindX = 0.0f;
+    float _physicsWindY = 0.0f;
     float _lipSyncValue = 0.0f;
     float _viewPositionX = 0.0f;
     float _viewPositionY = 0.0f;
@@ -144,6 +152,9 @@ private:
     int _manualMotionIndex = -1;
     bool _manualMotionLoop = false;
     std::string _lastErrorMessage;
+    std::vector<std::string> _loadWarnings;
+    CubismVector2 _defaultPhysicsGravity = CubismVector2(0.0f, -1.0f);
+    CubismVector2 _defaultPhysicsWind = CubismVector2(0.0f, 0.0f);
 };
 
 } // namespace VTuberKitForNative

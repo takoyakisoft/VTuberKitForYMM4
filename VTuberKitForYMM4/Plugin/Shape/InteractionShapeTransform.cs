@@ -11,6 +11,13 @@ namespace VTuberKitForYMM4.Plugin.Shape
             return Math.Min(width, height) / 2.0f;
         }
 
+        private static Vector2 GetTranslationPixelScale(int screenWidth, int screenHeight)
+        {
+            var width = Math.Max(1, screenWidth);
+            var height = Math.Max(1, screenHeight);
+            return new Vector2(width / 2.0f, height / 2.0f);
+        }
+
         private static Vector2 TransformLocalPointToModelSpace(
             Vector2 localPoint,
             Live2DInteractionStore.InteractionTransformState state)
@@ -145,12 +152,10 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var viewPointWithoutTranslation = TransformModelSpacePointToViewSpaceWithoutTranslation(modelPoint, state);
             var isotropicScale = GetIsotropicPixelScale(screenWidth, screenHeight);
             var modelPixels = ToPixel(viewPointWithoutTranslation, isotropicScale, isotropicScale);
-            var translationPixels = ToPixel(
-                new Vector2(
-                    state.PositionX * state.HitTestScaleX,
-                    state.PositionY * state.HitTestScaleY),
-                isotropicScale,
-                isotropicScale);
+            var translationPixels = TranslationToPixel(
+                new Vector2(state.PositionX, state.PositionY),
+                screenWidth,
+                screenHeight);
             return modelPixels + translationPixels;
         }
 
@@ -160,6 +165,51 @@ namespace VTuberKitForYMM4.Plugin.Shape
             // For wide clips the effective X pixel scale matches the clip height, not the width.
             var isotropicScale = GetIsotropicPixelScale(screenWidth, screenHeight);
             return ToPixel(point, isotropicScale, isotropicScale);
+        }
+
+        public static Vector2 PixelToLocal(Vector2 pixelPoint, int screenWidth, int screenHeight)
+        {
+            var isotropicScale = GetIsotropicPixelScale(screenWidth, screenHeight);
+            if (isotropicScale <= 0.0f)
+            {
+                return Vector2.Zero;
+            }
+
+            return new Vector2(
+                pixelPoint.X / isotropicScale,
+                -pixelPoint.Y / isotropicScale);
+        }
+
+        public static Vector2 PixelToTranslation(Vector2 pixelPoint, int screenWidth, int screenHeight)
+        {
+            var scale = GetTranslationPixelScale(screenWidth, screenHeight);
+            if (scale.X <= 0.0f || scale.Y <= 0.0f)
+            {
+                return Vector2.Zero;
+            }
+
+            return new Vector2(
+                pixelPoint.X / scale.X,
+                -pixelPoint.Y / scale.Y);
+        }
+
+        public static Vector2 TranslationToPixel(Vector2 translation, int screenWidth, int screenHeight)
+        {
+            var scale = GetTranslationPixelScale(screenWidth, screenHeight);
+            return new Vector2(
+                translation.X * scale.X,
+                -translation.Y * scale.Y);
+        }
+
+        public static float PixelToLocalScalar(float pixelValue, int screenWidth, int screenHeight)
+        {
+            var isotropicScale = GetIsotropicPixelScale(screenWidth, screenHeight);
+            if (isotropicScale <= 0.0f)
+            {
+                return 0.0f;
+            }
+
+            return pixelValue / isotropicScale;
         }
 
         public static Vector2 ToPixel(Vector2 point, float pixelScaleX, float pixelScaleY)

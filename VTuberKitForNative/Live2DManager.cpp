@@ -117,8 +117,26 @@ bool Live2DManager::Initialize() {
         _option->LoadFileFunction = Live2DPal::LoadFileAsBytes;
         _option->ReleaseBytesFunction = Live2DPal::ReleaseBytes;
 
-        CubismFramework::StartUp(static_cast<Csm::ICubismAllocator*>(_allocator), _option);
+        if (!CubismFramework::StartUp(static_cast<Csm::ICubismAllocator*>(_allocator), _option)) {
+            delete _allocator;
+            _allocator = nullptr;
+            delete _option;
+            _option = nullptr;
+            _refCount--;
+            return false;
+        }
+
         CubismFramework::Initialize();
+
+        if (!CubismFramework::IsInitialized()) {
+            CubismFramework::CleanUp();
+            delete _allocator;
+            _allocator = nullptr;
+            delete _option;
+            _option = nullptr;
+            _refCount--;
+            return false;
+        }
 
         _initialized = true;
         return true;
@@ -135,6 +153,10 @@ void Live2DManager::Release() {
             return;
         }
 
+        if (_refCount <= 0) {
+            return;
+        }
+
         _refCount--;
 
         if (_refCount > 0) {
@@ -145,6 +167,7 @@ void Live2DManager::Release() {
         // 最後の参照が解放された
         ReleaseAllModels();
         CubismFramework::Dispose();
+        CubismFramework::CleanUp();
 
         if (_allocator) {
             delete _allocator;

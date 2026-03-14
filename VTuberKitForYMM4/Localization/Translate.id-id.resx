@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>id-id</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>Mengaktifkan kedipan otomatis.</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>Kedipan otomatis</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>Menggerakkan mulut berdasarkan audio.</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>Sinkronisasi bibir otomatis</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>Nama tampilan yang digunakan saat memilih dari titik target atau hit box.</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>Nama karakter</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>Memungkinkan gerakan pernapasan.</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>Aktifkan Nafas</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Mengaktifkan MSAA saat AKTIF. Memperbaiki tepi, tetapi meningkatkan beban.</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Mengaktifkan fisika Live2D.</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>Memungkinkan</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>Mengatur interval kedipan dalam detik.</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>Interval kedipan</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>Pilih folder model Live2D atau file .model3.json.</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>Folder model</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>Menambahkan masukan fisika seperti tarikan saat reaksi kotak hit aktif.</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>Fisika Kotak Pukulan</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>Skala rendering internal. Nilai yang lebih besar meningkatkan kualitas kelas atas (default: 2.0).</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>Skala Internal</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>ID yang digunakan untuk mengaitkan titik target dan hit box. Dibuat otomatis jika kosong.</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>ID tautan</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>Menyesuaikan sensitivitas sinkronisasi bibir. Disarankan 1.0.</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>Sensitivitas sinkronisasi bibir</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Saat AKTIF, hanya parameter bentuk mulut A / I / U / E / O yang diperbarui alih-alih ParamMouthOpenY / ParamMouthForm.</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>Hanya parameter vokal</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>Memperbaiki tepi dengan beban lebih rendah.</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>Kualitas lebih tinggi dengan beban lebih besar.</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>Jumlah sampel saat MSAA diaktifkan (2x / 4x).</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA Sampel</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 adalah nilai standar. 0 menyembunyikan efek fisika dan 100 memperkuatnya hingga sekitar 2x.</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>Kekuatan Fisika</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Ukuran target render internal maksimum dalam piksel. Nilai yang lebih besar meningkatkan kualitas tetapi menggunakan lebih banyak VRAM (default: 4096).</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>Maks RT Ukuran</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 menonaktifkannya. Nilai yang lebih tinggi meningkatkan masukan angin acak.</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>Kekuatan Angin</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>Periksa konten .model3.json dan semua file yang direferensikan.</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>Pilih folder model Live2D atau file .model3.json.</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json mungkin tidak valid atau file moc3 / texture / motion yang direferensikan mungkin hilang.</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>Tidak dapat memuat model Live2D.</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Ada item yang perlu diperiksa saat memuat model Live2D.</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>Periksa lokasi file .model3.json.</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>Ada item yang perlu diperiksa saat memilih model Live2D.</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>Target</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>Mengedit parameter standar Cubism dan nilai Param/Part khusus model dalam daftar.</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>Daftar</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>Memilih ekspresi dari model3.json Expressions.</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>Menonaktifkan visibilitas saat AKTIF.</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>Loop gerakan wajah saat AKTIF.</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion Lingkaran</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>Memilih gerakan dari Motions di model3.json (termasuk Idle).</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Offset sementara ditambahkan ke posisi item X.</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X Mengimbangi</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>Offset sementara ditambahkan ke posisi item Y.</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Y Mengimbangi</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>Offset sementara ditambahkan ke rotasi item.</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>Perimbangan Rotasi</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>Offset sementara ditambahkan ke skala item.</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>Perimbangan Skala</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>Kedipan</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>Pernapasan</value></data>
+<data name="Group_Link" xml:space="preserve"><value>Tautan</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>Sinkronisasi bibir</value></data>
+<data name="Group_Model" xml:space="preserve"><value>Model</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>Parameter</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>Fisika</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>Kualitas render</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>Memilih karakter Live2D yang tertaut.</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>Karakter</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>Mengedit nilai Param / Part yang diterapkan sementara saat hit aktif.</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>Daftar</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>Expression untuk sementara ditimpa ketika kotak hit dipicu.</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>Tinggi persegi panjang.</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>Tinggi</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>Memilih target reaksi dari HitAreas di model3.json. Menggunakan Id ketika Name kosong.</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>Daerah Pukulan</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF hanya bentuk panduan yang disembunyikan. Deteksi hit dan reaksinya tetap aktif.</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>ID Tautan</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>Motion dimainkan sekali ketika kotak hit dipicu.</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>Lebar persegi panjang.</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>Lebar</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>Pusat persegi panjang X.</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>Pusat persegi panjang Y.</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>Pengeditan nilai Param / Part diterapkan secara terus menerus ke seluruh model. Pengaturan sisi muka menjadi prioritas saat ada.</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>Daftar</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>Memilih ekspresi dari model3.json Expressions.</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>Expression</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>Menonaktifkan visibilitas saat AKTIF.</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>Mengulang gerakan saat AKTIF.</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion Lingkaran</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>Memilih gerakan yang akan diulang saat model terlihat (termasuk Idle).</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>Model kalikan warna A.</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>Kegelapan</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>Model perbanyak warna B.</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>Perbanyak Warna B</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>Model kalikan warna G.</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>Perbanyak Warna G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>Model kalikan warna R.</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>Perbanyak Warna R</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>X offset untuk penempatan model.</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>Y offset untuk penempatan model.</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>Sudut rotasi tampilan model.</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>Rotasi</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>Skala tampilan model.</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>Skala</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>D3D11 inisialisasi perangkat gagal: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>Inisialisasi Live2D gagal: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() mengembalikan nol.</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>Terjadi kesalahan saat memperbarui Live2D: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>ModelMetadataCatalog.{0} gagal: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>Kotak Hit Live2D</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>Titik Target Live2D</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>Sudut X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>Sudut Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>Sudut Z</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>Lengan kiri A</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>Lengan kiriB</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>Lengan kanan A</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>Lengan kananB</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>Secara keseluruhan Kiri/kanan</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>Secara keseluruhan Naik/turun</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>Rotasi tubuh X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>Rotasi tubuh Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>Rotasi tubuh Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>Napas</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>Sudut alis kiri</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>Deformasi alis kiri</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>Alis kiri Kiri/Kanan</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>Alis kiri Atas/Bawah</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>Sudut alis kanan</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>Deformasi alis kanan</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>Alis kanan Kiri/Kanan</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>Alis kanan Atas/Bawah</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>Fisika payudara X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>Fisika payudara Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>Pipi</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>Penskalaan bola mata</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>Bola mata X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>Bola mata Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>Mata kiri Buka/Tutup</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>Mata kiri Tersenyum</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>Mata kanan Buka/Tutup</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>Mata kanan Tersenyum</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>Ayunan rambut ke belakang</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>Ayunan rambut Halus</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>Ayunan rambut Depan</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>Ayunan rambut ke samping</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>Tangan kiri</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>Tangan kanan</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>Deformasi Mulut</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>Mulut Buka/Tutup</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>Mengangkat bahu</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>Memilih karakter Live2D yang tertaut.</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>Karakter</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF hanya bentuk panduan yang disembunyikan. Tautan titik target tetap aktif.</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>ID Tautan</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>Ukuran tampilan panduan.</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>Ukuran</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>Targetkan X di ruang model.</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>Targetkan Y di ruang model.</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(Tidak ada)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Param Daftar</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Part Daftar</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>File DisplayInfo tidak ditemukan: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>File Expression tidak ditemukan: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression Pengaturan file tidak ada: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences tidak ada sehingga penyelesaian file terkait bisa gagal.</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>Ada item HitAreas tanpa set Id.</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>File Moc tidak ditemukan: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>Moc tidak dikonfigurasi.</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>Pengecualian terjadi saat menguraikan model3.json.</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>File Motion tidak ditemukan: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion Pengaturan file tidak ada: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Beberapa file .model3.json ditemukan di folder sehingga model pertama berdasarkan urutan nama akan digunakan.</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(Tanpa nama)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>File Fisika tidak ditemukan: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>File Texture tidak ditemukan: {0}</value></data>
+</root>

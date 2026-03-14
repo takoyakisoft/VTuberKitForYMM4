@@ -22,46 +22,46 @@ namespace VTuberKitForYMM4.Plugin
 
         private static readonly StandardParameterDefinition[] StandardParameters =
         [
-            new(Live2DManager.ParamAngleX, "角度 X", -30.0f, 0.0f, 30.0f, 0),
-            new(Live2DManager.ParamAngleY, "角度 Y", -30.0f, 0.0f, 30.0f, 1),
-            new(Live2DManager.ParamAngleZ, "角度 Z", -30.0f, 0.0f, 30.0f, 2),
-            new(Live2DManager.ParamEyeLOpen, "左目 開閉", 0.0f, 1.0f, 1.0f, 3),
-            new(Live2DManager.ParamEyeLSmile, "左目 笑顔", 0.0f, 0.0f, 1.0f, 4),
-            new(Live2DManager.ParamEyeROpen, "右目 開閉", 0.0f, 1.0f, 1.0f, 5),
-            new(Live2DManager.ParamEyeRSmile, "右目 笑顔", 0.0f, 0.0f, 1.0f, 6),
-            new(Live2DManager.ParamEyeBallX, "目玉 X", -1.0f, 0.0f, 1.0f, 7),
-            new(Live2DManager.ParamEyeBallY, "目玉 Y", -1.0f, 0.0f, 1.0f, 8),
-            new(Live2DManager.ParamEyeBallForm, "目玉の拡大縮小", -1.0f, 0.0f, 1.0f, 9),
-            new(Live2DManager.ParamBrowLY, "左眉 上下", -1.0f, 0.0f, 1.0f, 10),
-            new(Live2DManager.ParamBrowRY, "右眉 上下", -1.0f, 0.0f, 1.0f, 11),
-            new(Live2DManager.ParamBrowLX, "左眉 左右", -1.0f, 0.0f, 1.0f, 12),
-            new(Live2DManager.ParamBrowRX, "右眉 左右", -1.0f, 0.0f, 1.0f, 13),
-            new(Live2DManager.ParamBrowLAngle, "左眉 角度", -1.0f, 0.0f, 1.0f, 14),
-            new(Live2DManager.ParamBrowRAngle, "右眉 角度", -1.0f, 0.0f, 1.0f, 15),
-            new(Live2DManager.ParamBrowLForm, "左眉 変形", -1.0f, 0.0f, 1.0f, 16),
-            new(Live2DManager.ParamBrowRForm, "右眉 変形", -1.0f, 0.0f, 1.0f, 17),
-            new(Live2DManager.ParamMouthForm, "口 変形", -1.0f, 0.0f, 1.0f, 18),
-            new(Live2DManager.ParamMouthOpenY, "口 開閉", 0.0f, 0.0f, 1.0f, 19),
-            new(Live2DManager.ParamCheek, "照れ", 0.0f, 0.0f, 1.0f, 20),
-            new(Live2DManager.ParamBodyAngleX, "体の回転 X", -10.0f, 0.0f, 10.0f, 21),
-            new(Live2DManager.ParamBodyAngleY, "体の回転 Y", -10.0f, 0.0f, 10.0f, 22),
-            new(Live2DManager.ParamBodyAngleZ, "体の回転 Z", -10.0f, 0.0f, 10.0f, 23),
-            new(Live2DManager.ParamBreath, "呼吸", 0.0f, 0.0f, 1.0f, 24),
-            new(Live2DManager.ParamArmLA, "左腕 A", -30.0f, 0.0f, 30.0f, 25),
-            new(Live2DManager.ParamArmRA, "右腕 A", -30.0f, 0.0f, 30.0f, 26),
-            new(Live2DManager.ParamArmLB, "左腕 B", -30.0f, 0.0f, 30.0f, 27),
-            new(Live2DManager.ParamArmRB, "右腕 B", -30.0f, 0.0f, 30.0f, 28),
-            new(Live2DManager.ParamHandL, "左手", -10.0f, 0.0f, 10.0f, 29),
-            new(Live2DManager.ParamHandR, "右手", -10.0f, 0.0f, 10.0f, 30),
-            new(Live2DManager.ParamHairFront, "髪揺れ 前", -1.0f, 0.0f, 1.0f, 31),
-            new(Live2DManager.ParamHairSide, "髪揺れ 横", -1.0f, 0.0f, 1.0f, 32),
-            new(Live2DManager.ParamHairBack, "髪揺れ 後", -1.0f, 0.0f, 1.0f, 33),
-            new(Live2DManager.ParamHairFluffy, "髪揺れ ふわ", -1.0f, 0.0f, 1.0f, 34),
-            new(Live2DManager.ParamShoulderY, "肩すくめる", -10.0f, 0.0f, 10.0f, 35),
-            new(Live2DManager.ParamBustX, "胸揺れ X", -1.0f, 0.0f, 1.0f, 36),
-            new(Live2DManager.ParamBustY, "胸揺れ Y", -1.0f, 0.0f, 1.0f, 37),
-            new(Live2DManager.ParamBaseX, "全体の左右", -10.0f, 0.0f, 10.0f, 38),
-            new(Live2DManager.ParamBaseY, "全体の上下", -10.0f, 0.0f, 10.0f, 39),
+            new(Live2DManager.ParamAngleX, Translate.StdParam_AngleX, -30.0f, 0.0f, 30.0f, 0),
+            new(Live2DManager.ParamAngleY, Translate.StdParam_AngleY, -30.0f, 0.0f, 30.0f, 1),
+            new(Live2DManager.ParamAngleZ, Translate.StdParam_AngleZ, -30.0f, 0.0f, 30.0f, 2),
+            new(Live2DManager.ParamEyeLOpen, Translate.StdParam_EyeLOpen, 0.0f, 1.0f, 1.0f, 3),
+            new(Live2DManager.ParamEyeLSmile, Translate.StdParam_EyeLSmile, 0.0f, 0.0f, 1.0f, 4),
+            new(Live2DManager.ParamEyeROpen, Translate.StdParam_EyeROpen, 0.0f, 1.0f, 1.0f, 5),
+            new(Live2DManager.ParamEyeRSmile, Translate.StdParam_EyeRSmile, 0.0f, 0.0f, 1.0f, 6),
+            new(Live2DManager.ParamEyeBallX, Translate.StdParam_EyeBallX, -1.0f, 0.0f, 1.0f, 7),
+            new(Live2DManager.ParamEyeBallY, Translate.StdParam_EyeBallY, -1.0f, 0.0f, 1.0f, 8),
+            new(Live2DManager.ParamEyeBallForm, Translate.StdParam_EyeBallForm, -1.0f, 0.0f, 1.0f, 9),
+            new(Live2DManager.ParamBrowLY, Translate.StdParam_BrowLY, -1.0f, 0.0f, 1.0f, 10),
+            new(Live2DManager.ParamBrowRY, Translate.StdParam_BrowRY, -1.0f, 0.0f, 1.0f, 11),
+            new(Live2DManager.ParamBrowLX, Translate.StdParam_BrowLX, -1.0f, 0.0f, 1.0f, 12),
+            new(Live2DManager.ParamBrowRX, Translate.StdParam_BrowRX, -1.0f, 0.0f, 1.0f, 13),
+            new(Live2DManager.ParamBrowLAngle, Translate.StdParam_BrowLAngle, -1.0f, 0.0f, 1.0f, 14),
+            new(Live2DManager.ParamBrowRAngle, Translate.StdParam_BrowRAngle, -1.0f, 0.0f, 1.0f, 15),
+            new(Live2DManager.ParamBrowLForm, Translate.StdParam_BrowLForm, -1.0f, 0.0f, 1.0f, 16),
+            new(Live2DManager.ParamBrowRForm, Translate.StdParam_BrowRForm, -1.0f, 0.0f, 1.0f, 17),
+            new(Live2DManager.ParamMouthForm, Translate.StdParam_MouthForm, -1.0f, 0.0f, 1.0f, 18),
+            new(Live2DManager.ParamMouthOpenY, Translate.StdParam_MouthOpenY, 0.0f, 0.0f, 1.0f, 19),
+            new(Live2DManager.ParamCheek, Translate.StdParam_Cheek, 0.0f, 0.0f, 1.0f, 20),
+            new(Live2DManager.ParamBodyAngleX, Translate.StdParam_BodyAngleX, -10.0f, 0.0f, 10.0f, 21),
+            new(Live2DManager.ParamBodyAngleY, Translate.StdParam_BodyAngleY, -10.0f, 0.0f, 10.0f, 22),
+            new(Live2DManager.ParamBodyAngleZ, Translate.StdParam_BodyAngleZ, -10.0f, 0.0f, 10.0f, 23),
+            new(Live2DManager.ParamBreath, Translate.StdParam_Breath, 0.0f, 0.0f, 1.0f, 24),
+            new(Live2DManager.ParamArmLA, Translate.StdParam_ArmLA, -30.0f, 0.0f, 30.0f, 25),
+            new(Live2DManager.ParamArmRA, Translate.StdParam_ArmRA, -30.0f, 0.0f, 30.0f, 26),
+            new(Live2DManager.ParamArmLB, Translate.StdParam_ArmLB, -30.0f, 0.0f, 30.0f, 27),
+            new(Live2DManager.ParamArmRB, Translate.StdParam_ArmRB, -30.0f, 0.0f, 30.0f, 28),
+            new(Live2DManager.ParamHandL, Translate.StdParam_HandL, -10.0f, 0.0f, 10.0f, 29),
+            new(Live2DManager.ParamHandR, Translate.StdParam_HandR, -10.0f, 0.0f, 10.0f, 30),
+            new(Live2DManager.ParamHairFront, Translate.StdParam_HairFront, -1.0f, 0.0f, 1.0f, 31),
+            new(Live2DManager.ParamHairSide, Translate.StdParam_HairSide, -1.0f, 0.0f, 1.0f, 32),
+            new(Live2DManager.ParamHairBack, Translate.StdParam_HairBack, -1.0f, 0.0f, 1.0f, 33),
+            new(Live2DManager.ParamHairFluffy, Translate.StdParam_HairFluffy, -1.0f, 0.0f, 1.0f, 34),
+            new(Live2DManager.ParamShoulderY, Translate.StdParam_ShoulderY, -10.0f, 0.0f, 10.0f, 35),
+            new(Live2DManager.ParamBustX, Translate.StdParam_BustX, -1.0f, 0.0f, 1.0f, 36),
+            new(Live2DManager.ParamBustY, Translate.StdParam_BustY, -1.0f, 0.0f, 1.0f, 37),
+            new(Live2DManager.ParamBaseX, Translate.StdParam_BaseX, -10.0f, 0.0f, 10.0f, 38),
+            new(Live2DManager.ParamBaseY, Translate.StdParam_BaseY, -10.0f, 0.0f, 10.0f, 39),
         ];
         private static readonly Dictionary<string, StandardParameterDefinition> StandardParameterDefinitionsById =
             StandardParameters.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
@@ -95,24 +95,32 @@ namespace VTuberKitForYMM4.Plugin
             SyncPartRows();
         }
 
-        protected override IEnumerable<IAnimatable> GetAnimatables()
+        internal Live2DFaceDynamicParameterRow[] GetParameterRowsSnapshot()
         {
-            Live2DFaceDynamicParameterRow[] parameterRows;
             lock (ParameterRowsSyncRoot)
             {
-                parameterRows = ParameterRows.ToArray();
+                return ParameterRows.ToArray();
             }
+        }
+
+        internal Live2DFaceDynamicPartRow[] GetPartRowsSnapshot()
+        {
+            lock (PartRowsSyncRoot)
+            {
+                return PartRows.ToArray();
+            }
+        }
+
+        protected override IEnumerable<IAnimatable> GetAnimatables()
+        {
+            var parameterRows = GetParameterRowsSnapshot();
 
             foreach (var row in parameterRows)
             {
                 yield return row;
             }
 
-            Live2DFaceDynamicPartRow[] partRows;
-            lock (PartRowsSyncRoot)
-            {
-                partRows = PartRows.ToArray();
-            }
+            var partRows = GetPartRowsSnapshot();
 
             foreach (var row in partRows)
             {

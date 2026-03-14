@@ -4,6 +4,19 @@ using YukkuriMovieMaker.Commons;
 
 namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 {
+    public enum AnimatedHoldDisplayScaleMode
+    {
+        Raw,
+        VideoHalfMinDimension,
+    }
+
+    public enum AnimatedHoldDynamicRangeMode
+    {
+        None,
+        SymmetricVideoHalfLongDimension,
+        PositiveVideoHalfLongDimension,
+    }
+
     public class AnimatedHoldSliderAttribute : PropertyEditorAttribute2
     {
         public string StringFormat { get; }
@@ -14,6 +27,9 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
         public int Delay { get; }
         public string? HoldPropertyName { get; }
         public Type? ResourceType { get; set; }
+        public double DisplayScale { get; set; } = 1.0;
+        public AnimatedHoldDisplayScaleMode DisplayScaleMode { get; set; } = AnimatedHoldDisplayScaleMode.Raw;
+        public AnimatedHoldDynamicRangeMode DynamicRangeMode { get; set; } = AnimatedHoldDynamicRangeMode.None;
 
         public AnimatedHoldSliderAttribute(string stringFormat, string unitText, double defaultMin, double defaultMax, string? holdPropertyName = null)
         {

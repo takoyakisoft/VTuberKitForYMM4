@@ -85,6 +85,20 @@ System::String^ Live2DModelWrapper::LastErrorMessage::get() {
     return _lastErrorMessage;
 }
 
+array<System::String^>^ Live2DModelWrapper::LoadWarnings::get() {
+    if (_nativeModel == nullptr) {
+        return gcnew array<System::String^>(0);
+    }
+
+    const auto& warnings = _nativeModel->GetLoadWarnings();
+    array<System::String^>^ result = gcnew array<System::String^>(static_cast<int>(warnings.size()));
+    for (int i = 0; i < static_cast<int>(warnings.size()); ++i) {
+        result[i] = Utf8ToManagedString(warnings[static_cast<size_t>(i)].c_str());
+    }
+
+    return result;
+}
+
 void Live2DModelWrapper::ReloadRenderer() {
     if (_nativeModel != nullptr) {
         _nativeModel->ReloadRenderer();
@@ -332,6 +346,18 @@ bool Live2DModelWrapper::GetPhysicsEnabled() {
         return _nativeModel->GetPhysicsEnabled();
     }
     return true;
+}
+
+void Live2DModelWrapper::SetPhysicsOutputScale(float scale) {
+    if (_nativeModel != nullptr) {
+        _nativeModel->SetPhysicsOutputScale(scale);
+    }
+}
+
+void Live2DModelWrapper::SetPhysicsWind(float x, float y) {
+    if (_nativeModel != nullptr) {
+        _nativeModel->SetPhysicsWind(x, y);
+    }
 }
 
 void Live2DModelWrapper::SetBreathEnabled(bool enabled) {

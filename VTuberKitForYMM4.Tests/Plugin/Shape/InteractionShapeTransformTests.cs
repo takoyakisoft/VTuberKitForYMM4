@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.ComponentModel;
 using System.Windows;
+using VTuberKitForNative;
 using VTuberKitForYMM4.Commons.CustomPropertyEditor;
 using VTuberKitForYMM4.Plugin.CustomPropertyEditor;
 using VTuberKitForYMM4.Plugin;
@@ -17,7 +18,7 @@ public class InteractionShapeTransformTests
     }
 
     [Fact]
-    public void TargetPointPixelTransform_UsesHitTestScaleForItemTranslation()
+    public void TargetPointPixelTransform_UsesAbsolutePixelTranslation()
     {
         var state = new Live2DInteractionStore.InteractionTransformState(
             1.0f,
@@ -29,11 +30,13 @@ public class InteractionShapeTransformTests
             1.5324074f,
             1.0f,
             0.0f,
-            0.0f);
+            0.0f,
+            1920,
+            1080);
 
         var pixel = InteractionShapeTransform.TransformTargetPointToPixel(Vector2.Zero, state, 1920, 1080);
 
-        Assert.InRange(pixel.X, 827.4f, 827.6f);
+        Assert.InRange(pixel.X, 959.9f, 960.1f);
         Assert.InRange(pixel.Y, -0.01f, 0.01f);
     }
 
@@ -55,8 +58,8 @@ public class InteractionShapeTransformTests
     public void PreferredHitAreaReaction_UsesHighestLayerBeforeActivationTime()
     {
         var linkId = Guid.NewGuid().ToString("N");
-        Live2DInteractionStore.UpdateHitAreaRect($"ha-low-{linkId}", linkId, "Body", "exp-low", string.Empty, -1, 0, 0, 0.2f, 0.2f, 1);
-        Live2DInteractionStore.UpdateHitAreaRect($"ha-high-{linkId}", linkId, "Body", "exp-high", string.Empty, -1, 0, 0, 0.2f, 0.2f, 5);
+        Live2DInteractionStore.UpdateHitAreaRect($"ha-low-{linkId}", linkId, "Body", "exp-low", string.Empty, -1, [], [], 0, 0, 0.2f, 0.2f, 1);
+        Live2DInteractionStore.UpdateHitAreaRect($"ha-high-{linkId}", linkId, "Body", "exp-high", string.Empty, -1, [], [], 0, 0, 0.2f, 0.2f, 5);
         Live2DInteractionStore.SetHitAreaResult($"ha-low-{linkId}", true);
         Live2DInteractionStore.SetHitAreaResult($"ha-high-{linkId}", true);
 
@@ -74,8 +77,8 @@ public class InteractionShapeTransformTests
     {
         var firstLinkId = Guid.NewGuid().ToString("N");
         var secondLinkId = Guid.NewGuid().ToString("N");
-        Live2DInteractionStore.UpdateHitAreaRect("ha-first", firstLinkId, "Body", "exp-first", string.Empty, -1, 0, 0, 0.2f, 0.2f, 1);
-        Live2DInteractionStore.UpdateHitAreaRect("ha-second", secondLinkId, "Body", "exp-second", string.Empty, -1, 0, 0, 0.2f, 0.2f, 1);
+        Live2DInteractionStore.UpdateHitAreaRect("ha-first", firstLinkId, "Body", "exp-first", string.Empty, -1, [], [], 0, 0, 0.2f, 0.2f, 1);
+        Live2DInteractionStore.UpdateHitAreaRect("ha-second", secondLinkId, "Body", "exp-second", string.Empty, -1, [], [], 0, 0, 0.2f, 0.2f, 1);
         Live2DInteractionStore.SetHitAreaResult("ha-first", true);
         Live2DInteractionStore.SetHitAreaResult("ha-second", true);
 
@@ -166,6 +169,50 @@ public class InteractionShapeTransformTests
     public void RequiresReplayForFrameJump_DetectsDiscontinuousSeeking(double deltaFrames, bool expected)
     {
         Assert.Equal(expected, Live2DTachieSource.RequiresReplayForFrameJump(deltaFrames));
+    }
+
+    [Fact]
+    public void ResolveInteractionTrackingCenter_FallsBackFromEyeToFaceToBodyToBase()
+    {
+        var bounds = new Live2DBounds
+        {
+            X = 0.0f,
+            Y = 0.0f,
+            Width = 2.0f,
+            Height = 3.0f,
+        };
+        Live2DParameter[] parameters =
+        [
+            new Live2DParameter { Id = Live2DManager.ParamAngleX, Value = 15.0f, Default = 0.0f, Min = -30.0f, Max = 30.0f },
+            new Live2DParameter { Id = Live2DManager.ParamBodyAngleY, Value = 5.0f, Default = 0.0f, Min = -10.0f, Max = 10.0f },
+        ];
+
+        var center = Live2DTachieSource.ResolveInteractionTrackingCenter(parameters, bounds);
+
+        Assert.InRange(center.X, 0.139f, 0.141f);
+        Assert.InRange(center.Y, 0.119f, 0.121f);
+    }
+
+    [Fact]
+    public void ResolveInteractionTrackingCenter_UsesBaseWhenHigherPriorityParametersAreMissing()
+    {
+        var bounds = new Live2DBounds
+        {
+            X = 1.0f,
+            Y = -1.0f,
+            Width = 4.0f,
+            Height = 4.0f,
+        };
+        Live2DParameter[] parameters =
+        [
+            new Live2DParameter { Id = Live2DManager.ParamBaseX, Value = 10.0f, Default = 0.0f, Min = -10.0f, Max = 10.0f },
+            new Live2DParameter { Id = Live2DManager.ParamBaseY, Value = -10.0f, Default = 0.0f, Min = -10.0f, Max = 10.0f },
+        ];
+
+        var center = Live2DTachieSource.ResolveInteractionTrackingCenter(parameters, bounds);
+
+        Assert.InRange(center.X, 1.999f, 2.001f);
+        Assert.InRange(center.Y, -1.881f, -1.879f);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 using Vortice.Direct2D1;
@@ -15,7 +16,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
 {
     public class TargetPointShapePlugin : IShapePlugin
     {
-        public string Name => "Live2Dターゲットポイント";
+        public string Name => Translate.Plugin_TargetPoint_Name;
         public bool IsExoShapeSupported => false;
         public bool IsExoMaskSupported => false;
 
@@ -26,7 +27,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
     {
         private InteractionTargetViewModel? targetCharacter;
 
-        [Display(GroupName = "連携", Name = "対象キャラクター", Description = "連携する Live2D キャラクターを選択します")]
+        [Display(Name = nameof(Translate.Target_Character_Name), Description = nameof(Translate.Target_Character_Desc), ResourceType = typeof(Translate))]
         [CustomComboBox]
         public InteractionTargetViewModel TargetCharacter
         {
@@ -54,7 +55,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             }
         }
 
-        [Display(GroupName = "連携", Name = "リンクID", Description = "内部識別子。通常は対象キャラクター選択で自動設定されます")]
+        [Display(Name = nameof(Translate.Target_LinkId_Name), Description = nameof(Translate.Target_LinkId_Desc), ResourceType = typeof(Translate))]
         public string LinkId
         {
             get
@@ -79,17 +80,24 @@ namespace VTuberKitForYMM4.Plugin.Shape
         }
         string linkId = string.Empty;
 
-        [Display(Name = "X", Description = "モデル空間のターゲットX")]
-        [AnimatedHoldSlider("F2", "", -1.0, 1.0)]
-        public Animation X { get; } = new Animation(0, -1, 1);
 
-        [Display(Name = "Y", Description = "モデル空間のターゲットY")]
-        [AnimatedHoldSlider("F2", "", -1.0, 1.0)]
-        public Animation Y { get; } = new Animation(0, -1, 1);
+        [Display(Name = nameof(Translate.Target_IsHidden_Name), Description = nameof(Translate.Target_IsHidden_Desc), ResourceType = typeof(Translate))]
+        [ToggleSlider]
+        [DefaultValue(false)]
+        public bool IsHidden { get => isHidden; set => Set(ref isHidden, value); }
+        bool isHidden;
 
-        [Display(Name = "サイズ", Description = "ガイド表示サイズ")]
-        [AnimatedHoldSlider("F2", "", 0.02, 0.5)]
-        public Animation Size { get; } = new Animation(0.08, 0.02, 0.5);
+        [Display(Name = nameof(Translate.Target_X_Name), Description = nameof(Translate.Target_X_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation X { get; } = new Animation(0, -100000, 100000);
+
+        [Display(Name = nameof(Translate.Target_Y_Name), Description = nameof(Translate.Target_Y_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", -500.0, 500.0)]
+        public Animation Y { get; } = new Animation(0, -100000, 100000);
+
+        [Display(Name = nameof(Translate.Target_Size_Name), Description = nameof(Translate.Target_Size_Desc), ResourceType = typeof(Translate))]
+        [AnimatedHoldSlider("F1", "px", 0.0, 500.0)]
+        public Animation Size { get; } = new Animation(80, 0, 100000);
 
         public TargetPointShapeParameter(SharedDataStore? sharedData) : base(sharedData)
         {
@@ -117,6 +125,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             X.CopyFrom(data.X);
             Y.CopyFrom(data.Y);
             Size.CopyFrom(data.Size);
+            IsHidden = data.IsHidden;
         }
 
         protected override void SaveSharedData(SharedDataStore store)
@@ -168,6 +177,9 @@ namespace VTuberKitForYMM4.Plugin.Shape
             {
                 Set(ref linkId, selected, nameof(LinkId));
             }
+
+            OnPropertyChanged(nameof(TargetCharacter));
+            OnPropertyChanged(nameof(LinkId));
         }
 
         private sealed class SharedData
@@ -176,6 +188,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             public Animation X { get; } = new Animation(0, -1, 1);
             public Animation Y { get; } = new Animation(0, -1, 1);
             public Animation Size { get; } = new Animation(0.08, 0.02, 0.5);
+            public bool IsHidden { get; set; }
 
             public SharedData(TargetPointShapeParameter parameter)
             {
@@ -183,6 +196,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 X.CopyFrom(parameter.X);
                 Y.CopyFrom(parameter.Y);
                 Size.CopyFrom(parameter.Size);
+                IsHidden = parameter.IsHidden;
             }
         }
     }
@@ -210,6 +224,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
         private float transformHitTestScaleY = 1.0f;
         private float transformHitTestTranslateX;
         private float transformHitTestTranslateY;
+        private bool isHidden;
 
         public ID2D1Image Output => commandList ?? throw new InvalidOperationException($"{nameof(commandList)} is null.");
 
@@ -234,6 +249,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             var newScreenWidth = Math.Max(1, timelineItemSourceDescription.ScreenSize.Width);
             var newScreenHeight = Math.Max(1, timelineItemSourceDescription.ScreenSize.Height);
             var transform = GetTransformState(newLinkId);
+            var newIsHidden = parameter.IsHidden;
 
             if (string.IsNullOrWhiteSpace(newLinkId))
             {
@@ -260,7 +276,8 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 transformHitTestScaleX == transform.HitTestScaleX &&
                 transformHitTestScaleY == transform.HitTestScaleY &&
                 transformHitTestTranslateX == transform.HitTestTranslateX &&
-                transformHitTestTranslateY == transform.HitTestTranslateY)
+                transformHitTestTranslateY == transform.HitTestTranslateY &&
+                isHidden == newIsHidden)
                 return;
 
             var dc = devices.DeviceContext;
@@ -277,41 +294,45 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 dc.Target = null;
                 commandList.Close();
 
-                CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, string.Empty, transform);
+                CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, string.Empty, transform, newIsHidden);
                 return;
             }
-
-            var center = TransformPoint(newLinkId, newX, newY, newScreenWidth, newScreenHeight);
-            var halfModel = Math.Max(4.0f / 500.0f, newSize * 0.6f);
-            var horizontal = TransformVector(newLinkId, halfModel, 0.0f, newScreenWidth, newScreenHeight);
-            var vertical = TransformVector(newLinkId, 0.0f, halfModel, newScreenWidth, newScreenHeight);
-            var leftPixel = center - horizontal;
-            var rightPixel = center + horizontal;
-            var topPixel = center + vertical;
-            var bottomPixel = center - vertical;
 
             dc.Target = commandList;
             dc.BeginDraw();
             dc.Clear(null);
-            dc.DrawLine(leftPixel, rightPixel, brush, 4.0f);
-            dc.DrawLine(bottomPixel, topPixel, brush, 4.0f);
+            if (!newIsHidden)
+            {
+                var center = TransformPoint(newLinkId, newX, newY, newScreenWidth, newScreenHeight);
+                var halfModel = Math.Max(4.0f / 500.0f, newSize * 0.6f);
+                var horizontal = TransformVector(newLinkId, halfModel, 0.0f, newScreenWidth, newScreenHeight);
+                var vertical = TransformVector(newLinkId, 0.0f, halfModel, newScreenWidth, newScreenHeight);
+                var leftPixel = center - horizontal;
+                var rightPixel = center + horizontal;
+                var topPixel = center + vertical;
+                var bottomPixel = center - vertical;
+                dc.DrawLine(leftPixel, rightPixel, brush, 4.0f);
+                dc.DrawLine(bottomPixel, topPixel, brush, 4.0f);
+            }
             dc.EndDraw();
             dc.Target = null;
             commandList.Close();
 
-            CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, newLinkId, transform);
+            CacheTransformState(newX, newY, newSize, newScreenWidth, newScreenHeight, newLinkId, transform, newIsHidden);
         }
 
         private Vector2 TransformPoint(string linkId, float x, float y, int screenWidth, int screenHeight)
         {
             var state = GetTransformState(linkId);
-            return InteractionShapeTransform.TransformTargetPointToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
+            var localPoint = InteractionShapeTransform.PixelToLocal(new Vector2(x, y), screenWidth, screenHeight);
+            return InteractionShapeTransform.TransformTargetPointToPixel(localPoint, state, screenWidth, screenHeight);
         }
 
         private Vector2 TransformVector(string linkId, float x, float y, int screenWidth, int screenHeight)
         {
             var state = GetTransformState(linkId);
-            return InteractionShapeTransform.TransformLocalVectorToPixel(new Vector2(x, y), state, screenWidth, screenHeight);
+            var localVector = InteractionShapeTransform.PixelToLocal(new Vector2(x, y), screenWidth, screenHeight);
+            return InteractionShapeTransform.TransformLocalVectorToPixel(localVector, state, screenWidth, screenHeight);
         }
 
         private void CacheTransformState(
@@ -321,7 +342,8 @@ namespace VTuberKitForYMM4.Plugin.Shape
             int newScreenWidth,
             int newScreenHeight,
             string newLinkId,
-            Live2DInteractionStore.InteractionTransformState transform)
+            Live2DInteractionStore.InteractionTransformState transform,
+            bool newIsHidden)
         {
             x = newX;
             y = newY;
@@ -329,6 +351,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
             screenWidth = newScreenWidth;
             screenHeight = newScreenHeight;
             currentLinkId = newLinkId;
+            isHidden = newIsHidden;
             transformPositionX = transform.PositionX;
             transformPositionY = transform.PositionY;
             transformScale = transform.Scale;
@@ -348,7 +371,7 @@ namespace VTuberKitForYMM4.Plugin.Shape
                 return state;
             }
 
-            return new Live2DInteractionStore.InteractionTransformState(0, 0, 1, 0, 0, 0, 1, 1, 0, 0);
+            return new Live2DInteractionStore.InteractionTransformState(0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1920, 1080);
         }
 
         public void Dispose()

@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>ko-kr</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>자동으로 눈을 깜빡입니다.</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>자동 눈깜빡임</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>오디오에 맞춰 입을 움직입니다.</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>자동 립싱크</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>여러 캐릭터가 있을 때 타깃 포인트/히트박스에서 선택할 표시 이름입니다.</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>캐릭터 이름</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>호흡 모션을 활성화합니다.</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>호흡 활성화</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>켜면 MSAA를 활성화합니다. 가장자리를 개선하지만 부하가 증가합니다.</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Live2D 물리 연산을 활성화합니다.</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>사용</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>눈깜빡임 간격을 초 단위로 설정합니다.</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>눈깜빡임 간격</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>Live2D 모델 폴더 또는 .model3.json 파일을 선택하세요.</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>모델 폴더</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>히트박스 반응 중 드래그에 해당하는 물리 입력을 추가합니다.</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>끌기 물리</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>내부 렌더링 배율입니다. 값이 클수록 확대에 강합니다(기본값: 2.0).</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>내부 배율</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>타깃 포인트/히트박스와 연결할 ID입니다. 비워 두면 자동 생성됩니다.</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>링크 ID</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>립싱크 감도를 조정합니다. 보통 1.0을 권장합니다.</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>립싱크 감도</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>켜면 ParamMouthOpenY / ParamMouthForm 대신 A / I / U / E / O 입 모양 파라미터만 업데이트합니다.</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>모음 파라미터만</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>낮은 부하로 가장자리를 개선합니다.</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>더 높은 품질이지만 부하가 증가합니다.</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>MSAA 사용 시 샘플 수입니다(2x / 4x).</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA 샘플 수</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50이 기본값입니다. 0이면 물리 효과가 보이지 않게 되고 100이면 약 2배까지 강화됩니다。</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>물리 강도</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>내부 렌더 타깃의 최대 픽셀 크기입니다. 클수록 품질은 좋아지지만 VRAM 사용량이 증가합니다(기본값: 4096).</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>RT 최대 크기</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0이면 비활성화됩니다. 값이 높을수록 랜덤 바람 입력이 강해집니다.</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>바람 강도</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>.model3.json 내용과 참조 중인 파일 일체를 확인하세요.</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>Live2D 모델 폴더 또는 .model3.json 파일을 선택하세요.</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json 파일이 손상되었거나 참조된 moc3 / texture / motion 파일이 누락되었을 수 있습니다.</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>Live2D 모델을 불러올 수 없습니다.</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Live2D 모델 로드 시 확인할 항목이 있습니다.</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>.model3.json 파일 위치를 확인하세요.</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>Live2D 모델 선택 시 확인할 항목이 있습니다.</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>대상</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>Cubism 표준 파라미터와 모델 고유 Param / Part 를 목록으로 편집합니다.</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>목록</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>model3.json 의 Expressions 에서 선택합니다.</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>표정</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>켜면 숨기고 끄면 표시합니다.</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>숨기기</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>켜면 face 모션을 반복 재생합니다.</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>모션 루프</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>model3.json 의 Motions 에서 모션을 선택합니다(Idle 포함).</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>모션</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Item 위치 X 에 더하는 임시 오프셋입니다.</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X 오프셋</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>Item 위치 Y 에 더하는 임시 오프셋입니다.</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Y 오프셋</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>Item 회전에 더하는 임시 오프셋입니다.</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>회전각 오프셋</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>Item 배율에 더하는 임시 오프셋입니다.</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>배율 오프셋</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>눈깜빡임</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>호흡</value></data>
+<data name="Group_Link" xml:space="preserve"><value>연동</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>립싱크</value></data>
+<data name="Group_Model" xml:space="preserve"><value>모델</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>파라미터</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>물리 연산</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>렌더링 품질</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>연동할 Live2D 캐릭터를 선택합니다.</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>캐릭터</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>히트 중에 일시 적용할 Param / Part 를 편집합니다.</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>목록</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>히트박스가 반응했을 때 일시적으로 덮어쓸 표정입니다.</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>표정</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>사각형 높이입니다.</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>높이</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>model3.json 의 HitAreas 에서 반응 대상을 선택합니다. Name 이 비어 있으면 Id 를 사용합니다.</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>히트 영역</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>켜면 가이드 도형만 숨겨집니다. 히트 판정과 반응은 계속 유효합니다.</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>숨기기</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>내부 식별자입니다. 보통 대상 캐릭터 선택 시 자동으로 설정됩니다.</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>링크 ID</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>히트박스가 반응했을 때 한 번 재생할 모션입니다.</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>모션</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>사각형 너비입니다.</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>너비</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>사각형 중심 X 입니다.</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>사각형 중심 Y 입니다.</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>모델 전체에 지속 적용할 Param / Part 를 편집합니다. face 쪽 설정이 있으면 그쪽이 우선됩니다.</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>목록</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>model3.json 의 Expressions 에서 선택합니다.</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>표정</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>켜면 숨기고 끄면 표시합니다.</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>숨기기</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>켜면 모션을 반복 재생합니다.</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>모션 루프</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>모델이 표시되는 동안 반복 재생할 모션을 선택합니다(Idle 포함).</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>모션</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>모델 색상 곱셈의 A 입니다.</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>불투명도</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>모델 색상 곱셈의 B 입니다.</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>곱색 B</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>모델 색상 곱셈의 G 입니다.</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>곱색 G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>모델 색상 곱셈의 R 입니다.</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>곱색 R</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>모델 표시 위치의 X 오프셋입니다.</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>모델 표시 위치의 Y 오프셋입니다.</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>모델 표시 회전 각도입니다.</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>회전각</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>모델 표시 배율입니다.</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>배율</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>D3D11 디바이스 초기화에 실패했습니다: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>Live2D 초기화에 실패했습니다: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() 가 null 을 반환했습니다.</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>Live2D 업데이트 중 오류가 발생했습니다: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>ModelMetadataCatalog.{0} 에서 실패했습니다: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>Live2D 히트박스</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>Live2D 타깃 포인트</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>각도 X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>각도 Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>각도 Z</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>왼팔 A</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>왼팔 B</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>오른팔 A</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>오른팔 B</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>전체의 좌우</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>전체 상하</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>몸의 회전 X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>몸의 회전 Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>몸의 회전 Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>호흡</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>왼쪽 눈썹 각도</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>왼쪽 눈썹 변형</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>왼쪽 눈썹 좌우</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>왼쪽 눈썹 상하</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>오른쪽 눈썹 각도</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>오른쪽 눈썹 변형</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>오른쪽 눈썹 좌우</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>오른쪽 눈썹 상하</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>가슴 흔들림 X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>가슴 흔들림 Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>수줍음</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>눈알 확대・축소</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>눈알 X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>눈알 Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>왼쪽 눈 개폐</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>왼쪽 눈 미소</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>오른쪽 눈 개폐</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>오른쪽 눈 미소</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>머리카락 흔들림: 뒤</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>머리카락 흔들림: 둥실</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>머리카락 흔들림: 앞</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>머리카락 흔들림: 옆</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>왼손</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>오른손</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>입 변형</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>입 개폐</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>어깨 으쓱</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>연동할 Live2D 캐릭터를 선택합니다.</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>캐릭터</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>켜면 가이드 도형만 숨겨집니다. 타깃 포인트 연동은 계속 유효합니다.</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>숨기기</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>내부 식별자입니다. 보통 대상 캐릭터 선택 시 자동으로 설정됩니다.</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>링크 ID</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>가이드 표시 크기입니다.</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>크기</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>모델 공간의 타깃 X 입니다.</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>모델 공간의 타깃 Y 입니다.</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(기본값)</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(선택 안 함)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Param 목록</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Part 목록</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>DisplayInfo 파일을 찾을 수 없습니다: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>Expression 파일을 찾을 수 없습니다: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression 의 File 설정이 없습니다: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences가 없어 관련 파일 확인에 실패할 수 있습니다.</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>HitAreas 에 Id 가 설정되지 않은 항목이 있습니다.</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>Moc 파일을 찾을 수 없습니다: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>Moc 설정이 없습니다.</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>model3.json 을 파싱하는 중 예외가 발생했습니다.</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>Motion 파일을 찾을 수 없습니다: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion 의 File 설정이 없습니다: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>폴더에 여러 .model3.json 파일이 있어 이름순으로 가장 앞선 모델을 사용합니다.</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(이름 없음)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>Physics 파일을 찾을 수 없습니다: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>Texture 파일을 찾을 수 없습니다: {0}</value></data>
+</root>

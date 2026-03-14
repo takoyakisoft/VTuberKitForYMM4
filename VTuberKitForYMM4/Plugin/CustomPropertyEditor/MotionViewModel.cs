@@ -9,8 +9,8 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
         public int Index { get; set; }
         public string FileName { get; set; } = string.Empty;
         public override string DisplayMember => IsNone
-            ? "(未選択)"
-            : $"{(string.IsNullOrEmpty(Group) ? "(Default)" : Group)}[{Index}] {FileName}";
+            ? Translate.Ui_NoneSelected
+            : $"{(string.IsNullOrEmpty(Group) ? Translate.Ui_DefaultGroup : Group)}[{Index}] {FileName}";
     }
 
     public class MotionViewModel : CustomComboBoxViewModelBase

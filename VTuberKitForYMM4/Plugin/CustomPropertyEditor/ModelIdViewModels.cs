@@ -7,12 +7,12 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
         public bool IsNone { get; set; }
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public override string DisplayMember => IsNone ? "(未選択)" : string.IsNullOrWhiteSpace(Name) ? Id : $"{Id} | {Name}";
+        public override string DisplayMember => IsNone ? Translate.Ui_NoneSelected : string.IsNullOrWhiteSpace(Name) ? Id : $"{Id} | {Name}";
     }
 
     public class InteractionTargetItem : ModelIdItem
     {
-        public override string DisplayMember => IsNone ? "(未選択)" : string.IsNullOrWhiteSpace(Name) ? Id : Name;
+        public override string DisplayMember => IsNone ? Translate.Ui_NoneSelected : string.IsNullOrWhiteSpace(Name) ? Id : Name;
     }
 
     public class ParameterIdViewModel : CustomComboBoxViewModelBase

@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using YukkuriMovieMaker.Commons;
@@ -8,14 +10,28 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
 {
     public partial class AnimatedHoldEditor : UserControl, IPropertyEditorControl, IPropertyEditorControl2
     {
+        public static readonly DependencyProperty HoldValueProperty =
+            DependencyProperty.Register(
+                nameof(HoldValue),
+                typeof(bool),
+                typeof(AnimatedHoldEditor),
+                new PropertyMetadata(false, OnHoldValueChanged));
+
         private ItemProperty[] animationItemProperties = [];
         private PropertyInfo? holdPropertyInfo;
         private object[] holdOwners = [];
         private bool isUpdatingHoldCheckBox;
         private IEditorInfo? editorInfo;
+        private AnimatedHoldSliderAttribute? currentSettings;
 
         public event EventHandler? BeginEdit;
         public event EventHandler? EndEdit;
+
+        public bool HoldValue
+        {
+            get => (bool)GetValue(HoldValueProperty);
+            set => SetValue(HoldValueProperty, value);
+        }
 
         public AnimatedHoldEditor()
         {
@@ -28,6 +44,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             ArgumentOutOfRangeException.ThrowIfZero(itemProperties.Length);
 
             animationItemProperties = itemProperties;
+            currentSettings = settings;
 
             var animation = itemProperties[0].GetValue<Animation>();
             var animations = AnimatedHoldSliderAttribute.GetAnimations(itemProperties);
@@ -41,6 +58,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             AnimationEditor.DefaultValue = animation?.DefaultValue ?? settings.DefaultMin;
             AnimationEditor.Animation = animation;
             AnimationEditor.Animations = animations;
+            ApplyPresentationSettings(settings);
 
             ResolveHoldProperty(itemProperties, settings.HoldPropertyName);
             UpdateHoldCheckBox();
@@ -59,14 +77,19 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             holdOwners = [];
             AnimationEditor.Animations = null;
             AnimationEditor.Animation = null;
-            HoldCheckBox.Visibility = Visibility.Hidden;
-            HoldCheckBox.IsChecked = false;
+            currentSettings = null;
+            HoldToggle.Visibility = Visibility.Hidden;
+            HoldValue = false;
         }
 
         public void SetEditorInfo(IEditorInfo info)
         {
             editorInfo = info;
             AnimationEditor.SetEditorInfo(info);
+            if (currentSettings != null)
+            {
+                ApplyPresentationSettings(currentSettings);
+            }
             ApplyEditorInfoToAnimations(AnimationEditor.Animations ?? (AnimationEditor.Animation != null ? [AnimationEditor.Animation] : []));
         }
 
@@ -123,13 +146,13 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 if (holdPropertyInfo == null || holdOwners.Length == 0)
                 {
-                    HoldCheckBox.Visibility = Visibility.Hidden;
-                    HoldCheckBox.IsChecked = false;
+                    HoldToggle.Visibility = Visibility.Hidden;
+                    HoldValue = false;
                     return;
                 }
 
-                HoldCheckBox.Visibility = Visibility.Visible;
-                HoldCheckBox.IsChecked = (bool?)holdPropertyInfo.GetValue(holdOwners[0]) ?? false;
+                HoldToggle.Visibility = Visibility.Visible;
+                HoldValue = (bool?)holdPropertyInfo.GetValue(holdOwners[0]) ?? false;
             }
             finally
             {
@@ -184,14 +207,184 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
         }
 
-        private void CheckBox_Changed(object sender, RoutedEventArgs e)
+        private static void OnHoldValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((AnimatedHoldEditor)d).ApplyHoldValueChanged((bool)e.NewValue);
+        }
+
+        private void ApplyPresentationSettings(AnimatedHoldSliderAttribute settings)
+        {
+            var scale = settings.DisplayScaleMode switch
+            {
+                AnimatedHoldDisplayScaleMode.VideoHalfMinDimension => ResolveVideoHalfMinDimension(),
+                _ => settings.DisplayScale,
+            };
+
+            if (scale <= 0)
+            {
+                scale = 1.0;
+            }
+
+            SetAnimationEditorProperty("Scale", scale);
+            ApplyDynamicRange(settings, scale);
+        }
+
+        private void ApplyDynamicRange(AnimatedHoldSliderAttribute settings, double scale)
+        {
+            var (defaultMin, defaultMax) = settings.DynamicRangeMode switch
+            {
+                AnimatedHoldDynamicRangeMode.SymmetricVideoHalfLongDimension => ResolveLongSideRange(scale, symmetric: true, settings.DefaultMin, settings.DefaultMax),
+                AnimatedHoldDynamicRangeMode.PositiveVideoHalfLongDimension => ResolveLongSideRange(scale, symmetric: false, settings.DefaultMin, settings.DefaultMax),
+                _ => (settings.DefaultMin, settings.DefaultMax),
+            };
+
+            AnimationEditor.DefaultMin = defaultMin;
+            AnimationEditor.DefaultMax = defaultMax;
+        }
+
+        private (double Min, double Max) ResolveLongSideRange(double scale, bool symmetric, double fallbackMin, double fallbackMax)
+        {
+            if (editorInfo == null || scale <= 0)
+            {
+                return (fallbackMin, fallbackMax);
+            }
+
+            var videoInfo = editorInfo.VideoInfo;
+            var width = ReadNumericProperty(videoInfo, "Width");
+            var height = ReadNumericProperty(videoInfo, "Height");
+            if (width <= 0 || height <= 0)
+            {
+                return (fallbackMin, fallbackMax);
+            }
+
+            var halfLongSide = Math.Max(width, height) / 2.0;
+            var rawMax = halfLongSide / scale;
+            return symmetric ? (-rawMax, rawMax) : (0.0, rawMax);
+        }
+
+        private double ResolveVideoHalfMinDimension()
+        {
+            if (editorInfo == null)
+            {
+                return 1.0;
+            }
+
+            var videoInfo = editorInfo.VideoInfo;
+            var width = ReadNumericProperty(videoInfo, "Width");
+            var height = ReadNumericProperty(videoInfo, "Height");
+            if (width <= 0 || height <= 0)
+            {
+                return 1.0;
+            }
+
+            return Math.Min(width, height) / 2.0;
+        }
+
+        private static double ReadNumericProperty(object target, string propertyName)
+        {
+            var property = target.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (property?.CanRead != true)
+            {
+                return 0.0;
+            }
+
+            var value = property.GetValue(target);
+            if (value == null)
+            {
+                return 0.0;
+            }
+
+            try
+            {
+                return Convert.ToDouble(value);
+            }
+            catch (ArgumentNullException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (FormatException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (InvalidCastException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (OverflowException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+        }
+
+        private void SetAnimationEditorProperty(string propertyName, object value)
+        {
+            var property = AnimationEditor.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (property?.CanWrite != true)
+            {
+                return;
+            }
+
+            try
+            {
+                var converted = ConvertEditorPropertyValue(property.PropertyType, value);
+                property.SetValue(AnimationEditor, converted);
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            catch (FormatException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            catch (InvalidCastException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private static object? ConvertEditorPropertyValue(Type targetType, object value)
+        {
+            var nonNullableType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+            if (value == null)
+            {
+                return targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null
+                    ? Activator.CreateInstance(targetType)
+                    : null;
+            }
+
+            if (nonNullableType.IsInstanceOfType(value))
+            {
+                return value;
+            }
+
+            if (nonNullableType.IsEnum)
+            {
+                return value is string text
+                    ? Enum.Parse(nonNullableType, text, ignoreCase: true)
+                    : Enum.ToObject(nonNullableType, value);
+            }
+
+            var converter = TypeDescriptor.GetConverter(nonNullableType);
+            if (converter.CanConvertFrom(value.GetType()))
+            {
+                return converter.ConvertFrom(value);
+            }
+
+            return Convert.ChangeType(value, nonNullableType);
+        }
+
+        private void ApplyHoldValueChanged(bool value)
         {
             if (!IsLoaded || isUpdatingHoldCheckBox || holdPropertyInfo == null || holdOwners.Length == 0)
             {
                 return;
             }
 
-            var value = HoldCheckBox.IsChecked == true;
             BeginEdit?.Invoke(this, EventArgs.Empty);
             foreach (var owner in holdOwners)
             {

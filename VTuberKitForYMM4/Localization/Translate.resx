@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+<data name="CurrentCulture" xml:space="preserve"><value>ja-jp</value></data>
+<data name="Character_AutoEyeBlink_Desc" xml:space="preserve"><value>自動でまばたきを行います</value></data>
+<data name="Character_AutoEyeBlink_Name" xml:space="preserve"><value>自動まばたき</value></data>
+<data name="Character_AutoLipSync_Desc" xml:space="preserve"><value>音声に連動して口を動かします</value></data>
+<data name="Character_AutoLipSync_Name" xml:space="preserve"><value>自動口パク</value></data>
+<data name="Character_DisplayName_Desc" xml:space="preserve"><value>複数キャラクター時にターゲットポイント/ヒットボックスから選ぶための表示名</value></data>
+<data name="Character_DisplayName_Name" xml:space="preserve"><value>キャラクター名</value></data>
+<data name="Character_EnableBreath_Desc" xml:space="preserve"><value>呼吸モーションを有効にします</value></data>
+<data name="Character_EnableBreath_Name" xml:space="preserve"><value>呼吸有効</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>ONでMSAAを有効化します。輪郭を改善しますが負荷が増加します</value></data>
+<data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
+<data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Live2D の物理演算を有効にします</value></data>
+<data name="Character_EnablePhysics_Name" xml:space="preserve"><value>使う</value></data>
+<data name="Character_EyeBlinkInterval_Desc" xml:space="preserve"><value>まばたきの間隔を秒単位で設定します</value></data>
+<data name="Character_EyeBlinkInterval_Name" xml:space="preserve"><value>目パチ間隔</value></data>
+<data name="Character_File_Desc" xml:space="preserve"><value>Live2Dモデルのフォルダ、または .model3.json ファイルを指定してください</value></data>
+<data name="Character_File_Name" xml:space="preserve"><value>モデルフォルダ</value></data>
+<data name="Character_HitAreaPhysicsStrength_Desc" xml:space="preserve"><value>ヒットボックス反応中にドラッグ相当の物理入力を追加します</value></data>
+<data name="Character_HitAreaPhysicsStrength_Name" xml:space="preserve"><value>ヒットボックス時の物理演算</value></data>
+<data name="Character_InternalRenderScale_Desc" xml:space="preserve"><value>内部描画倍率。大きいほど拡大に強い（既定: 2.0）</value></data>
+<data name="Character_InternalRenderScale_Name" xml:space="preserve"><value>内部倍率</value></data>
+<data name="Character_LinkId_Desc" xml:space="preserve"><value>ターゲットポイント/ヒットボックス図形と関連付けるID。空欄なら自動採番します</value></data>
+<data name="Character_LinkId_Name" xml:space="preserve"><value>リンクID</value></data>
+<data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>口パクの感度を調整します。通常は 1.0 を推奨します</value></data>
+<data name="Character_LipSyncGain_Name" xml:space="preserve"><value>口パク感度</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>ONで ParamMouthOpenY / ParamMouthForm を更新せず、A / I / U / E / O の口形パラメータのみを更新します</value></data>
+<data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>口形パラメータのみ</value></data>
+<data name="Character_Msaa2x_Desc" xml:space="preserve"><value>負荷を抑えつつ輪郭を改善</value></data>
+<data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
+<data name="Character_Msaa4x_Desc" xml:space="preserve"><value>より高品質。負荷が増加</value></data>
+<data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
+<data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>MSAA ON時のサンプル数（2x / 4x）</value></data>
+<data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAAサンプル</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 で標準、0 で物理結果を見えなくし、100 で約2倍まで強めます</value></data>
+<data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>物理の倍率</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>内部描画の最大ピクセルサイズ。大きいほど高品質だがVRAM消費増（既定: 4096）</value></data>
+<data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>RT最大サイズ</value></data>
+<data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 で無効。値を上げるほどランダムな風入力を強めます</value></data>
+<data name="Character_WindStrength_Name" xml:space="preserve"><value>風の強さ</value></data>
+<data name="Error_CheckModelFiles" xml:space="preserve"><value>.model3.json の内容と、参照しているファイル一式を確認してください。</value></data>
+<data name="Error_InvalidModelSelection" xml:space="preserve"><value>Live2Dモデルのフォルダ、または .model3.json を指定してください。</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json が壊れているか、参照先の moc3 / texture / motion ファイルが不足している可能性があります。</value></data>
+<data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>Live2Dモデルを読み込めませんでした。</value></data>
+<data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Live2Dモデルの読込時に確認したい項目があります。</value></data>
+<data name="Error_ModelPathCheck" xml:space="preserve"><value>.model3.json の場所を確認してください。</value></data>
+<data name="Error_ModelSelectionWarnings_Title" xml:space="preserve"><value>Live2Dモデル選択時に確認したい項目があります。</value></data>
+<data name="Error_TargetPath_Label" xml:space="preserve"><value>対象</value></data>
+<data name="Face_DynamicOverrides_Desc" xml:space="preserve"><value>Cubism標準パラメータとモデル固有のParam/Partを一覧で編集します</value></data>
+<data name="Face_DynamicOverrides_Name" xml:space="preserve"><value>一覧</value></data>
+<data name="Face_Expression_Desc" xml:space="preserve"><value>model3.json の Expressions から選択</value></data>
+<data name="Face_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Face_IsHidden_Desc" xml:space="preserve"><value>ONで非表示、OFFで表示します</value></data>
+<data name="Face_IsHidden_Name" xml:space="preserve"><value>非表示</value></data>
+<data name="Face_MotionLoop_Desc" xml:space="preserve"><value>ONで face モーションを繰り返し再生します</value></data>
+<data name="Face_MotionLoop_Name" xml:space="preserve"><value>モーションループ</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>model3.json の Motions から選択（Idle含む）</value></data>
+<data name="Face_Motion_Name" xml:space="preserve"><value>モーション</value></data>
+<data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Itemの位置Xに加算する一時オフセット</value></data>
+<data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>Xオフセット</value></data>
+<data name="Face_OffsetPositionY_Desc" xml:space="preserve"><value>Itemの位置Yに加算する一時オフセット</value></data>
+<data name="Face_OffsetPositionY_Name" xml:space="preserve"><value>Yオフセット</value></data>
+<data name="Face_OffsetRotation_Desc" xml:space="preserve"><value>Itemの回転に加算する一時オフセット</value></data>
+<data name="Face_OffsetRotation_Name" xml:space="preserve"><value>回転角オフセット</value></data>
+<data name="Face_OffsetScale_Desc" xml:space="preserve"><value>Itemの拡大率に加算する一時オフセット</value></data>
+<data name="Face_OffsetScale_Name" xml:space="preserve"><value>拡大率オフセット</value></data>
+<data name="Group_Blink" xml:space="preserve"><value>目パチ</value></data>
+<data name="Group_Breath" xml:space="preserve"><value>呼吸</value></data>
+<data name="Group_Link" xml:space="preserve"><value>連携</value></data>
+<data name="Group_LipSync" xml:space="preserve"><value>口パク</value></data>
+<data name="Group_Model" xml:space="preserve"><value>モデル</value></data>
+<data name="Group_Parameter" xml:space="preserve"><value>パラメータ</value></data>
+<data name="Group_Physics" xml:space="preserve"><value>物理演算</value></data>
+<data name="Group_Quality" xml:space="preserve"><value>描画品質</value></data>
+<data name="Hit_Character_Desc" xml:space="preserve"><value>連携する Live2D キャラクターを選択します</value></data>
+<data name="Hit_Character_Name" xml:space="preserve"><value>キャラクター</value></data>
+<data name="Hit_DynamicOverrides_Desc" xml:space="preserve"><value>ヒット中に一時適用する Param / Part を編集します</value></data>
+<data name="Hit_DynamicOverrides_Name" xml:space="preserve"><value>一覧</value></data>
+<data name="Hit_Expression_Desc" xml:space="preserve"><value>ヒットボックスが当たった時に一時的に上書きする表情</value></data>
+<data name="Hit_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Hit_Height_Desc" xml:space="preserve"><value>矩形高さ</value></data>
+<data name="Hit_Height_Name" xml:space="preserve"><value>高さ</value></data>
+<data name="Hit_HitArea_Desc" xml:space="preserve"><value>model3.json の HitAreas から反応対象を選択します。Name が空のモデルでは Id を使います</value></data>
+<data name="Hit_HitArea_Name" xml:space="preserve"><value>ヒットエリア</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>ONでガイド図形のみ非表示にします。ヒット判定と反応は有効です</value></data>
+<data name="Hit_IsHidden_Name" xml:space="preserve"><value>非表示</value></data>
+<data name="Hit_LinkId_Desc" xml:space="preserve"><value>内部識別子。通常は対象キャラクター選択で自動設定されます</value></data>
+<data name="Hit_LinkId_Name" xml:space="preserve"><value>リンクID</value></data>
+<data name="Hit_Motion_Desc" xml:space="preserve"><value>ヒットボックスが当たった時に1回再生するモーション</value></data>
+<data name="Hit_Motion_Name" xml:space="preserve"><value>モーション</value></data>
+<data name="Hit_Width_Desc" xml:space="preserve"><value>矩形幅</value></data>
+<data name="Hit_Width_Name" xml:space="preserve"><value>幅</value></data>
+<data name="Hit_X_Desc" xml:space="preserve"><value>矩形中心X</value></data>
+<data name="Hit_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Hit_Y_Desc" xml:space="preserve"><value>矩形中心Y</value></data>
+<data name="Hit_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_DynamicOverrides_Desc" xml:space="preserve"><value>モデル全体に継続適用する Param / Part を編集します。face 側の設定がある場合はそちらが優先されます</value></data>
+<data name="Item_DynamicOverrides_Name" xml:space="preserve"><value>一覧</value></data>
+<data name="Item_Expression_Desc" xml:space="preserve"><value>model3.json の Expressions から選択</value></data>
+<data name="Item_Expression_Name" xml:space="preserve"><value>表情</value></data>
+<data name="Item_IsHidden_Desc" xml:space="preserve"><value>ONで非表示、OFFで表示します</value></data>
+<data name="Item_IsHidden_Name" xml:space="preserve"><value>非表示</value></data>
+<data name="Item_MotionLoop_Desc" xml:space="preserve"><value>ONでモーションを繰り返し再生します</value></data>
+<data name="Item_MotionLoop_Name" xml:space="preserve"><value>モーションループ</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>モデル表示中に継続再生するモーションを選択（Idle含む）</value></data>
+<data name="Item_Motion_Name" xml:space="preserve"><value>モーション</value></data>
+<data name="Item_MultiplyA_Desc" xml:space="preserve"><value>モデルカラー乗算のA</value></data>
+<data name="Item_MultiplyA_Name" xml:space="preserve"><value>不透明度</value></data>
+<data name="Item_MultiplyB_Desc" xml:space="preserve"><value>モデルカラー乗算のB</value></data>
+<data name="Item_MultiplyB_Name" xml:space="preserve"><value>乗算色B</value></data>
+<data name="Item_MultiplyG_Desc" xml:space="preserve"><value>モデルカラー乗算のG</value></data>
+<data name="Item_MultiplyG_Name" xml:space="preserve"><value>乗算色G</value></data>
+<data name="Item_MultiplyR_Desc" xml:space="preserve"><value>モデルカラー乗算のR</value></data>
+<data name="Item_MultiplyR_Name" xml:space="preserve"><value>乗算色R</value></data>
+<data name="Item_PositionX_Desc" xml:space="preserve"><value>モデル表示位置のXオフセット</value></data>
+<data name="Item_PositionX_Name" xml:space="preserve"><value>X</value></data>
+<data name="Item_PositionY_Desc" xml:space="preserve"><value>モデル表示位置のYオフセット</value></data>
+<data name="Item_PositionY_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Item_Rotation_Desc" xml:space="preserve"><value>モデル表示の回転角度</value></data>
+<data name="Item_Rotation_Name" xml:space="preserve"><value>回転角</value></data>
+<data name="Item_Scale_Desc" xml:space="preserve"><value>モデル表示スケール</value></data>
+<data name="Item_Scale_Name" xml:space="preserve"><value>拡大率</value></data>
+<data name="Log_D3D11InitializationFailed" xml:space="preserve"><value>D3D11 デバイスの初期化に失敗しました: {0}</value></data>
+<data name="Log_Live2DInitializationError" xml:space="preserve"><value>Live2D の初期化に失敗しました: {0}</value></data>
+<data name="Log_Live2DManagerNull" xml:space="preserve"><value>Live2DManager.GetInstance() が null を返しました。</value></data>
+<data name="Log_Live2DUpdateError" xml:space="preserve"><value>Live2D の更新中にエラーが発生しました: {0}</value></data>
+<data name="Log_ModelMetadataCatalogFailed" xml:space="preserve"><value>ModelMetadataCatalog.{0} で失敗しました: {1}\n{2}</value></data>
+<data name="Plugin_HitArea_Name" xml:space="preserve"><value>Live2Dヒットボックス</value></data>
+<data name="Plugin_Live2D_Name" xml:space="preserve"><value>VTuberKit Live2D</value></data>
+<data name="Plugin_TargetPoint_Name" xml:space="preserve"><value>Live2Dターゲットポイント</value></data>
+<data name="StdParam_AngleX" xml:space="preserve"><value>角度 X</value></data>
+<data name="StdParam_AngleY" xml:space="preserve"><value>角度 Y</value></data>
+<data name="StdParam_AngleZ" xml:space="preserve"><value>角度 Z</value></data>
+<data name="StdParam_ArmLA" xml:space="preserve"><value>左腕 A</value></data>
+<data name="StdParam_ArmLB" xml:space="preserve"><value>左腕 B</value></data>
+<data name="StdParam_ArmRA" xml:space="preserve"><value>右腕 A</value></data>
+<data name="StdParam_ArmRB" xml:space="preserve"><value>右腕 B</value></data>
+<data name="StdParam_BaseX" xml:space="preserve"><value>全体の左右</value></data>
+<data name="StdParam_BaseY" xml:space="preserve"><value>全体の上下</value></data>
+<data name="StdParam_BodyAngleX" xml:space="preserve"><value>体の回転 X</value></data>
+<data name="StdParam_BodyAngleY" xml:space="preserve"><value>体の回転 Y</value></data>
+<data name="StdParam_BodyAngleZ" xml:space="preserve"><value>体の回転 Z</value></data>
+<data name="StdParam_Breath" xml:space="preserve"><value>呼吸</value></data>
+<data name="StdParam_BrowLAngle" xml:space="preserve"><value>左眉 角度</value></data>
+<data name="StdParam_BrowLForm" xml:space="preserve"><value>左眉 変形</value></data>
+<data name="StdParam_BrowLX" xml:space="preserve"><value>左眉 左右</value></data>
+<data name="StdParam_BrowLY" xml:space="preserve"><value>左眉 上下</value></data>
+<data name="StdParam_BrowRAngle" xml:space="preserve"><value>右眉 角度</value></data>
+<data name="StdParam_BrowRForm" xml:space="preserve"><value>右眉 変形</value></data>
+<data name="StdParam_BrowRX" xml:space="preserve"><value>右眉 左右</value></data>
+<data name="StdParam_BrowRY" xml:space="preserve"><value>右眉 上下</value></data>
+<data name="StdParam_BustX" xml:space="preserve"><value>胸揺れ X</value></data>
+<data name="StdParam_BustY" xml:space="preserve"><value>胸揺れ Y</value></data>
+<data name="StdParam_Cheek" xml:space="preserve"><value>照れ</value></data>
+<data name="StdParam_EyeBallForm" xml:space="preserve"><value>目玉の拡大縮小</value></data>
+<data name="StdParam_EyeBallX" xml:space="preserve"><value>目玉 X</value></data>
+<data name="StdParam_EyeBallY" xml:space="preserve"><value>目玉 Y</value></data>
+<data name="StdParam_EyeLOpen" xml:space="preserve"><value>左目 開閉</value></data>
+<data name="StdParam_EyeLSmile" xml:space="preserve"><value>左目 笑顔</value></data>
+<data name="StdParam_EyeROpen" xml:space="preserve"><value>右目 開閉</value></data>
+<data name="StdParam_EyeRSmile" xml:space="preserve"><value>右目 笑顔</value></data>
+<data name="StdParam_HairBack" xml:space="preserve"><value>髪揺れ 後</value></data>
+<data name="StdParam_HairFluffy" xml:space="preserve"><value>髪揺れ ふわ</value></data>
+<data name="StdParam_HairFront" xml:space="preserve"><value>髪揺れ 前</value></data>
+<data name="StdParam_HairSide" xml:space="preserve"><value>髪揺れ 横</value></data>
+<data name="StdParam_HandL" xml:space="preserve"><value>左手</value></data>
+<data name="StdParam_HandR" xml:space="preserve"><value>右手</value></data>
+<data name="StdParam_MouthForm" xml:space="preserve"><value>口 変形</value></data>
+<data name="StdParam_MouthOpenY" xml:space="preserve"><value>口 開閉</value></data>
+<data name="StdParam_ShoulderY" xml:space="preserve"><value>肩すくめる</value></data>
+<data name="Target_Character_Desc" xml:space="preserve"><value>連携する Live2D キャラクターを選択します</value></data>
+<data name="Target_Character_Name" xml:space="preserve"><value>キャラクター</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>ONでガイド図形のみ非表示にします。ターゲットポイント連携は有効です</value></data>
+<data name="Target_IsHidden_Name" xml:space="preserve"><value>非表示</value></data>
+<data name="Target_LinkId_Desc" xml:space="preserve"><value>内部識別子。通常は対象キャラクター選択で自動設定されます</value></data>
+<data name="Target_LinkId_Name" xml:space="preserve"><value>リンクID</value></data>
+<data name="Target_Size_Desc" xml:space="preserve"><value>ガイド表示サイズ</value></data>
+<data name="Target_Size_Name" xml:space="preserve"><value>サイズ</value></data>
+<data name="Target_X_Desc" xml:space="preserve"><value>モデル空間のターゲットX</value></data>
+<data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
+<data name="Target_Y_Desc" xml:space="preserve"><value>モデル空間のターゲットY</value></data>
+<data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>（既定）</value></data>
+<data name="Ui_NoneSelected" xml:space="preserve"><value>(未選択)</value></data>
+<data name="Ui_ParamList_Name" xml:space="preserve"><value>Param一覧</value></data>
+<data name="Ui_PartList_Name" xml:space="preserve"><value>Part一覧</value></data>
+<data name="Ui_Tab_Param" xml:space="preserve"><value>Param</value></data>
+<data name="Ui_Tab_Part" xml:space="preserve"><value>Part</value></data>
+<data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>DisplayInfo ファイルが見つかりません: {0}</value></data>
+<data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>Expression ファイルが見つかりません: {0}</value></data>
+<data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression の File 設定がありません: {0}</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences が無いため、関連ファイルの解決に失敗する可能性があります。</value></data>
+<data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>HitAreas に Id 未設定の項目があります。</value></data>
+<data name="Warning_MocFileMissing" xml:space="preserve"><value>Moc ファイルが見つかりません: {0}</value></data>
+<data name="Warning_MocMissing" xml:space="preserve"><value>Moc の設定がありません。</value></data>
+<data name="Warning_ModelParseException" xml:space="preserve"><value>model3.json の解析時に例外が発生しました。</value></data>
+<data name="Warning_MotionFileMissing" xml:space="preserve"><value>Motion ファイルが見つかりません: {0}</value></data>
+<data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion の File 設定がありません: {0}</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>フォルダ内に複数の .model3.json が見つかったため、名前順で先頭のモデルを使います。</value></data>
+<data name="Warning_NameUnset" xml:space="preserve"><value>(名前未設定)</value></data>
+<data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>Physics ファイルが見つかりません: {0}</value></data>
+<data name="Warning_TextureFileMissing" xml:space="preserve"><value>Texture ファイルが見つかりません: {0}</value></data>
+</root>

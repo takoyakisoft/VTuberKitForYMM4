@@ -2,10 +2,13 @@ using SharpGen.Runtime;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Numerics;
+using System.Windows;
 using Vortice.Direct2D1;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using VTuberKitForNative;
+using VTuberKitForYMM4.Plugin.Shape;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Player.Video;
 using YukkuriMovieMaker.Plugin.Tachie;
@@ -14,8 +17,9 @@ namespace VTuberKitForYMM4.Plugin
 {
     public class Live2DTachieSource : ITachieSource2, IDisposable
     {
+        private readonly record struct StandardAnchorCandidate(string ParameterId, float Influence);
         private const int MinRenderTargetSize = 256;
-        private const int DefaultMaxRenderTargetSize = 8192;
+        private const int DefaultMaxRenderTargetSize = 4096;
         private const int MinAllowedRenderTargetMaxSize = 2048;
         private const int MaxAllowedRenderTargetMaxSize = 8192;
         private const float MinInternalRenderScale = 1.0f;
@@ -66,22 +70,37 @@ namespace VTuberKitForYMM4.Plugin
         private bool _cachedEnablePhysics;
         private bool _cachedEnableBreath;
         private bool _hasCachedItemSettings;
-        private float _cachedOpacity = 1.0f;
         private float _cachedMultiplyR = 1.0f;
         private float _cachedMultiplyG = 1.0f;
         private float _cachedMultiplyB = 1.0f;
         private float _cachedMultiplyA = 1.0f;
         private int _cachedRenderTargetMaxSize = DefaultMaxRenderTargetSize;
         private float _cachedInternalRenderScale = DefaultInternalRenderScale;
-        private bool _cachedEnableFxaa;
         private bool _cachedEnableMsaa = true;
         private int _cachedPreferredMsaaSampleCount = 4;
-        private bool _canSetAffineInterpolationMode = true;
         private bool _needsWarmupRender = true;
         private int _consecutiveRenderFailures;
         private DateTime _renderDisabledUntilUtc = DateTime.MinValue;
         private int _localDeviceGeneration = -1;
         private readonly Dictionary<string, double> _hitAreaActiveSinceSeconds = [];
+        private string _lastShownModelWarningKey = string.Empty;
+        private string _lastShownModelLoadErrorKey = string.Empty;
+
+        private static readonly StandardAnchorCandidate[] AnchorCandidatesX =
+        [
+            new(Live2DManager.ParamEyeBallX, 0.18f),
+            new(Live2DManager.ParamAngleX, 0.14f),
+            new(Live2DManager.ParamBodyAngleX, 0.10f),
+            new(Live2DManager.ParamBaseX, 0.25f),
+        ];
+        private static readonly StandardAnchorCandidate[] AnchorCandidatesY =
+        [
+            new(Live2DManager.ParamEyeBallY, 0.16f),
+            new(Live2DManager.ParamAngleY, 0.12f),
+            new(Live2DManager.ParamBodyAngleY, 0.08f),
+            new(Live2DManager.ParamBaseY, 0.22f),
+        ];
+        private static readonly Vector2 FixedLookOrigin = Vector2.Zero;
 
         public Live2DTachieSource(IGraphicsDevicesAndContext devices)
         {
@@ -98,7 +117,7 @@ namespace VTuberKitForYMM4.Plugin
                 var manager = Live2DManager.GetInstance();
                 if (manager == null)
                 {
-                    Commons.ConsoleManager.Error("Live2DManager.GetInstance() returned null");
+                    Commons.ConsoleManager.Error(Translate.Log_Live2DManagerNull);
                     return;
                 }
 
@@ -116,10 +135,9 @@ namespace VTuberKitForYMM4.Plugin
             }
             catch (Exception ex)
             {
-                Commons.ConsoleManager.Error($"Live2D initialization error: {ex.Message}");
+                Commons.ConsoleManager.Error(string.Format(Translate.Log_Live2DInitializationError, ex.Message));
             }
         }
-
         private bool TryInitializeD3D11Device()
         {
             try
@@ -175,11 +193,10 @@ namespace VTuberKitForYMM4.Plugin
             }
             catch (Exception ex)
             {
-                Commons.ConsoleManager.Error($"D3D11 device initialization failed: {ex.Message}");
+                Commons.ConsoleManager.Error(string.Format(Translate.Log_D3D11InitializationFailed, ex.Message));
                 return false;
             }
         }
-
         public void Update(TachieSourceDescription desc)
         {
             if (_disposed) return;
@@ -191,29 +208,17 @@ namespace VTuberKitForYMM4.Plugin
                     return;
                 }
 
+                var charParam = desc.Tachie?.CharacterParameter as Live2DCharacterParameter;
+                var itemParam = desc.Tachie?.ItemParameter as Live2DItemParameter;
+                var currentModelFile = charParam?.File ?? string.Empty;
+                var facesSnapshot = SnapshotFacesOnUiThread(desc);
+                var activeFace = GetActiveFace(facesSnapshot, desc.ItemPosition);
+                var faceParam = activeFace.Face;
+
+                SynchronizeModelFileOnUiThread(itemParam, facesSnapshot, currentModelFile);
+
                 lock (_drawLock)
                 {
-                    var charParam = desc.Tachie?.CharacterParameter as Live2DCharacterParameter;
-                    var itemParam = desc.Tachie?.ItemParameter as Live2DItemParameter;
-                    var activeFace = GetActiveFace(desc);
-                    var faceParam = activeFace.Face;
-                    var currentModelFile = charParam?.File ?? string.Empty;
-                    if (itemParam != null && !string.Equals(itemParam.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
-                    {
-                        itemParam.ModelFile = currentModelFile;
-                    }
-
-                    if (desc.Tachie?.Faces is { } allFaces)
-                    {
-                        foreach (var face in allFaces.ToArray())
-                        {
-                            if (face.FaceParameter is Live2DFaceParameter live2DFace &&
-                                !string.Equals(live2DFace.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
-                            {
-                                live2DFace.ModelFile = currentModelFile;
-                            }
-                        }
-                    }
                     Live2DInteractionStore.UpdateInteractionTarget(charParam?.InteractionLinkId, charParam?.InteractionDisplayName, currentModelFile);
 
                     if (charParam != null && !string.IsNullOrEmpty(charParam.File))
@@ -231,10 +236,10 @@ namespace VTuberKitForYMM4.Plugin
                                     var detail = loadedModel.LastErrorMessage;
                                     if (string.IsNullOrWhiteSpace(detail))
                                     {
-                                        detail = "model3.json が壊れているか、参照先の moc3 / texture / motion ファイルが不足している可能性があります。";
+                                        detail = Translate.Error_ModelFilesMayBeInvalid;
                                     }
 
-                                    Commons.ConsoleManager.Error($"Live2Dモデルを読み込めませんでした。\n\n対象: {_currentModelPath}\n\n{detail}\n\n.model3.json の内容と、参照しているファイル一式を確認してください。");
+                                    ShowModelLoadErrorIfNeeded(_currentModelPath, detail);
 
                                     loadedModel.Dispose();
                                     _currentModelPath = string.Empty;
@@ -246,6 +251,8 @@ namespace VTuberKitForYMM4.Plugin
                                     loadedModel.CommitParameters();
                                     _model = loadedModel;
                                     ModelMetadataCatalog.UpdateFromModelPath(_currentModelPath);
+                                    ShowModelWarningsIfNeeded(_currentModelPath, loadedModel.LoadWarnings);
+                                    _lastShownModelLoadErrorKey = string.Empty;
                                     ClearInteractionState(charParam?.InteractionLinkId);
                                 }
                                 _hasLastItemFrame = false;
@@ -261,12 +268,11 @@ namespace VTuberKitForYMM4.Plugin
                                 _model = null;
                                 _currentModelPath = string.Empty;
                                 ClearInteractionState(charParam?.InteractionLinkId);
-                                var missingModelPath = charParam?.File ?? "(null)";
-                                Commons.ConsoleManager.Error($"Live2Dモデルが見つかりませんでした。\n\n対象: {missingModelPath}\n\n.model3.json の場所を確認してください。");
+                                var missingModelPath = charParam?.File ?? string.Empty;
+                                ShowModelLoadErrorIfNeeded(missingModelPath, Translate.Error_ModelPathCheck);
                             }
                         }
                     }
-
                     if (_model != null)
                     {
                         var deltaSeconds = GetDeltaSeconds(desc, out var requiresReplay);
@@ -318,7 +324,6 @@ namespace VTuberKitForYMM4.Plugin
                                 charParam.InternalRenderScale,
                                 MinInternalRenderScale,
                                 MaxInternalRenderScale);
-                            _cachedEnableFxaa = charParam.EnableFxaa;
                             _cachedEnableMsaa = charParam.EnableMsaa;
                             _cachedPreferredMsaaSampleCount = charParam.MsaaSamplePreset switch
                             {
@@ -333,12 +338,12 @@ namespace VTuberKitForYMM4.Plugin
                         {
                             _cachedRenderTargetMaxSize = DefaultMaxRenderTargetSize;
                             _cachedInternalRenderScale = DefaultInternalRenderScale;
-                            _cachedEnableFxaa = true;
                             _cachedEnableMsaa = true;
                             _cachedPreferredMsaaSampleCount = 4;
                         }
 
                         var activeHitArea = GetActiveHitAreaReaction(charParam?.InteractionLinkId, itemTimeSeconds, out var interactionMotionTimeSeconds);
+                        var activeHitAreaForPhysics = GetActiveHitAreaPhysicsSource(charParam?.InteractionLinkId);
                         var resolvedExpressionId = ResolveExpressionId(
                             itemParam,
                             faceParam,
@@ -374,39 +379,33 @@ namespace VTuberKitForYMM4.Plugin
                         var transformPositionY = 0.0f;
                         var transformScale = 1.0f;
                         var transformRotation = 0.0f;
+                        var screenWidth = Math.Max(1, desc.ScreenSize.Width);
+                        var screenHeight = Math.Max(1, desc.ScreenSize.Height);
 
-                        float finalOpacity = 1.0f;
+                        var finalVisible = true;
+                        const float finalOpacity = 1.0f;
                         if (itemParam != null)
                         {
                             var frame = desc.ItemPosition.Frame;
                             var length = desc.ItemDuration.Frame;
                             var fps = desc.FPS;
-                            var opacity = itemParam.Opacity.GetValue(frame, length, fps);
                             var multiplyR = itemParam.MultiplyR.GetValue(frame, length, fps);
                             var multiplyG = itemParam.MultiplyG.GetValue(frame, length, fps);
                             var multiplyB = itemParam.MultiplyB.GetValue(frame, length, fps);
                             var multiplyA = itemParam.MultiplyA.GetValue(frame, length, fps);
-                            var faceOpacity = faceParam != null && (faceParam.OpacityHold || faceParam.Opacity.Values.Count > 1)
-                                ? faceParam.Opacity.GetValue(
-                                    Math.Max(0L, (long)Math.Round(activeFace.LocalFrame)),
-                                    Math.Max(1L, (long)Math.Round(activeFace.DurationFrame)),
-                                    fps)
-                                : opacity;
-                            finalOpacity = (float)Math.Clamp(faceOpacity, 0.0, 1.0);
-                            var mR = (float)multiplyR;
-                            var mG = (float)multiplyG;
-                            var mB = (float)multiplyB;
-                            var mA = (float)multiplyA;
+                            finalVisible = !itemParam.IsHidden && !(faceParam?.IsHidden ?? false);
+                            var mR = (float)multiplyR / 100.0f;
+                            var mG = (float)multiplyG / 100.0f;
+                            var mB = (float)multiplyB / 100.0f;
+                            var mA = (float)multiplyA / 100.0f;
 
                             if (!_hasCachedItemSettings ||
-                                !NearlyEqual(_cachedOpacity, finalOpacity) ||
                                 !NearlyEqual(_cachedMultiplyR, mR) ||
                                 !NearlyEqual(_cachedMultiplyG, mG) ||
                                 !NearlyEqual(_cachedMultiplyB, mB) ||
                                 !NearlyEqual(_cachedMultiplyA, mA))
                             {
                                 _model.ApplyItemParameters(finalOpacity, mR, mG, mB, mA);
-                                _cachedOpacity = finalOpacity;
                                 _cachedMultiplyR = mR;
                                 _cachedMultiplyG = mG;
                                 _cachedMultiplyB = mB;
@@ -414,9 +413,15 @@ namespace VTuberKitForYMM4.Plugin
                                 _hasCachedItemSettings = true;
                             }
 
-                            transformPositionX = (float)itemParam.PositionX.GetValue(frame, length, fps);
-                            transformPositionY = (float)itemParam.PositionY.GetValue(frame, length, fps);
-                            transformScale = (float)itemParam.Scale.GetValue(frame, length, fps);
+                            var itemPosition = InteractionShapeTransform.PixelToTranslation(
+                                new Vector2(
+                                    (float)itemParam.PositionX.GetValue(frame, length, fps),
+                                    (float)itemParam.PositionY.GetValue(frame, length, fps)),
+                                screenWidth,
+                                screenHeight);
+                            transformPositionX = itemPosition.X;
+                            transformPositionY = itemPosition.Y;
+                            transformScale = (float)itemParam.Scale.GetValue(frame, length, fps) / 100.0f;
                             transformRotation = (float)itemParam.Rotation.GetValue(frame, length, fps);
                         }
 
@@ -425,10 +430,20 @@ namespace VTuberKitForYMM4.Plugin
                             var faceFrame = Math.Max(0L, (long)Math.Round(activeFace.LocalFrame));
                             var faceLength = Math.Max(1L, (long)Math.Round(activeFace.DurationFrame));
                             var fpsForFace = desc.FPS;
+                            if (itemParam == null)
+                            {
+                                finalVisible = !faceParam.IsHidden;
+                            }
 
-                            transformPositionX += (float)faceParam.OffsetPositionX.GetValue(faceFrame, faceLength, fpsForFace);
-                            transformPositionY += (float)faceParam.OffsetPositionY.GetValue(faceFrame, faceLength, fpsForFace);
-                            transformScale += (float)faceParam.OffsetScale.GetValue(faceFrame, faceLength, fpsForFace);
+                            var faceOffset = InteractionShapeTransform.PixelToTranslation(
+                                new Vector2(
+                                    (float)faceParam.OffsetPositionX.GetValue(faceFrame, faceLength, fpsForFace),
+                                    (float)faceParam.OffsetPositionY.GetValue(faceFrame, faceLength, fpsForFace)),
+                                screenWidth,
+                                screenHeight);
+                            transformPositionX += faceOffset.X;
+                            transformPositionY += faceOffset.Y;
+                            transformScale *= (float)faceParam.OffsetScale.GetValue(faceFrame, faceLength, fpsForFace) / 100.0f;
                             transformRotation += (float)faceParam.OffsetRotation.GetValue(faceFrame, faceLength, fpsForFace);
                         }
 
@@ -439,19 +454,20 @@ namespace VTuberKitForYMM4.Plugin
                             _currentModelPath,
                             _model.GetCanvasWidth(),
                             _model.GetCanvasHeight());
-                        var modelBounds = _model.GetModelBounds();
                         Live2DInteractionStore.UpdateInteractionTransform(
                             charParam?.InteractionLinkId,
                             transformPositionX,
                             transformPositionY,
                             Math.Max(0.01f, transformScale),
                             transformRotation,
-                            modelBounds.X,
-                            modelBounds.Y,
+                            0.0f,
+                            0.0f,
                             hitTestTransform.ScaleX,
                             hitTestTransform.ScaleY,
                             hitTestTransform.TranslateX,
-                            hitTestTransform.TranslateY);
+                            hitTestTransform.TranslateY,
+                            screenWidth,
+                            screenHeight);
                         Live2DInteractionStore.UpdateInteractionHitAreas(
                             charParam?.InteractionLinkId,
                             _model.GetHitAreas().Select(x => new Live2DInteractionStore.InteractionHitAreaState(
@@ -462,7 +478,7 @@ namespace VTuberKitForYMM4.Plugin
                                 x?.Width ?? 0.0f,
                                 x?.Height ?? 0.0f)));
 
-                        ApplyTargetPointOrDragging(_model, charParam, (float)itemTimeSeconds);
+                        ApplyInteractionPhysicsInput(_model, charParam, activeHitAreaForPhysics, (float)itemTimeSeconds, deltaSeconds);
 
                         if (requiresReplay)
                         {
@@ -474,13 +490,29 @@ namespace VTuberKitForYMM4.Plugin
                                 itemParam,
                                 Math.Max(activeFace.RelativeTimeSeconds, (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds)),
                                 activeFace.DurationFrame,
-                                (float)(charParam?.LipSyncGain ?? 1.0),
-                                (float)(charParam?.WindStrength ?? 0.0));
+                                (float)(charParam?.LipSyncGain ?? 1.0));
                         }
                         else
                         {
                             _model.UpdatePrePhysics(deltaSeconds);
                             _model.UpdatePostPhysics(deltaSeconds);
+                        }
+                        if (itemParam != null)
+                        {
+                            var itemFrame = Math.Max(0L, Convert.ToInt64(desc.ItemPosition.Frame));
+                            var itemLength = Math.Max(1L, Convert.ToInt64(desc.ItemDuration.Frame));
+                            TachieMotionEvaluator.ApplyDynamicItemParameters(
+                                _model,
+                                itemParam,
+                                itemFrame,
+                                itemLength,
+                                desc.FPS);
+                            TachieMotionEvaluator.ApplyDynamicItemParts(
+                                _model,
+                                itemParam,
+                                itemFrame,
+                                itemLength,
+                                desc.FPS);
                         }
                         if (faceParam != null)
                         {
@@ -511,19 +543,19 @@ namespace VTuberKitForYMM4.Plugin
                                 (float)(charParam?.LipSyncGain ?? 1.0),
                                 charParam?.LipSyncVowelsOnly ?? false);
                         }
+                        ApplyHitAreaDynamicOverrides(_model, activeHitArea);
                         _model.CommitParameters();
                         UpdateHitAreaResults(_model, charParam?.InteractionLinkId, itemTimeSeconds);
 
                         var canDraw = desc.ScreenSize.Width > 0 &&
                                       desc.ScreenSize.Height > 0 &&
-                                      finalOpacity > 0.001f;
+                                      finalVisible;
                         if (Render(
                             desc.ScreenSize.Width,
                             desc.ScreenSize.Height,
                             canDraw,
                             _cachedRenderTargetMaxSize,
                             _cachedInternalRenderScale,
-                            _cachedEnableFxaa,
                             _cachedEnableMsaa,
                             _cachedPreferredMsaaSampleCount))
                         {
@@ -534,10 +566,9 @@ namespace VTuberKitForYMM4.Plugin
             }
             catch (Exception ex)
             {
-                Commons.ConsoleManager.Error($"Live2D update error: {ex.Message}");
+                Commons.ConsoleManager.Error(string.Format(Translate.Log_Live2DUpdateError, ex.Message));
             }
         }
-
         internal static (Live2DFaceParameter? Face, float RelativeTimeSeconds, double LocalFrame, double DurationFrame) ResolveActiveFace(
             IEnumerable<TachieFaceDescription> faces,
             YukkuriMovieMaker.Player.Video.FrameTime currentPosition)
@@ -548,7 +579,7 @@ namespace VTuberKitForYMM4.Plugin
             double activeLocalFrame = 0.0;
             double activeDurationFrame = 1.0;
 
-            foreach (var face in faces.ToArray())
+            foreach (var face in faces)
             {
                 var durationFrame = Math.Max(1.0, (double)face.ItemDuration.Frame);
                 var localTime = face.ItemPosition.Time;
@@ -571,14 +602,82 @@ namespace VTuberKitForYMM4.Plugin
             return (null, 0.0f, 0.0, 1.0);
         }
 
-        private static (Live2DFaceParameter? Face, float RelativeTimeSeconds, double LocalFrame, double DurationFrame) GetActiveFace(TachieSourceDescription desc)
+        private static (Live2DFaceParameter? Face, float RelativeTimeSeconds, double LocalFrame, double DurationFrame) GetActiveFace(
+            IReadOnlyList<TachieFaceDescription> faces,
+            YukkuriMovieMaker.Player.Video.FrameTime currentPosition)
         {
-            if (desc.Tachie?.Faces is not { } faces)
+            if (faces.Count == 0)
             {
                 return (null, 0.0f, 0.0, 1.0);
             }
 
-            return ResolveActiveFace(faces, desc.ItemPosition);
+            return ResolveActiveFace(faces, currentPosition);
+        }
+
+        private static TachieFaceDescription[] SnapshotFacesOnUiThread(TachieSourceDescription desc)
+        {
+            if (desc.Tachie?.Faces is not { } faces)
+            {
+                return [];
+            }
+
+            return InvokeOnUiThread(() => faces.ToArray());
+        }
+
+        private static void SynchronizeModelFileOnUiThread(
+            Live2DItemParameter? itemParam,
+            IReadOnlyList<TachieFaceDescription> faces,
+            string currentModelFile)
+        {
+            var shouldSyncItem = itemParam != null && !string.Equals(itemParam.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase);
+            var shouldSyncFaces = faces.Any(face =>
+                face.FaceParameter is Live2DFaceParameter live2DFace &&
+                !string.Equals(live2DFace.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase));
+
+            if (!shouldSyncItem && !shouldSyncFaces)
+            {
+                return;
+            }
+
+            InvokeOnUiThread(() =>
+            {
+                if (itemParam != null && !string.Equals(itemParam.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
+                {
+                    itemParam.ModelFile = currentModelFile;
+                }
+
+                foreach (var face in faces)
+                {
+                    if (face.FaceParameter is Live2DFaceParameter live2DFace &&
+                        !string.Equals(live2DFace.ModelFile, currentModelFile, StringComparison.OrdinalIgnoreCase))
+                    {
+                        live2DFace.ModelFile = currentModelFile;
+                    }
+                }
+            });
+        }
+
+        private static T InvokeOnUiThread<T>(Func<T> action)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                return action();
+            }
+
+            return dispatcher.Invoke(action);
+        }
+
+        private static void InvokeOnUiThread(Action action)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                action();
+                return;
+            }
+
+            dispatcher.Invoke(action);
         }
 
         private static string ResolveExpressionId(
@@ -602,6 +701,36 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             return string.Empty;
+        }
+
+        private static void ApplyHitAreaDynamicOverrides(
+            Live2DModelWrapper model,
+            Live2DInteractionStore.HitAreaRectState? activeHitArea)
+        {
+            if (activeHitArea == null)
+            {
+                return;
+            }
+
+            foreach (var row in activeHitArea.ParameterOverrides)
+            {
+                if (string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
+
+                model.SetParameterValue(row.Id, row.Value);
+            }
+
+            foreach (var row in activeHitArea.PartOverrides)
+            {
+                if (string.IsNullOrWhiteSpace(row.Id))
+                {
+                    continue;
+                }
+
+                model.SetPartOpacity(row.Id, Math.Clamp(row.Opacity, 0.0f, 1.0f));
+            }
         }
 
         private float GetDeltaSeconds(TachieSourceDescription desc, out bool rewound)
@@ -649,39 +778,70 @@ namespace VTuberKitForYMM4.Plugin
             return deltaFrames < 0.0 || deltaFrames > 1.0;
         }
 
-        private static void ApplyDragging(Live2DModelWrapper model, double windStrength, float timeSeconds)
+        private void ApplyInteractionPhysicsInput(
+            Live2DModelWrapper model,
+            Live2DCharacterParameter? charParam,
+            Live2DInteractionStore.HitAreaRectState? activeHitArea,
+            float timeSeconds,
+            float deltaTime)
         {
-            if (windStrength > 0.0)
-            {
-                var dragX = (float)(Math.Sin(timeSeconds * 0.7f) * windStrength * 0.6f);
-                var dragY = (float)(Math.Cos(timeSeconds * 0.45f) * windStrength * 0.15f);
-                model.SetDragging(dragX, dragY);
-            }
-            else
-            {
-                model.SetDragging(0.0f, 0.0f);
-            }
+            var physicsScale = ConvertPhysicsStrengthToScale(charParam?.PhysicsStrength ?? 50.0);
+            model.SetPhysicsOutputScale(physicsScale);
+
+            var wind = ResolvePhysicsWindVector(charParam?.WindStrength ?? 0.0, timeSeconds);
+            model.SetPhysicsWind(wind.X, wind.Y);
+
+            var drag = ResolveInteractionDrag(charParam, activeHitArea);
+            model.SetDragging(drag.X, drag.Y);
         }
 
-        private static void ApplyTargetPointOrDragging(Live2DModelWrapper model, Live2DCharacterParameter? charParam, float timeSeconds)
+        private void ShowModelWarningsIfNeeded(string? modelPath, IEnumerable<string>? warnings)
         {
-            if (charParam != null &&
-                Live2DInteractionStore.TryGetTargetPoint(charParam.InteractionLinkId, out var targetX, out var targetY))
+            var warningList = warnings?
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray() ?? [];
+            if (warningList.Length == 0)
             {
-                if (Live2DInteractionStore.TryGetInteractionTransform(charParam.InteractionLinkId, out var state) && state is not null)
-                {
-                    targetX += state.ModelCenterX;
-                    targetY += state.ModelCenterY;
-                }
-
-                model.SetDragging(Math.Clamp(targetX, -1.0f, 1.0f), Math.Clamp(targetY, -1.0f, 1.0f));
+                _lastShownModelWarningKey = string.Empty;
                 return;
             }
 
-            ApplyDragging(model, Math.Max(0.0, charParam?.WindStrength ?? 0.0), timeSeconds);
+            var warningKey = $"{modelPath}|{string.Join("\n", warningList)}";
+            if (string.Equals(_lastShownModelWarningKey, warningKey, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastShownModelWarningKey = warningKey;
+            Commons.ConsoleManager.Error(
+                $"{Translate.Error_ModelLoadWarnings_Title}\n\n{Translate.Error_TargetPath_Label}: {modelPath}\n\n- {string.Join("\n- ", warningList)}");
         }
 
-        private static void ReplayModelToCurrentTime(
+        private void ShowModelLoadErrorIfNeeded(string? modelPath, string detail)
+        {
+            var safePath = modelPath ?? string.Empty;
+            var safeDetail = string.IsNullOrWhiteSpace(detail)
+                ? Translate.Error_CheckModelFiles
+                : detail.Trim();
+            if (ModelMetadataCatalog.WasSelectionIssueShown(safePath, safeDetail))
+            {
+                _lastShownModelLoadErrorKey = $"{safePath}|{safeDetail}";
+                return;
+            }
+
+            var errorKey = $"{safePath}|{safeDetail}";
+            if (string.Equals(_lastShownModelLoadErrorKey, errorKey, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastShownModelLoadErrorKey = errorKey;
+            Commons.ConsoleManager.Error(
+                $"{Translate.Error_ModelLoadFailed_Title}\n\n{Translate.Error_TargetPath_Label}: {safePath}\n\n{safeDetail}\n\n{Translate.Error_CheckModelFiles}");
+        }
+
+        private void ReplayModelToCurrentTime(
             Live2DModelWrapper model,
             TachieSourceDescription desc,
             string? modelPath,
@@ -689,8 +849,7 @@ namespace VTuberKitForYMM4.Plugin
             Live2DItemParameter? itemParam,
             float activeFaceTimeSeconds,
             double activeFaceDurationFrame,
-            float lipSyncGain,
-            float windStrength)
+            float lipSyncGain)
         {
             var targetSeconds = (float)Math.Max(0.0, desc.ItemPosition.Time.TotalSeconds);
             if (targetSeconds <= 0.0f)
@@ -722,9 +881,31 @@ namespace VTuberKitForYMM4.Plugin
                     0.0f,
                     next);
 
-                ApplyTargetPointOrDragging(model, desc.Tachie?.CharacterParameter as Live2DCharacterParameter, next);
+                ApplyInteractionPhysicsInput(
+                    model,
+                    desc.Tachie?.CharacterParameter as Live2DCharacterParameter,
+                    null,
+                    next,
+                    delta);
                 model.UpdatePrePhysics(delta);
                 model.UpdatePostPhysics(delta);
+                if (itemParam != null)
+                {
+                    var itemFrame = Math.Clamp((long)Math.Round(next * desc.FPS), 0L, Math.Max(1L, desc.ItemDuration.Frame));
+                    var itemLength = Math.Max(1L, desc.ItemDuration.Frame);
+                    TachieMotionEvaluator.ApplyDynamicItemParameters(
+                        model,
+                        itemParam,
+                        itemFrame,
+                        itemLength,
+                        desc.FPS);
+                    TachieMotionEvaluator.ApplyDynamicItemParts(
+                        model,
+                        itemParam,
+                        itemFrame,
+                        itemLength,
+                        desc.FPS);
+                }
                 if (faceParam != null)
                 {
                     var faceFrame = Math.Clamp((long)Math.Round(Math.Min(activeFaceTimeSeconds, next) * desc.FPS), 0L, Math.Max(1L, (long)Math.Round(activeFaceDurationFrame)));
@@ -833,16 +1014,172 @@ namespace VTuberKitForYMM4.Plugin
             return activeHitArea;
         }
 
+        private Live2DInteractionStore.HitAreaRectState? GetActiveHitAreaPhysicsSource(string? linkId)
+        {
+            PruneInactiveHitAreaState(linkId);
+
+            return Live2DInteractionStore.GetHitAreaRects(linkId)
+                .Where(x => x.IsHit)
+                .Select(x => new
+                {
+                    HitArea = x,
+                    ActiveSinceSeconds = _hitAreaActiveSinceSeconds.TryGetValue(x.SourceId, out var activeSinceSeconds)
+                        ? activeSinceSeconds
+                        : double.MinValue
+                })
+                .OrderByDescending(x => x.HitArea.Layer)
+                .ThenByDescending(x => x.ActiveSinceSeconds)
+                .ThenBy(x => x.HitArea.SourceId, StringComparer.Ordinal)
+                .Select(x => x.HitArea)
+                .FirstOrDefault();
+        }
+
+        private static Vector2 ResolveInteractionDrag(
+            Live2DCharacterParameter? charParam,
+            Live2DInteractionStore.HitAreaRectState? activeHitArea)
+        {
+            var rawTarget = FixedLookOrigin;
+            Live2DInteractionStore.InteractionTransformState? transformState = null;
+            if (charParam != null)
+            {
+                Live2DInteractionStore.TryGetInteractionTransform(charParam.InteractionLinkId, out transformState);
+            }
+            else if (activeHitArea != null)
+            {
+                Live2DInteractionStore.TryGetInteractionTransform(activeHitArea.LinkId, out transformState);
+            }
+
+            if (charParam != null &&
+                Live2DInteractionStore.TryGetTargetPoint(charParam.InteractionLinkId, out var targetX, out var targetY))
+            {
+                rawTarget += ConvertPixelOffsetToDragUnits(transformState, targetX, targetY);
+            }
+
+            var hitAreaStrength = (float)Math.Clamp((charParam?.HitAreaPhysicsStrength ?? 0.0) / 100.0, 0.0, 1.0);
+            if (activeHitArea != null && hitAreaStrength > 0.0f)
+            {
+                rawTarget += ConvertPixelOffsetToDragUnits(transformState, activeHitArea.X, activeHitArea.Y) * hitAreaStrength;
+            }
+
+            rawTarget = new Vector2(
+                Math.Clamp(rawTarget.X - FixedLookOrigin.X, -1.0f, 1.0f),
+                Math.Clamp(rawTarget.Y - FixedLookOrigin.Y, -1.0f, 1.0f));
+            return rawTarget;
+        }
+
+        private static float ConvertPhysicsStrengthToScale(double physicsStrength)
+        {
+            return (float)Math.Clamp(physicsStrength / 50.0, 0.0, 2.0);
+        }
+
+        private static Vector2 ResolvePhysicsWindVector(double windStrength, float timeSeconds)
+        {
+            var normalizedStrength = (float)Math.Clamp(windStrength / 100.0, 0.0, 1.0);
+            if (normalizedStrength <= 0.0f)
+            {
+                return Vector2.Zero;
+            }
+
+            var x =
+                MathF.Sin(timeSeconds * 0.83f) * 0.55f +
+                MathF.Sin(timeSeconds * 1.73f + 1.1f) * 0.30f;
+            var y =
+                MathF.Cos(timeSeconds * 0.41f + 0.35f) * 0.12f +
+                MathF.Sin(timeSeconds * 1.07f + 2.3f) * 0.08f;
+
+            return new Vector2(x, y) * normalizedStrength;
+        }
+
         private static System.Numerics.Vector2 TransformHitTestPoint(string? linkId, float x, float y)
         {
             if (Live2DInteractionStore.TryGetInteractionTransform(linkId, out var state) && state is not null)
             {
-                return new System.Numerics.Vector2(
-                    (x + state.ModelCenterX) * state.HitTestScaleX + state.HitTestTranslateX,
-                    (y + state.ModelCenterY) * state.HitTestScaleY + state.HitTestTranslateY);
+                var localPoint = InteractionShapeTransform.PixelToLocal(new Vector2(x, y), state.ScreenWidth, state.ScreenHeight);
+                return new Vector2(
+                    (localPoint.X + state.ModelCenterX) * state.HitTestScaleX + state.HitTestTranslateX,
+                    (localPoint.Y + state.ModelCenterY) * state.HitTestScaleY + state.HitTestTranslateY);
             }
 
-            return new System.Numerics.Vector2(x, y);
+            return Vector2.Zero;
+        }
+
+        private static Vector2 ConvertPixelOffsetToDragUnits(
+            Live2DInteractionStore.InteractionTransformState? state,
+            float x,
+            float y)
+        {
+            if (state is null)
+            {
+                return Vector2.Zero;
+            }
+
+            return InteractionShapeTransform.PixelToLocal(new Vector2(x, y), state.ScreenWidth, state.ScreenHeight);
+        }
+
+        internal static Vector2 ResolveInteractionTrackingCenter(Live2DModelWrapper model, Live2DBounds modelBounds)
+        {
+            if (model == null)
+            {
+                return new Vector2(modelBounds.X, modelBounds.Y);
+            }
+
+            return ResolveInteractionTrackingCenter(
+                model.GetParameters()
+                    .Where(x => x != null)
+                    .Cast<Live2DParameter>(),
+                modelBounds);
+        }
+
+        internal static Vector2 ResolveInteractionTrackingCenter(IEnumerable<Live2DParameter> sourceParameters, Live2DBounds modelBounds)
+        {
+            var parameters = sourceParameters
+                .Where(x => x != null && !string.IsNullOrWhiteSpace(x.Id))
+                .ToDictionary(x => x.Id!, StringComparer.OrdinalIgnoreCase);
+
+            var offsetX = ResolveTrackingAxisOffset(parameters, AnchorCandidatesX, modelBounds.Width);
+            var offsetY = ResolveTrackingAxisOffset(parameters, AnchorCandidatesY, modelBounds.Height);
+            return new Vector2(modelBounds.X + offsetX, modelBounds.Y + offsetY);
+        }
+
+        private static float ResolveTrackingAxisOffset(
+            IReadOnlyDictionary<string, Live2DParameter> parameters,
+            IReadOnlyList<StandardAnchorCandidate> candidates,
+            float extent)
+        {
+            var safeExtent = Math.Max(0.0f, extent);
+            foreach (var candidate in candidates)
+            {
+                if (TryGetNormalizedParameterValue(parameters, candidate.ParameterId, out var normalized))
+                {
+                    return normalized * safeExtent * candidate.Influence;
+                }
+            }
+
+            return 0.0f;
+        }
+
+        private static bool TryGetNormalizedParameterValue(
+            IReadOnlyDictionary<string, Live2DParameter> parameters,
+            string parameterId,
+            out float normalized)
+        {
+            normalized = 0.0f;
+            if (!parameters.TryGetValue(parameterId, out var parameter))
+            {
+                return false;
+            }
+
+            var positiveRange = parameter.Max - parameter.Default;
+            var negativeRange = parameter.Default - parameter.Min;
+            var current = parameter.Value - parameter.Default;
+            var divisor = current >= 0.0f ? positiveRange : negativeRange;
+            if (Math.Abs(divisor) < 1e-5f)
+            {
+                return false;
+            }
+
+            normalized = Math.Clamp(current / divisor, -1.0f, 1.0f);
+            return true;
         }
 
         private void ClearInteractionState(string? linkId)
@@ -850,7 +1187,6 @@ namespace VTuberKitForYMM4.Plugin
             _hitAreaActiveSinceSeconds.Clear();
             Live2DInteractionStore.ClearHitAreaResults(linkId);
         }
-
         private void PruneInactiveHitAreaState(string? linkId)
         {
             if (string.IsNullOrWhiteSpace(linkId))
@@ -889,7 +1225,7 @@ namespace VTuberKitForYMM4.Plugin
             return (renderWidth, renderHeight);
         }
 
-        private bool Render(int screenWidth, int screenHeight, bool drawModel, int maxRenderTargetSize, float internalRenderScale, bool enableFxaa, bool enableMsaa, int preferredMsaaSampleCount)
+        private bool Render(int screenWidth, int screenHeight, bool drawModel, int maxRenderTargetSize, float internalRenderScale, bool enableMsaa, int preferredMsaaSampleCount)
         {
             if (_renderer == null || _model == null || _transformEffect == null)
             {
@@ -1143,23 +1479,6 @@ namespace VTuberKitForYMM4.Plugin
                     if (_d2dBitmap == null)
                     {
                         return true;
-                    }
-
-                    if (_canSetAffineInterpolationMode)
-                    {
-                        try
-                        {
-                            renderPhase = "set-affine-interpolation";
-                            _transformEffect.SetValue(
-                                (int)AffineTransform2DProperties.InterpolationMode,
-                                (int)(enableFxaa ? AffineTransform2DInterpolationMode.HighQualityCubic : AffineTransform2DInterpolationMode.Linear));
-                        }
-                        catch (Exception)
-                        {
-                            _canSetAffineInterpolationMode = false;
-                            // Some environments reject this property entirely.
-                            // Disable interpolation-mode switching silently and continue with the effect's default behavior.
-                        }
                     }
 
                     var outputWidth = Math.Max(1, screenWidth);

@@ -8,6 +8,11 @@ namespace VTuberKitForYMM4.Plugin
     public static class ModelMetadataCatalog
     {
         public readonly record struct ParameterMetadata(string Id, string Name, float Default, float Min, float Max);
+        public readonly record struct ModelSelectionResolution(
+            string ResolvedModelPath,
+            bool IsValid,
+            bool SelectionWasDirectory,
+            bool MultipleCandidatesFound);
         public readonly record struct HitTestTransform(float ScaleX, float ScaleY, float TranslateX, float TranslateY)
         {
             public static HitTestTransform Identity => new(1.0f, 1.0f, 0.0f, 0.0f);
@@ -37,6 +42,7 @@ namespace VTuberKitForYMM4.Plugin
 
         private static readonly object LockObj = new();
         private static readonly Dictionary<string, SnapshotCacheEntry> SnapshotCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> ShownSelectionIssueKeys = new(StringComparer.Ordinal);
         private static string currentModelPath = string.Empty;
         private static List<string> expressions = [];
         private static List<(string Group, int Index, string FileName)> motions = [];
@@ -179,7 +185,8 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                var snapshot = GetSnapshotCore(modelPath);
+                var resolvedModelPath = ResolveModelSelection(modelPath).ResolvedModelPath;
+                var snapshot = GetSnapshotCore(resolvedModelPath);
                 if (snapshot == null)
                 {
                     currentModelPath = string.Empty;
@@ -218,7 +225,18 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                return GetSnapshotCore(modelPath)?.Expressions ?? [];
+                return GetSnapshotCore(ResolveModelSelection(modelPath).ResolvedModelPath)?.Expressions ?? [];
+            }
+        }
+
+        public static string CurrentModelPath
+        {
+            get
+            {
+                lock (LockObj)
+                {
+                    return currentModelPath;
+                }
             }
         }
 
@@ -226,7 +244,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                return GetSnapshotCore(modelPath)?.Motions ?? [];
+                return GetSnapshotCore(ResolveModelSelection(modelPath).ResolvedModelPath)?.Motions ?? [];
             }
         }
 
@@ -234,7 +252,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                return GetSnapshotCore(modelPath)?.HitAreas ?? [];
+                return GetSnapshotCore(ResolveModelSelection(modelPath).ResolvedModelPath)?.HitAreas ?? [];
             }
         }
 
@@ -242,7 +260,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                return GetSnapshotCore(modelPath)?.Parameters ?? [];
+                return GetSnapshotCore(ResolveModelSelection(modelPath).ResolvedModelPath)?.Parameters ?? [];
             }
         }
 
@@ -250,7 +268,229 @@ namespace VTuberKitForYMM4.Plugin
         {
             lock (LockObj)
             {
-                return GetSnapshotCore(modelPath)?.Parts ?? [];
+                return GetSnapshotCore(ResolveModelSelection(modelPath).ResolvedModelPath)?.Parts ?? [];
+            }
+        }
+
+        public static ModelSelectionResolution ResolveModelSelection(string? selection)
+        {
+            if (string.IsNullOrWhiteSpace(selection))
+            {
+                return new ModelSelectionResolution(string.Empty, false, false, false);
+            }
+
+            try
+            {
+                if (Directory.Exists(selection))
+                {
+                    var candidates = Directory
+                        .EnumerateFiles(selection, "*.model3.json", SearchOption.TopDirectoryOnly)
+                        .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    if (candidates.Length == 0)
+                    {
+                        return new ModelSelectionResolution(string.Empty, false, true, false);
+                    }
+
+                    return new ModelSelectionResolution(
+                        Path.GetFullPath(candidates[0]),
+                        true,
+                        true,
+                        candidates.Length > 1);
+                }
+
+                if (File.Exists(selection) &&
+                    selection.EndsWith(".model3.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ModelSelectionResolution(Path.GetFullPath(selection), true, false, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMetadataError(nameof(ResolveModelSelection), selection, ex);
+            }
+
+            return new ModelSelectionResolution(string.Empty, false, false, false);
+        }
+
+        public static IReadOnlyList<string> GetModelWarnings(string? modelPath)
+        {
+            var resolved = ResolveModelSelection(modelPath);
+            if (!resolved.IsValid || string.IsNullOrWhiteSpace(resolved.ResolvedModelPath))
+            {
+                return [];
+            }
+
+            var warnings = new List<string>();
+            if (resolved.SelectionWasDirectory && resolved.MultipleCandidatesFound)
+            {
+                warnings.Add(Translate.Warning_MultipleModel3Json);
+            }
+
+            try
+            {
+                var root = JObject.Parse(File.ReadAllText(resolved.ResolvedModelPath));
+                var refs = root["FileReferences"] as JObject;
+                if (refs == null)
+                {
+                    warnings.Add(Translate.Warning_FileReferencesMissing);
+                    return warnings;
+                }
+
+                var modelDirectory = Path.GetDirectoryName(resolved.ResolvedModelPath) ?? string.Empty;
+                if (refs["Moc"] is not JValue mocValue || string.IsNullOrWhiteSpace(mocValue.ToString()))
+                {
+                    warnings.Add(Translate.Warning_MocMissing);
+                }
+                else if (!File.Exists(Path.GetFullPath(Path.Combine(modelDirectory, mocValue.ToString()))))
+                {
+                    warnings.Add(string.Format(Translate.Warning_MocFileMissing, mocValue));
+                }
+
+                if (refs["Textures"] is JArray textures)
+                {
+                    foreach (var texture in textures.Select(x => x?.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)))
+                    {
+                        var texturePath = Path.GetFullPath(Path.Combine(modelDirectory, texture!));
+                        if (!File.Exists(texturePath))
+                        {
+                            warnings.Add(string.Format(Translate.Warning_TextureFileMissing, texture));
+                        }
+                    }
+                }
+
+                if (refs["Expressions"] is JArray expressionsArray)
+                {
+                    foreach (var expressionEntry in expressionsArray.OfType<JObject>())
+                    {
+                        var expressionName = expressionEntry["Name"]?.ToString();
+                        var expressionFile = expressionEntry["File"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(expressionFile))
+                        {
+                            warnings.Add(string.Format(Translate.Warning_ExpressionFileSettingMissing, expressionName ?? Translate.Warning_NameUnset));
+                            continue;
+                        }
+
+                        var expressionPath = Path.GetFullPath(Path.Combine(modelDirectory, expressionFile));
+                        if (!File.Exists(expressionPath))
+                        {
+                            warnings.Add(string.Format(Translate.Warning_ExpressionFileMissing, expressionFile));
+                        }
+                    }
+                }
+
+                if (refs["Motions"] is JObject motionsObject)
+                {
+                    foreach (var group in motionsObject.Properties())
+                    {
+                        if (group.Value is not JArray motionArray)
+                        {
+                            continue;
+                        }
+
+                        foreach (var motionEntry in motionArray.OfType<JObject>())
+                        {
+                            var motionFile = motionEntry["File"]?.ToString();
+                            if (string.IsNullOrWhiteSpace(motionFile))
+                            {
+                                warnings.Add(string.Format(Translate.Warning_MotionFileSettingMissing, group.Name));
+                                continue;
+                            }
+
+                            var motionPath = Path.GetFullPath(Path.Combine(modelDirectory, motionFile));
+                            if (!File.Exists(motionPath))
+                            {
+                                warnings.Add(string.Format(Translate.Warning_MotionFileMissing, motionFile));
+                            }
+                        }
+                    }
+                }
+
+                if (root["HitAreas"] is JArray hitAreasArray)
+                {
+                    foreach (var hitArea in hitAreasArray.OfType<JObject>())
+                    {
+                        var hitAreaId = hitArea["Id"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(hitAreaId))
+                        {
+                            warnings.Add(Translate.Warning_HitAreaIdMissing);
+                        }
+                    }
+                }
+
+                if (refs["Physics"] is JValue physicsValue && !string.IsNullOrWhiteSpace(physicsValue.ToString()))
+                {
+                    var physicsPath = Path.GetFullPath(Path.Combine(modelDirectory, physicsValue.ToString()));
+                    if (!File.Exists(physicsPath))
+                    {
+                        warnings.Add(string.Format(Translate.Warning_PhysicsFileMissing, physicsValue));
+                    }
+                }
+
+                if (refs["DisplayInfo"] is JValue displayInfoValue && !string.IsNullOrWhiteSpace(displayInfoValue.ToString()))
+                {
+                    var displayInfoPath = Path.GetFullPath(Path.Combine(modelDirectory, displayInfoValue.ToString()));
+                    if (!File.Exists(displayInfoPath))
+                    {
+                        warnings.Add(string.Format(Translate.Warning_DisplayInfoFileMissing, displayInfoValue));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMetadataError(nameof(GetModelWarnings), resolved.ResolvedModelPath, ex);
+                warnings.Add(Translate.Warning_ModelParseException);
+            }
+
+            return warnings.Distinct(StringComparer.Ordinal).ToArray();
+        }
+
+        public static IReadOnlyList<string> GetModelSelectionWarnings(string? modelPath)
+        {
+            var warnings = GetModelWarnings(modelPath).ToList();
+            var resolved = ResolveModelSelection(modelPath);
+            if (!resolved.IsValid || string.IsNullOrWhiteSpace(resolved.ResolvedModelPath))
+            {
+                return warnings;
+            }
+
+            var loadError = ProbeModelLoadError(resolved.ResolvedModelPath);
+            if (!string.IsNullOrWhiteSpace(loadError))
+            {
+                warnings.Add(loadError);
+            }
+
+            return warnings
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        public static void RememberShownSelectionIssue(string? modelPath, string detail)
+        {
+            var key = CreateIssueKey(modelPath, detail);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return;
+            }
+
+            lock (LockObj)
+            {
+                ShownSelectionIssueKeys.Add(key);
+            }
+        }
+
+        public static bool WasSelectionIssueShown(string? modelPath, string detail)
+        {
+            var key = CreateIssueKey(modelPath, detail);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return false;
+            }
+
+            lock (LockObj)
+            {
+                return ShownSelectionIssueKeys.Contains(key);
             }
         }
 
@@ -375,6 +615,11 @@ namespace VTuberKitForYMM4.Plugin
                     return loadedParameters;
                 }
 
+                if (!manager.HasD3D11Device())
+                {
+                    return loadedParameters;
+                }
+
                 var model = manager.CreateModel();
                 if (model == null)
                 {
@@ -424,6 +669,73 @@ namespace VTuberKitForYMM4.Plugin
             }
 
             return loadedParameters;
+        }
+
+        private static string ProbeModelLoadError(string modelPath)
+        {
+            var initializedManager = false;
+            try
+            {
+                var manager = Live2DManager.GetInstance();
+                manager?.Initialize();
+                initializedManager = manager != null;
+                if (manager == null)
+                {
+                    return string.Empty;
+                }
+
+                if (!manager.HasD3D11Device())
+                {
+                    return string.Empty;
+                }
+
+                var model = manager.CreateModel();
+                if (model == null)
+                {
+                    return string.Empty;
+                }
+
+                using (model)
+                {
+                    if (model.LoadModel(modelPath))
+                    {
+                        return string.Empty;
+                    }
+
+                    return model.LastErrorMessage ?? string.Empty;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMetadataError(nameof(ProbeModelLoadError), modelPath, ex);
+                return string.Empty;
+            }
+            finally
+            {
+                if (initializedManager)
+                {
+                    try
+                    {
+                        Live2DManager.GetInstance()?.Release();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMetadataError(nameof(ProbeModelLoadError), $"{modelPath} (release)", ex);
+                    }
+                }
+            }
+        }
+
+        private static string CreateIssueKey(string? modelPath, string? detail)
+        {
+            var safePath = modelPath?.Trim();
+            var safeDetail = detail?.Trim();
+            if (string.IsNullOrWhiteSpace(safePath) || string.IsNullOrWhiteSpace(safeDetail))
+            {
+                return string.Empty;
+            }
+
+            return $"{safePath}|{safeDetail}";
         }
 
         private static ModelMetadataSnapshot? GetSnapshotCore(string? modelPath)
@@ -667,7 +979,11 @@ namespace VTuberKitForYMM4.Plugin
 
         private static void LogMetadataError(string methodName, string context, Exception exception)
         {
-            Commons.ConsoleManager.Error($"ModelMetadataCatalog.{methodName} failed: {context}\n{exception}");
+            Commons.ConsoleManager.Error(string.Format(
+                Translate.Log_ModelMetadataCatalogFailed,
+                methodName,
+                context,
+                exception));
         }
     }
 }

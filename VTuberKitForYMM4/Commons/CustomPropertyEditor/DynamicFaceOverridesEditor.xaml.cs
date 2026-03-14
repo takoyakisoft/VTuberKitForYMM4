@@ -263,12 +263,17 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 AttachParameterCallbacks(overrides.ParameterRows);
                 ApplyEditorInfoToParameterRows(overrides.ParameterRows);
+                EnsureSelectedRows(overrides);
                 RefreshFilters();
                 return;
             }
 
             AttachParameterCallbacks(e.NewItems?.OfType<Live2DFaceDynamicParameterRow>());
             ApplyEditorInfoToParameterRows(e.NewItems?.OfType<Live2DFaceDynamicParameterRow>());
+            if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace)
+            {
+                EnsureSelectedRows(overrides);
+            }
             RefreshFilters();
         }
 
@@ -283,13 +288,31 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 AttachPartCallbacks(overrides.PartRows);
                 ApplyEditorInfoToPartRows(overrides.PartRows);
+                EnsureSelectedRows(overrides);
                 RefreshFilters();
                 return;
             }
 
             AttachPartCallbacks(e.NewItems?.OfType<Live2DFaceDynamicPartRow>());
             ApplyEditorInfoToPartRows(e.NewItems?.OfType<Live2DFaceDynamicPartRow>());
+            if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace)
+            {
+                EnsureSelectedRows(overrides);
+            }
             RefreshFilters();
+        }
+
+        private void EnsureSelectedRows(Live2DFaceDynamicOverrides overrides)
+        {
+            if (SelectedParameterRow == null || !overrides.ParameterRows.Contains(SelectedParameterRow))
+            {
+                SelectedParameterRow = overrides.ParameterRows.FirstOrDefault();
+            }
+
+            if (SelectedPartRow == null || !overrides.PartRows.Contains(SelectedPartRow))
+            {
+                SelectedPartRow = overrides.PartRows.FirstOrDefault();
+            }
         }
 
         private void AttachParameterCallbacks(IEnumerable<Live2DFaceDynamicParameterRow>? rows)
@@ -516,6 +539,14 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             }
         }
 
+        private void DetailAnimationSlider_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is AnimationSlider slider)
+            {
+                DetachSliderValueWatchers(slider);
+            }
+        }
+
         private void ConfigureDetailAnimationSlider(AnimationSlider slider)
         {
             var state = CreateSliderConfigurationState(slider);
@@ -613,6 +644,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 isRefreshingMetadata = false;
             }
 
+            EnsureSelectedRows(overrides);
             AttachParameterCallbacks(overrides.ParameterRows);
             AttachPartCallbacks(overrides.PartRows);
             RefreshVisibleCollections(overrides);

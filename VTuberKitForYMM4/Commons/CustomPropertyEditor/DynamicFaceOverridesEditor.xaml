@@ -104,6 +104,7 @@
                                                                   DefaultMin="{Binding Min}"
                                                                   DefaultMax="{Binding Max}"
                                                                   Loaded="DetailAnimationSlider_Loaded"
+                                                                  Unloaded="DetailAnimationSlider_Unloaded"
                                                                   DataContextChanged="DetailAnimationSlider_DataContextChanged" />
                                         <controls:ToggleSlider Grid.Row="1"
                                                                Grid.Column="1"
@@ -190,6 +191,7 @@
                                                                   DefaultMin="0"
                                                                   DefaultMax="1"
                                                                   Loaded="DetailAnimationSlider_Loaded"
+                                                                  Unloaded="DetailAnimationSlider_Unloaded"
                                                                   DataContextChanged="DetailAnimationSlider_DataContextChanged" />
                                         <controls:ToggleSlider Grid.Row="1"
                                                                Grid.Column="1"

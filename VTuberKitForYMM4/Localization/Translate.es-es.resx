@@ -67,9 +67,7 @@
 <data name="Character_DisplayName_Name" xml:space="preserve"><value>Nombre del personaje</value></data>
 <data name="Character_EnableBreath_Desc" xml:space="preserve"><value>Permite el movimiento respiratorio.</value></data>
 <data name="Character_EnableBreath_Name" xml:space="preserve"><value>Habilitar respiración</value></data>
-<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>Mejora la calidad de la reducción de escala final cuando está activado. Más suave pero puede parecer un poco más suave. El valor predeterminado es APAGADO.</value></data>
-<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
-<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Habilita MSAA cuando está activado. Mejora los bordes con mayor costo. Se puede combinar con FXAA.</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Habilita MSAA cuando está activado. Mejora los bordes, pero aumenta la carga.</value></data>
 <data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
 <data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Habilita la física Live2D.</value></data>
 <data name="Character_EnablePhysics_Name" xml:space="preserve"><value>Permitir</value></data>
@@ -85,7 +83,7 @@
 <data name="Character_LinkId_Name" xml:space="preserve"><value>ID de vínculo</value></data>
 <data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>Ajusta la sensibilidad de la sincronización labial. Se recomienda 1.0.</value></data>
 <data name="Character_LipSyncGain_Name" xml:space="preserve"><value>Sensibilidad de sincronización labial</value></data>
-<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Cuando está activado, solo actualiza los parámetros de boca A / I / U / E / O en lugar de ParamMouthOpenY / ParamMouthForm.</value></data>
 <data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>Solo parámetros de vocales</value></data>
 <data name="Character_Msaa2x_Desc" xml:space="preserve"><value>Mejora los bordes con menor costo.</value></data>
 <data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
@@ -93,15 +91,15 @@
 <data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
 <data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>Recuento de muestras cuando MSAA está habilitado (2x / 4x).</value></data>
 <data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA Muestras</value></data>
-<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 es estándar</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 es el valor estándar. 0 oculta el efecto físico y 100 lo refuerza hasta aproximadamente el doble.</value></data>
 <data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>Fuerza física</value></data>
-<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Tamaño máximo del objetivo de renderizado interno en píxeles. Los valores más grandes mejoran la calidad pero utilizan más VRAM (predeterminado: 8192).</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Tamaño máximo del objetivo de renderizado interno en píxeles. Los valores más grandes mejoran la calidad pero utilizan más VRAM (predeterminado: 4096).</value></data>
 <data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>Tamaño máximo RT</value></data>
 <data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 lo desactiva. Los valores más altos aumentan la entrada aleatoria de viento.</value></data>
 <data name="Character_WindStrength_Name" xml:space="preserve"><value>Fuerza del viento</value></data>
 <data name="Error_CheckModelFiles" xml:space="preserve"><value>Verifique el contenido del .model3.json y todos los archivos a los que se hace referencia.</value></data>
 <data name="Error_InvalidModelSelection" xml:space="preserve"><value>Seleccione una carpeta de modelo Live2D o un archivo .model3.json.</value></data>
-<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json puede no ser válido</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>Es posible que model3.json no sea válido o que falten los archivos moc3 / texture / motion referenciados.</value></data>
 <data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>No se pudo cargar el modelo Live2D.</value></data>
 <data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Hay elementos que se deben verificar al cargar el modelo Live2D.</value></data>
 <data name="Error_ModelPathCheck" xml:space="preserve"><value>Verifique la ubicación del archivo .model3.json.</value></data>
@@ -115,7 +113,7 @@
 <data name="Face_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
 <data name="Face_MotionLoop_Desc" xml:space="preserve"><value>Los bucles se enfrentan al movimiento cuando están activados.</value></data>
 <data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion Bucle</value></data>
-<data name="Face_Motion_Desc" xml:space="preserve"><value>Selecciona un movimiento de model3.json Motions</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>Selecciona un movimiento de model3.json Motions (incluido Idle).</value></data>
 <data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Compensación temporal agregada a la posición del artículo X.</value></data>
 <data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X Compensación</value></data>
@@ -143,7 +141,7 @@
 <data name="Hit_Height_Name" xml:space="preserve"><value>Altura</value></data>
 <data name="Hit_HitArea_Desc" xml:space="preserve"><value>Selecciona el objetivo de reacción de HitAreas en model3.json. Utiliza Id cuando Name está vacío.</value></data>
 <data name="Hit_HitArea_Name" xml:space="preserve"><value>Área de impacto</value></data>
-<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Cuando está activado solo se oculta la guía. La detección de impacto y las reacciones siguen activas.</value></data>
 <data name="Hit_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
 <data name="Hit_LinkId_Desc" xml:space="preserve"><value>Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.</value></data>
 <data name="Hit_LinkId_Name" xml:space="preserve"><value>ID de enlace</value></data>
@@ -163,7 +161,7 @@
 <data name="Item_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
 <data name="Item_MotionLoop_Desc" xml:space="preserve"><value>Realiza un bucle del movimiento cuando está activado.</value></data>
 <data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion Bucle</value></data>
-<data name="Item_Motion_Desc" xml:space="preserve"><value>Selecciona el movimiento para realizar un bucle mientras el modelo está visible</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>Selecciona el movimiento que se repetirá mientras el modelo esté visible (incluido Idle).</value></data>
 <data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Item_MultiplyA_Desc" xml:space="preserve"><value>Modelo multiplicar color A.</value></data>
 <data name="Item_MultiplyA_Name" xml:space="preserve"><value>Opacidad</value></data>
@@ -231,7 +229,7 @@
 <data name="StdParam_ShoulderY" xml:space="preserve"><value>Encogimiento de hombros</value></data>
 <data name="Target_Character_Desc" xml:space="preserve"><value>Selecciona el carácter Live2D vinculado.</value></data>
 <data name="Target_Character_Name" xml:space="preserve"><value>Personaje</value></data>
-<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Cuando está encendido</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Cuando está activado solo se oculta la guía. La vinculación con el punto objetivo sigue activa.</value></data>
 <data name="Target_IsHidden_Name" xml:space="preserve"><value>Esconder</value></data>
 <data name="Target_LinkId_Desc" xml:space="preserve"><value>Identificador interno. Generalmente se establece automáticamente mediante la selección del personaje objetivo.</value></data>
 <data name="Target_LinkId_Name" xml:space="preserve"><value>ID de enlace</value></data>
@@ -241,7 +239,7 @@
 <data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
 <data name="Target_Y_Desc" xml:space="preserve"><value>Objetivo Y en el espacio modelo.</value></data>
 <data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
-<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Predeterminado)</value></data>
 <data name="Ui_NoneSelected" xml:space="preserve"><value>(Ninguno)</value></data>
 <data name="Ui_ParamList_Name" xml:space="preserve"><value>Lista Param</value></data>
 <data name="Ui_PartList_Name" xml:space="preserve"><value>Lista Part</value></data>
@@ -250,14 +248,14 @@
 <data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>DisplayInfo archivo no encontrado: {0}</value></data>
 <data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>Expression archivo no encontrado: {0}</value></data>
 <data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression Falta la configuración del archivo: {0}</value></data>
-<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>Falta FileReferences</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>Falta FileReferences por lo que puede fallar la resolución de archivos relacionados.</value></data>
 <data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>Hay un elemento HitAreas sin Id configurado.</value></data>
 <data name="Warning_MocFileMissing" xml:space="preserve"><value>Moc archivo no encontrado: {0}</value></data>
 <data name="Warning_MocMissing" xml:space="preserve"><value>Moc no está configurado.</value></data>
 <data name="Warning_ModelParseException" xml:space="preserve"><value>Se produjo una excepción al analizar model3.json.</value></data>
 <data name="Warning_MotionFileMissing" xml:space="preserve"><value>Motion archivo no encontrado: {0}</value></data>
 <data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion Falta la configuración del archivo: {0}</value></data>
-<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Se encontraron varios archivos .model3.json en la carpeta</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Se encontraron varios archivos .model3.json en la carpeta y se usará el primero en orden de nombre.</value></data>
 <data name="Warning_NameUnset" xml:space="preserve"><value>(Sin nombre)</value></data>
 <data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>Archivo de física no encontrado: {0}</value></data>
 <data name="Warning_TextureFileMissing" xml:space="preserve"><value>Texture archivo no encontrado: {0}</value></data>

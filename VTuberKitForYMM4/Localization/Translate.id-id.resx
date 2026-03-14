@@ -67,9 +67,7 @@
 <data name="Character_DisplayName_Name" xml:space="preserve"><value>Nama karakter</value></data>
 <data name="Character_EnableBreath_Desc" xml:space="preserve"><value>Memungkinkan gerakan pernapasan.</value></data>
 <data name="Character_EnableBreath_Name" xml:space="preserve"><value>Aktifkan Nafas</value></data>
-<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>Meningkatkan kualitas penurunan akhir saat AKTIF. Lebih halus tetapi bisa terlihat sedikit lebih lembut. Standarnya MATI.</value></data>
-<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
-<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Mengaktifkan MSAA saat AKTIF. Meningkatkan tepian dengan biaya lebih tinggi. Dapat dikombinasikan dengan FXAA.</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>Mengaktifkan MSAA saat AKTIF. Memperbaiki tepi, tetapi meningkatkan beban.</value></data>
 <data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
 <data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Mengaktifkan fisika Live2D.</value></data>
 <data name="Character_EnablePhysics_Name" xml:space="preserve"><value>Memungkinkan</value></data>
@@ -85,7 +83,7 @@
 <data name="Character_LinkId_Name" xml:space="preserve"><value>ID tautan</value></data>
 <data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>Menyesuaikan sensitivitas sinkronisasi bibir. Disarankan 1.0.</value></data>
 <data name="Character_LipSyncGain_Name" xml:space="preserve"><value>Sensitivitas sinkronisasi bibir</value></data>
-<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Saat AKTIF</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>Saat AKTIF, hanya parameter bentuk mulut A / I / U / E / O yang diperbarui alih-alih ParamMouthOpenY / ParamMouthForm.</value></data>
 <data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>Hanya parameter vokal</value></data>
 <data name="Character_Msaa2x_Desc" xml:space="preserve"><value>Memperbaiki tepi dengan beban lebih rendah.</value></data>
 <data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
@@ -93,15 +91,15 @@
 <data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
 <data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>Jumlah sampel saat MSAA diaktifkan (2x / 4x).</value></data>
 <data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA Sampel</value></data>
-<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 adalah standar</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 adalah nilai standar. 0 menyembunyikan efek fisika dan 100 memperkuatnya hingga sekitar 2x.</value></data>
 <data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>Kekuatan Fisika</value></data>
-<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Ukuran target render internal maksimum dalam piksel. Nilai yang lebih besar meningkatkan kualitas tetapi menggunakan lebih banyak VRAM (default: 8192).</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>Ukuran target render internal maksimum dalam piksel. Nilai yang lebih besar meningkatkan kualitas tetapi menggunakan lebih banyak VRAM (default: 4096).</value></data>
 <data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>Maks RT Ukuran</value></data>
 <data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 menonaktifkannya. Nilai yang lebih tinggi meningkatkan masukan angin acak.</value></data>
 <data name="Character_WindStrength_Name" xml:space="preserve"><value>Kekuatan Angin</value></data>
 <data name="Error_CheckModelFiles" xml:space="preserve"><value>Periksa konten .model3.json dan semua file yang direferensikan.</value></data>
 <data name="Error_InvalidModelSelection" xml:space="preserve"><value>Pilih folder model Live2D atau file .model3.json.</value></data>
-<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json mungkin tidak valid</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json mungkin tidak valid atau file moc3 / texture / motion yang direferensikan mungkin hilang.</value></data>
 <data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>Tidak dapat memuat model Live2D.</value></data>
 <data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>Ada item yang perlu diperiksa saat memuat model Live2D.</value></data>
 <data name="Error_ModelPathCheck" xml:space="preserve"><value>Periksa lokasi file .model3.json.</value></data>
@@ -115,7 +113,7 @@
 <data name="Face_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
 <data name="Face_MotionLoop_Desc" xml:space="preserve"><value>Loop gerakan wajah saat AKTIF.</value></data>
 <data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion Lingkaran</value></data>
-<data name="Face_Motion_Desc" xml:space="preserve"><value>Memilih gerakan dari model3.json Motions</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>Memilih gerakan dari Motions di model3.json (termasuk Idle).</value></data>
 <data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>Offset sementara ditambahkan ke posisi item X.</value></data>
 <data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X Mengimbangi</value></data>
@@ -143,7 +141,7 @@
 <data name="Hit_Height_Name" xml:space="preserve"><value>Tinggi</value></data>
 <data name="Hit_HitArea_Desc" xml:space="preserve"><value>Memilih target reaksi dari HitAreas di model3.json. Menggunakan Id ketika Name kosong.</value></data>
 <data name="Hit_HitArea_Name" xml:space="preserve"><value>Daerah Pukulan</value></data>
-<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF hanya bentuk panduan yang disembunyikan. Deteksi hit dan reaksinya tetap aktif.</value></data>
 <data name="Hit_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
 <data name="Hit_LinkId_Desc" xml:space="preserve"><value>Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.</value></data>
 <data name="Hit_LinkId_Name" xml:space="preserve"><value>ID Tautan</value></data>
@@ -163,7 +161,7 @@
 <data name="Item_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
 <data name="Item_MotionLoop_Desc" xml:space="preserve"><value>Mengulang gerakan saat AKTIF.</value></data>
 <data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion Lingkaran</value></data>
-<data name="Item_Motion_Desc" xml:space="preserve"><value>Memilih gerakan yang akan diulang saat model terlihat</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>Memilih gerakan yang akan diulang saat model terlihat (termasuk Idle).</value></data>
 <data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Item_MultiplyA_Desc" xml:space="preserve"><value>Model kalikan warna A.</value></data>
 <data name="Item_MultiplyA_Name" xml:space="preserve"><value>Kegelapan</value></data>
@@ -231,7 +229,7 @@
 <data name="StdParam_ShoulderY" xml:space="preserve"><value>Mengangkat bahu</value></data>
 <data name="Target_Character_Desc" xml:space="preserve"><value>Memilih karakter Live2D yang tertaut.</value></data>
 <data name="Target_Character_Name" xml:space="preserve"><value>Karakter</value></data>
-<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>Saat AKTIF hanya bentuk panduan yang disembunyikan. Tautan titik target tetap aktif.</value></data>
 <data name="Target_IsHidden_Name" xml:space="preserve"><value>Bersembunyi</value></data>
 <data name="Target_LinkId_Desc" xml:space="preserve"><value>Pengidentifikasi internal. Biasanya diatur secara otomatis berdasarkan pemilihan karakter target.</value></data>
 <data name="Target_LinkId_Name" xml:space="preserve"><value>ID Tautan</value></data>
@@ -250,14 +248,14 @@
 <data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>File DisplayInfo tidak ditemukan: {0}</value></data>
 <data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>File Expression tidak ditemukan: {0}</value></data>
 <data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression Pengaturan file tidak ada: {0}</value></data>
-<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences hilang</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences tidak ada sehingga penyelesaian file terkait bisa gagal.</value></data>
 <data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>Ada item HitAreas tanpa set Id.</value></data>
 <data name="Warning_MocFileMissing" xml:space="preserve"><value>File Moc tidak ditemukan: {0}</value></data>
 <data name="Warning_MocMissing" xml:space="preserve"><value>Moc tidak dikonfigurasi.</value></data>
 <data name="Warning_ModelParseException" xml:space="preserve"><value>Pengecualian terjadi saat menguraikan model3.json.</value></data>
 <data name="Warning_MotionFileMissing" xml:space="preserve"><value>File Motion tidak ditemukan: {0}</value></data>
 <data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion Pengaturan file tidak ada: {0}</value></data>
-<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Beberapa file .model3.json ditemukan di folder tersebut</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>Beberapa file .model3.json ditemukan di folder sehingga model pertama berdasarkan urutan nama akan digunakan.</value></data>
 <data name="Warning_NameUnset" xml:space="preserve"><value>(Tanpa nama)</value></data>
 <data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>File Fisika tidak ditemukan: {0}</value></data>
 <data name="Warning_TextureFileMissing" xml:space="preserve"><value>File Texture tidak ditemukan: {0}</value></data>

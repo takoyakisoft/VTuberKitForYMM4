@@ -67,9 +67,7 @@
 <data name="Character_DisplayName_Name" xml:space="preserve"><value>キャラクター名</value></data>
 <data name="Character_EnableBreath_Desc" xml:space="preserve"><value>呼吸モーションを有効にします</value></data>
 <data name="Character_EnableBreath_Name" xml:space="preserve"><value>呼吸有効</value></data>
-<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>ONで最終縮小時の補間を高品質化（滑らか寄り、ややソフトになる場合あり）。既定はOFF</value></data>
-<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
-<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>ONでMSAAを有効化（エッジ改善、負荷増）。FXAAと併用可</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>ONでMSAAを有効化します。輪郭を改善しますが負荷が増加します</value></data>
 <data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
 <data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>Live2D の物理演算を有効にします</value></data>
 <data name="Character_EnablePhysics_Name" xml:space="preserve"><value>使う</value></data>
@@ -95,7 +93,7 @@
 <data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAAサンプル</value></data>
 <data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 で標準、0 で物理結果を見えなくし、100 で約2倍まで強めます</value></data>
 <data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>物理の倍率</value></data>
-<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>内部描画の最大ピクセルサイズ。大きいほど高品質だがVRAM消費増（既定: 8192）</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>内部描画の最大ピクセルサイズ。大きいほど高品質だがVRAM消費増（既定: 4096）</value></data>
 <data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>RT最大サイズ</value></data>
 <data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 で無効。値を上げるほどランダムな風入力を強めます</value></data>
 <data name="Character_WindStrength_Name" xml:space="preserve"><value>風の強さ</value></data>
@@ -241,7 +239,7 @@
 <data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
 <data name="Target_Y_Desc" xml:space="preserve"><value>モデル空間のターゲットY</value></data>
 <data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
-<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>（既定）</value></data>
 <data name="Ui_NoneSelected" xml:space="preserve"><value>(未選択)</value></data>
 <data name="Ui_ParamList_Name" xml:space="preserve"><value>Param一覧</value></data>
 <data name="Ui_PartList_Name" xml:space="preserve"><value>Part一覧</value></data>

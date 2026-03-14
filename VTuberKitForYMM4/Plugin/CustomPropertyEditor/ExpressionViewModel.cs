@@ -5,13 +5,14 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
 {
     public class ExpressionItem : CustomComboBoxValueBase
     {
+        public bool IsNone { get; set; }
         public string Id { get; set; } = string.Empty;
-        public override string DisplayMember => Id;
+        public override string DisplayMember => IsNone ? Translate.Ui_NoneSelected : Id;
     }
 
     public class ExpressionViewModel : CustomComboBoxViewModelBase
     {
-        private static string NoneExpression => Translate.Ui_NoneSelected;
+        private const string NoneExpressionId = "__none__";
         private readonly Func<string?>? modelPathProvider;
         private string selectedExpressionId = string.Empty;
         private bool isRefreshing;
@@ -27,12 +28,12 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
             get
             {
                 var id = (SelectedValue as ExpressionItem)?.Id ?? string.Empty;
-                return string.IsNullOrEmpty(id) || id == NoneExpression ? selectedExpressionId : id;
+                return string.IsNullOrEmpty(id) || id == NoneExpressionId ? selectedExpressionId : id;
             }
             set
             {
                 selectedExpressionId = string.IsNullOrWhiteSpace(value) ? string.Empty : value;
-                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpression : selectedExpressionId;
+                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpressionId : selectedExpressionId;
                 var found = ItemsSource.OfType<ExpressionItem>().FirstOrDefault(x => x.Id == normalized);
                 if (found != null)
                 {
@@ -50,12 +51,12 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
                 var previousSelectedExpressionId = selectedExpressionId;
                 base.SelectedValue = value;
                 var id = (value as ExpressionItem)?.Id ?? string.Empty;
-                if (isRefreshing && (string.IsNullOrEmpty(id) || id == NoneExpression) && !string.IsNullOrEmpty(previousSelectedExpressionId))
+                if (isRefreshing && (string.IsNullOrEmpty(id) || id == NoneExpressionId) && !string.IsNullOrEmpty(previousSelectedExpressionId))
                 {
                     return;
                 }
 
-                selectedExpressionId = id == NoneExpression ? string.Empty : id;
+                selectedExpressionId = id == NoneExpressionId ? string.Empty : id;
                 if (!isRefreshing)
                 {
                     OnPropertyChanged(nameof(SelectedExpressionId));
@@ -68,7 +69,7 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
             isRefreshing = true;
             IsEnabled = true;
             ItemsSource.Clear();
-            ItemsSource.Add(new ExpressionItem { Id = NoneExpression });
+            ItemsSource.Add(new ExpressionItem { Id = NoneExpressionId, IsNone = true });
 
             var expressions = modelPathProvider == null
                 ? ModelMetadataCatalog.Expressions
@@ -89,7 +90,7 @@ namespace VTuberKitForYMM4.Plugin.CustomPropertyEditor
                     return;
                 }
 
-                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpression : selectedExpressionId;
+                var normalized = string.IsNullOrWhiteSpace(selectedExpressionId) ? NoneExpressionId : selectedExpressionId;
                 var found = !string.IsNullOrEmpty(normalized)
                     ? ItemsSource.FirstOrDefault(x => (x as ExpressionItem)?.Id == normalized)
                     : null;

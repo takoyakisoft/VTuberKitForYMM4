@@ -67,9 +67,7 @@
 <data name="Character_DisplayName_Name" xml:space="preserve"><value>角色名稱</value></data>
 <data name="Character_EnableBreath_Desc" xml:space="preserve"><value>啟用呼吸動作。</value></data>
 <data name="Character_EnableBreath_Name" xml:space="preserve"><value>啟用呼吸</value></data>
-<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>開啟後提高最終縮小時的品質。較平滑，但可能稍微偏柔。預設關閉。</value></data>
-<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
-<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>開啟後啟用 MSAA。改善邊緣但會增加負載。可與 FXAA 併用。</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>開啟後啟用 MSAA。改善邊緣，但會增加負載。</value></data>
 <data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
 <data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>啟用 Live2D 物理演算。</value></data>
 <data name="Character_EnablePhysics_Name" xml:space="preserve"><value>啟用</value></data>
@@ -85,7 +83,7 @@
 <data name="Character_LinkId_Name" xml:space="preserve"><value>連結ID</value></data>
 <data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>調整口型同步靈敏度。通常建議 1.0。</value></data>
 <data name="Character_LipSyncGain_Name" xml:space="preserve"><value>口型同步靈敏度</value></data>
-<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>开启后不会更新 ParamMouthOpenY / ParamMouthForm，而只更新 A / I / U / E / O 口形参数。</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>開啟後不更新 ParamMouthOpenY / ParamMouthForm，而只更新 A / I / U / E / O 口形參數。</value></data>
 <data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>僅口形參數</value></data>
 <data name="Character_Msaa2x_Desc" xml:space="preserve"><value>以較低負載改善邊緣。</value></data>
 <data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
@@ -93,15 +91,15 @@
 <data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
 <data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>MSAA 開啟時的取樣數（2x / 4x）。</value></data>
 <data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA取樣數</value></data>
-<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>and 100 boosts it to about 2x.</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 為標準。0 會隱藏物理效果，100 約為 2 倍強度。</value></data>
 <data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>物理演算強度</value></data>
-<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>內部渲染目標的最大像素尺寸。越大品質越高，但會增加 VRAM 使用量（預設 8192）。</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>內部渲染目標的最大像素尺寸。越大品質越高，但會增加 VRAM 使用量（預設 4096）。</value></data>
 <data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>RT最大尺寸</value></data>
 <data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 為停用。數值越高隨機風輸入越強。</value></data>
 <data name="Character_WindStrength_Name" xml:space="preserve"><value>風力強度</value></data>
 <data name="Error_CheckModelFiles" xml:space="preserve"><value>請檢查 .model3.json 的內容以及其參照的所有檔案。</value></data>
 <data name="Error_InvalidModelSelection" xml:space="preserve"><value>請選擇 Live2D 模型資料夾或 .model3.json 檔案。</value></data>
-<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json 可能已损坏，或引用的 moc3 / texture / motion 文件可能缺失。</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json 可能已損壞，或參照的 moc3 / texture / motion 檔案可能缺失。</value></data>
 <data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>無法載入 Live2D 模型。</value></data>
 <data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>載入 Live2D 模型時有需要確認的項目。</value></data>
 <data name="Error_ModelPathCheck" xml:space="preserve"><value>請確認 .model3.json 檔案的位置。</value></data>
@@ -115,7 +113,7 @@
 <data name="Face_IsHidden_Name" xml:space="preserve"><value>隱藏</value></data>
 <data name="Face_MotionLoop_Desc" xml:space="preserve"><value>開啟後循環播放 face 動作。</value></data>
 <data name="Face_MotionLoop_Name" xml:space="preserve"><value>動作循環</value></data>
-<data name="Face_Motion_Desc" xml:space="preserve"><value>从 model3.json 的 Motions 中选择（含 Idle）。</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>從 model3.json 的 Motions 中選擇（含 Idle）。</value></data>
 <data name="Face_Motion_Name" xml:space="preserve"><value>動作</value></data>
 <data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>加到 Item 的位置 X 上的臨時偏移。</value></data>
 <data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X偏移</value></data>
@@ -143,7 +141,7 @@
 <data name="Hit_Height_Name" xml:space="preserve"><value>高度</value></data>
 <data name="Hit_HitArea_Desc" xml:space="preserve"><value>從 model3.json 的 HitAreas 中選擇反應目標。若 Name 為空則使用 Id。</value></data>
 <data name="Hit_HitArea_Name" xml:space="preserve"><value>命中區域</value></data>
-<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>开启时仅隐藏引导图形，命中判定和反应仍然有效。</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>開啟時僅隱藏導引圖形，命中判定與反應仍然有效。</value></data>
 <data name="Hit_IsHidden_Name" xml:space="preserve"><value>隱藏</value></data>
 <data name="Hit_LinkId_Desc" xml:space="preserve"><value>內部識別碼。通常會在選擇目標角色時自動設定。</value></data>
 <data name="Hit_LinkId_Name" xml:space="preserve"><value>連結ID</value></data>
@@ -163,7 +161,7 @@
 <data name="Item_IsHidden_Name" xml:space="preserve"><value>隱藏</value></data>
 <data name="Item_MotionLoop_Desc" xml:space="preserve"><value>開啟後循環播放動作。</value></data>
 <data name="Item_MotionLoop_Name" xml:space="preserve"><value>動作循環</value></data>
-<data name="Item_Motion_Desc" xml:space="preserve"><value>选择模型显示期间持续播放的动作（含 Idle）。</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>選擇模型顯示期間持續播放的動作（含 Idle）。</value></data>
 <data name="Item_Motion_Name" xml:space="preserve"><value>動作</value></data>
 <data name="Item_MultiplyA_Desc" xml:space="preserve"><value>模型顏色乘算的 A。</value></data>
 <data name="Item_MultiplyA_Name" xml:space="preserve"><value>不透明度</value></data>
@@ -231,7 +229,7 @@
 <data name="StdParam_ShoulderY" xml:space="preserve"><value>聳肩</value></data>
 <data name="Target_Character_Desc" xml:space="preserve"><value>選擇要連動的 Live2D 角色。</value></data>
 <data name="Target_Character_Name" xml:space="preserve"><value>角色</value></data>
-<data name="Target_IsHidden_Desc" xml:space="preserve"><value>开启时仅隐藏引导图形，目标点联动仍然有效。</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>開啟時僅隱藏導引圖形，目標點連動仍然有效。</value></data>
 <data name="Target_IsHidden_Name" xml:space="preserve"><value>隱藏</value></data>
 <data name="Target_LinkId_Desc" xml:space="preserve"><value>內部識別碼。通常會在選擇目標角色時自動設定。</value></data>
 <data name="Target_LinkId_Name" xml:space="preserve"><value>連結ID</value></data>
@@ -250,14 +248,14 @@
 <data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>找不到 DisplayInfo 檔案: {0}</value></data>
 <data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>找不到 Expression 檔案: {0}</value></data>
 <data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression 缺少 File 設定: {0}</value></data>
-<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>缺少 FileReferences，相关文件解析可能失败。</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>缺少 FileReferences，相關檔案解析可能失敗。</value></data>
 <data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>HitAreas 中有未設定 Id 的項目。</value></data>
 <data name="Warning_MocFileMissing" xml:space="preserve"><value>找不到 Moc 檔案: {0}</value></data>
 <data name="Warning_MocMissing" xml:space="preserve"><value>未設定 Moc。</value></data>
 <data name="Warning_ModelParseException" xml:space="preserve"><value>解析 model3.json 時發生例外。</value></data>
 <data name="Warning_MotionFileMissing" xml:space="preserve"><value>找不到 Motion 檔案: {0}</value></data>
 <data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion 缺少 File 設定: {0}</value></data>
-<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>文件夹中发现多个 .model3.json 文件，因此将使用按名称排序后的第一个模型。</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>資料夾中找到多個 .model3.json 檔案，因此將使用依名稱排序的第一個模型。</value></data>
 <data name="Warning_NameUnset" xml:space="preserve"><value>(未設定名稱)</value></data>
 <data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>找不到 Physics 檔案: {0}</value></data>
 <data name="Warning_TextureFileMissing" xml:space="preserve"><value>找不到 Texture 檔案: {0}</value></data>

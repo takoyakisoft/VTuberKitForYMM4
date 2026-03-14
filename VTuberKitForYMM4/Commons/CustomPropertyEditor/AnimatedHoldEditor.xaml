@@ -18,7 +18,7 @@
                                   Margin="0,0,6,0"
                                   BeginEdit="AnimationEditor_BeginEdit"
                                   EndEdit="AnimationEditor_EndEdit" />
-        <controls:ToggleSlider x:Name="HoldCheckBox"
+        <controls:ToggleSlider x:Name="HoldToggle"
                                Grid.Column="1"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"

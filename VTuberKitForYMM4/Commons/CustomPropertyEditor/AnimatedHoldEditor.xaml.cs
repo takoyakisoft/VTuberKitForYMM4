@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using YukkuriMovieMaker.Commons;
@@ -76,7 +78,7 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             AnimationEditor.Animations = null;
             AnimationEditor.Animation = null;
             currentSettings = null;
-            HoldCheckBox.Visibility = Visibility.Hidden;
+            HoldToggle.Visibility = Visibility.Hidden;
             HoldValue = false;
         }
 
@@ -144,12 +146,12 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 if (holdPropertyInfo == null || holdOwners.Length == 0)
                 {
-                    HoldCheckBox.Visibility = Visibility.Hidden;
+                    HoldToggle.Visibility = Visibility.Hidden;
                     HoldValue = false;
                     return;
                 }
 
-                HoldCheckBox.Visibility = Visibility.Visible;
+                HoldToggle.Visibility = Visibility.Visible;
                 HoldValue = (bool?)holdPropertyInfo.GetValue(holdOwners[0]) ?? false;
             }
             finally
@@ -296,8 +298,24 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             {
                 return Convert.ToDouble(value);
             }
-            catch
+            catch (ArgumentNullException ex)
             {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (FormatException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (InvalidCastException ex)
+            {
+                Debug.WriteLine(ex);
+                return 0.0;
+            }
+            catch (OverflowException ex)
+            {
+                Debug.WriteLine(ex);
                 return 0.0;
             }
         }
@@ -310,8 +328,54 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
                 return;
             }
 
-            var converted = Convert.ChangeType(value, property.PropertyType);
-            property.SetValue(AnimationEditor, converted);
+            try
+            {
+                var converted = ConvertEditorPropertyValue(property.PropertyType, value);
+                property.SetValue(AnimationEditor, converted);
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            catch (FormatException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            catch (InvalidCastException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private static object? ConvertEditorPropertyValue(Type targetType, object value)
+        {
+            var nonNullableType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+            if (value == null)
+            {
+                return targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null
+                    ? Activator.CreateInstance(targetType)
+                    : null;
+            }
+
+            if (nonNullableType.IsInstanceOfType(value))
+            {
+                return value;
+            }
+
+            if (nonNullableType.IsEnum)
+            {
+                return value is string text
+                    ? Enum.Parse(nonNullableType, text, ignoreCase: true)
+                    : Enum.ToObject(nonNullableType, value);
+            }
+
+            var converter = TypeDescriptor.GetConverter(nonNullableType);
+            if (converter.CanConvertFrom(value.GetType()))
+            {
+                return converter.ConvertFrom(value);
+            }
+
+            return Convert.ChangeType(value, nonNullableType);
         }
 
         private void ApplyHoldValueChanged(bool value)

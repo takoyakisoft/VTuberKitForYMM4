@@ -86,7 +86,6 @@ namespace VTuberKitForYMM4.Plugin
         private string _lastShownModelWarningKey = string.Empty;
         private string _lastShownModelLoadErrorKey = string.Empty;
 
-        private readonly record struct NativeLogSnapshot(string Path, int LineCount);
         private static readonly StandardAnchorCandidate[] AnchorCandidatesX =
         [
             new(Live2DManager.ParamEyeBallX, 0.18f),
@@ -232,7 +231,6 @@ namespace VTuberKitForYMM4.Plugin
                                 _model = null;
                                 _currentModelPath = charParam.File;
                                 var loadedModel = Live2DManager.GetInstance().CreateModel();
-                                var nativeLogSnapshot = CaptureNativeLogSnapshot();
                                 if (!loadedModel.LoadModel(_currentModelPath))
                                 {
                                     var detail = loadedModel.LastErrorMessage;
@@ -253,7 +251,7 @@ namespace VTuberKitForYMM4.Plugin
                                     loadedModel.CommitParameters();
                                     _model = loadedModel;
                                     ModelMetadataCatalog.UpdateFromModelPath(_currentModelPath);
-                                    ShowModelWarningsIfNeeded(_currentModelPath, ExtractLoadWarningsFromNativeLog(nativeLogSnapshot));
+                                    ShowModelWarningsIfNeeded(_currentModelPath, loadedModel.LoadWarnings);
                                     _lastShownModelLoadErrorKey = string.Empty;
                                     ClearInteractionState(charParam?.InteractionLinkId);
                                 }
@@ -843,77 +841,6 @@ namespace VTuberKitForYMM4.Plugin
                 $"{Translate.Error_ModelLoadFailed_Title}\n\n{Translate.Error_TargetPath_Label}: {safePath}\n\n{safeDetail}\n\n{Translate.Error_CheckModelFiles}");
         }
 
-        private static NativeLogSnapshot CaptureNativeLogSnapshot()
-        {
-            foreach (var path in GetNativeLogPathCandidates())
-            {
-                if (!File.Exists(path))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    return new NativeLogSnapshot(path, File.ReadLines(path).Count());
-                }
-                catch
-                {
-                }
-            }
-
-            var fallback = GetNativeLogPathCandidates().FirstOrDefault() ?? Path.Combine(AppContext.BaseDirectory, "VTuberKitForNative.log");
-            return new NativeLogSnapshot(fallback, 0);
-        }
-
-        private static IReadOnlyList<string> ExtractLoadWarningsFromNativeLog(NativeLogSnapshot snapshot)
-        {
-            if (string.IsNullOrWhiteSpace(snapshot.Path) || !File.Exists(snapshot.Path))
-            {
-                return [];
-            }
-
-            try
-            {
-                var addedLines = File.ReadLines(snapshot.Path)
-                    .Skip(Math.Max(0, snapshot.LineCount))
-                    .Select(x =>
-                    {
-                        var closingBracket = x.IndexOf("] ", StringComparison.Ordinal);
-                        return closingBracket >= 0 ? x[(closingBracket + 2)..] : x;
-                    })
-                    .Where(IsLoadWarningLine)
-                    .ToArray();
-
-                return addedLines;
-            }
-            catch
-            {
-                return [];
-            }
-        }
-
-        private static bool IsLoadWarningLine(string line)
-        {
-            return line.StartsWith("Skipped expression ", StringComparison.Ordinal) ||
-                   line.StartsWith("Skipped motion ", StringComparison.Ordinal) ||
-                   line.StartsWith("Skipped physics file", StringComparison.Ordinal) ||
-                   line.StartsWith("Skipped pose file", StringComparison.Ordinal) ||
-                   line.StartsWith("Skipped user data file", StringComparison.Ordinal) ||
-                   line.StartsWith("Failed to create motion: ", StringComparison.Ordinal) ||
-                   line.StartsWith("Failed to load motion file: ", StringComparison.Ordinal) ||
-                   line.StartsWith("Failed to create decoder for: ", StringComparison.Ordinal);
-        }
-
-        private static IEnumerable<string> GetNativeLogPathCandidates()
-        {
-            yield return Path.Combine(Environment.CurrentDirectory, "VTuberKitForNative.log");
-
-            var appBase = AppContext.BaseDirectory;
-            if (!string.IsNullOrWhiteSpace(appBase))
-            {
-                yield return Path.Combine(appBase, "VTuberKitForNative.log");
-            }
-        }
         private void ReplayModelToCurrentTime(
             Live2DModelWrapper model,
             TachieSourceDescription desc,

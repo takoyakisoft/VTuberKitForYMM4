@@ -67,9 +67,7 @@
 <data name="Character_DisplayName_Name" xml:space="preserve"><value>اسم الشخصية</value></data>
 <data name="Character_EnableBreath_Desc" xml:space="preserve"><value>تمكن من حركة التنفس.</value></data>
 <data name="Character_EnableBreath_Name" xml:space="preserve"><value>تمكين التنفس</value></data>
-<data name="Character_EnableFxaa_Desc" xml:space="preserve"><value>يعمل على تحسين جودة التصغير النهائية عند التشغيل. أكثر سلاسة ولكن يمكن أن تبدو أكثر ليونة قليلاً. الافتراضي هو إيقاف.</value></data>
-<data name="Character_EnableFxaa_Name" xml:space="preserve"><value>FXAA</value></data>
-<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>تمكين MSAA عند التشغيل. يحسن الحواف بتكلفة أعلى. يمكن دمجه مع FXAA.</value></data>
+<data name="Character_EnableMsaa_Desc" xml:space="preserve"><value>تمكين MSAA عند التشغيل. يحسن الحواف لكنه يزيد الحمل.</value></data>
 <data name="Character_EnableMsaa_Name" xml:space="preserve"><value>MSAA</value></data>
 <data name="Character_EnablePhysics_Desc" xml:space="preserve"><value>تمكين فيزياء Live2D.</value></data>
 <data name="Character_EnablePhysics_Name" xml:space="preserve"><value>يُمكَِن</value></data>
@@ -85,7 +83,7 @@
 <data name="Character_LinkId_Name" xml:space="preserve"><value>معرّف الربط</value></data>
 <data name="Character_LipSyncGain_Desc" xml:space="preserve"><value>يضبط حساسية مزامنة الشفاه. يوصى باستخدام 1.0.</value></data>
 <data name="Character_LipSyncGain_Name" xml:space="preserve"><value>حساسية مزامنة الشفاه</value></data>
-<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Character_LipSyncVowelsOnly_Desc" xml:space="preserve"><value>عند التشغيل يتم تحديث معلمات شكل الفم A / I / U / E / O فقط بدلاً من ParamMouthOpenY / ParamMouthForm.</value></data>
 <data name="Character_LipSyncVowelsOnly_Name" xml:space="preserve"><value>معلمات حروف العلة فقط</value></data>
 <data name="Character_Msaa2x_Desc" xml:space="preserve"><value>يحسن الحواف مع حمل أقل.</value></data>
 <data name="Character_Msaa2x_Name" xml:space="preserve"><value>2x</value></data>
@@ -93,15 +91,15 @@
 <data name="Character_Msaa4x_Name" xml:space="preserve"><value>4x</value></data>
 <data name="Character_MsaaSamplePreset_Desc" xml:space="preserve"><value>عدد العينات عند تمكين MSAA (2x / 4x).</value></data>
 <data name="Character_MsaaSamplePreset_Name" xml:space="preserve"><value>MSAA العينات</value></data>
-<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 هو المعيار</value></data>
+<data name="Character_PhysicsStrength_Desc" xml:space="preserve"><value>50 هو المستوى القياسي. تؤدي القيمة 0 إلى إخفاء تأثير الفيزياء وتزيد القيمة 100 الشدة إلى نحو الضعف.</value></data>
 <data name="Character_PhysicsStrength_Name" xml:space="preserve"><value>قوة الفيزياء</value></data>
-<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>الحد الأقصى لحجم هدف العرض الداخلي بالبكسل. تعمل القيم الأكبر على تحسين الجودة ولكنها تستخدم المزيد من VRAM (الافتراضي: 8192).</value></data>
+<data name="Character_RenderTargetMaxSize_Desc" xml:space="preserve"><value>الحد الأقصى لحجم هدف العرض الداخلي بالبكسل. تعمل القيم الأكبر على تحسين الجودة ولكنها تستخدم المزيد من VRAM (الافتراضي: 4096).</value></data>
 <data name="Character_RenderTargetMaxSize_Name" xml:space="preserve"><value>الحجم الأقصى RT</value></data>
 <data name="Character_WindStrength_Desc" xml:space="preserve"><value>0 تعطيله. تعمل القيم الأعلى على زيادة مدخلات الرياح العشوائية.</value></data>
 <data name="Character_WindStrength_Name" xml:space="preserve"><value>قوة الرياح</value></data>
 <data name="Error_CheckModelFiles" xml:space="preserve"><value>تحقق من محتويات .model3.json وجميع الملفات المشار إليها.</value></data>
 <data name="Error_InvalidModelSelection" xml:space="preserve"><value>حدد مجلد نموذج Live2D أو ملف .model3.json.</value></data>
-<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>model3.json قد يكون غير صالح</value></data>
+<data name="Error_ModelFilesMayBeInvalid" xml:space="preserve"><value>قد يكون model3.json غير صالح أو قد تكون ملفات moc3 / texture / motion المشار إليها مفقودة.</value></data>
 <data name="Error_ModelLoadFailed_Title" xml:space="preserve"><value>تعذر تحميل النموذج Live2D.</value></data>
 <data name="Error_ModelLoadWarnings_Title" xml:space="preserve"><value>هناك عناصر يجب التحقق منها عند تحميل الطراز Live2D.</value></data>
 <data name="Error_ModelPathCheck" xml:space="preserve"><value>تحقق من موقع الملف .model3.json.</value></data>
@@ -115,7 +113,7 @@
 <data name="Face_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
 <data name="Face_MotionLoop_Desc" xml:space="preserve"><value>تواجه الحلقات الحركة عند التشغيل.</value></data>
 <data name="Face_MotionLoop_Name" xml:space="preserve"><value>Motion حلقة</value></data>
-<data name="Face_Motion_Desc" xml:space="preserve"><value>تحديد حركة من model3.json Motions</value></data>
+<data name="Face_Motion_Desc" xml:space="preserve"><value>يحدد حركة من Motions في model3.json (بما في ذلك Idle).</value></data>
 <data name="Face_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Face_OffsetPositionX_Desc" xml:space="preserve"><value>تمت إضافة الإزاحة المؤقتة إلى موضع العنصر X.</value></data>
 <data name="Face_OffsetPositionX_Name" xml:space="preserve"><value>X إزاحة</value></data>
@@ -143,7 +141,7 @@
 <data name="Hit_Height_Name" xml:space="preserve"><value>ارتفاع</value></data>
 <data name="Hit_HitArea_Desc" xml:space="preserve"><value>يحدد هدف التفاعل من HitAreas في model3.json. يستخدم Id عندما يكون Name فارغًا.</value></data>
 <data name="Hit_HitArea_Name" xml:space="preserve"><value>منطقة الضرب</value></data>
-<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Hit_IsHidden_Desc" xml:space="preserve"><value>عند التشغيل يتم إخفاء شكل الدليل فقط. يظل اكتشاف الاصطدام وردود الفعل فعالين.</value></data>
 <data name="Hit_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
 <data name="Hit_LinkId_Desc" xml:space="preserve"><value>معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.</value></data>
 <data name="Hit_LinkId_Name" xml:space="preserve"><value>معرف الارتباط</value></data>
@@ -163,7 +161,7 @@
 <data name="Item_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
 <data name="Item_MotionLoop_Desc" xml:space="preserve"><value>حلقات الحركة عند التشغيل.</value></data>
 <data name="Item_MotionLoop_Name" xml:space="preserve"><value>Motion حلقة</value></data>
-<data name="Item_Motion_Desc" xml:space="preserve"><value>يحدد الحركة التي سيتم تكرارها أثناء ظهور النموذج</value></data>
+<data name="Item_Motion_Desc" xml:space="preserve"><value>يحدد الحركة التي ستتكرر أثناء ظهور النموذج (بما في ذلك Idle).</value></data>
 <data name="Item_Motion_Name" xml:space="preserve"><value>Motion</value></data>
 <data name="Item_MultiplyA_Desc" xml:space="preserve"><value>نموذج مضاعفة اللون أ.</value></data>
 <data name="Item_MultiplyA_Name" xml:space="preserve"><value>العتامة</value></data>
@@ -231,7 +229,7 @@
 <data name="StdParam_ShoulderY" xml:space="preserve"><value>تتغاضى</value></data>
 <data name="Target_Character_Desc" xml:space="preserve"><value>تحديد الحرف المرتبط Live2D.</value></data>
 <data name="Target_Character_Name" xml:space="preserve"><value>شخصية</value></data>
-<data name="Target_IsHidden_Desc" xml:space="preserve"><value>عندما تكون في وضع التشغيل</value></data>
+<data name="Target_IsHidden_Desc" xml:space="preserve"><value>عند التشغيل يتم إخفاء شكل الدليل فقط. يظل ربط نقطة الهدف فعالاً.</value></data>
 <data name="Target_IsHidden_Name" xml:space="preserve"><value>يخفي</value></data>
 <data name="Target_LinkId_Desc" xml:space="preserve"><value>معرف داخلي. عادةً ما يتم تعيينه تلقائيًا عن طريق اختيار الحرف المستهدف.</value></data>
 <data name="Target_LinkId_Name" xml:space="preserve"><value>معرف الارتباط</value></data>
@@ -241,7 +239,7 @@
 <data name="Target_X_Name" xml:space="preserve"><value>X</value></data>
 <data name="Target_Y_Desc" xml:space="preserve"><value>الهدف Y في مساحة النموذج.</value></data>
 <data name="Target_Y_Name" xml:space="preserve"><value>Y</value></data>
-<data name="Ui_DefaultGroup" xml:space="preserve"><value>(Default)</value></data>
+<data name="Ui_DefaultGroup" xml:space="preserve"><value>(الافتراضي)</value></data>
 <data name="Ui_NoneSelected" xml:space="preserve"><value>(لا أحد)</value></data>
 <data name="Ui_ParamList_Name" xml:space="preserve"><value>Param قائمة</value></data>
 <data name="Ui_PartList_Name" xml:space="preserve"><value>Part قائمة</value></data>
@@ -250,14 +248,14 @@
 <data name="Warning_DisplayInfoFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف DisplayInfo: {0}</value></data>
 <data name="Warning_ExpressionFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Expression: {0}</value></data>
 <data name="Warning_ExpressionFileSettingMissing" xml:space="preserve"><value>Expression إعداد الملف مفقود: {0}</value></data>
-<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>FileReferences مفقود</value></data>
+<data name="Warning_FileReferencesMissing" xml:space="preserve"><value>ملف FileReferences مفقود لذلك قد يفشل حل الملفات المرتبطة.</value></data>
 <data name="Warning_HitAreaIdMissing" xml:space="preserve"><value>يوجد عنصر HitAreas بدون مجموعة Id.</value></data>
 <data name="Warning_MocFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Moc: {0}</value></data>
 <data name="Warning_MocMissing" xml:space="preserve"><value>Moc لم يتم تكوينه.</value></data>
 <data name="Warning_ModelParseException" xml:space="preserve"><value>حدث استثناء أثناء تحليل model3.json.</value></data>
 <data name="Warning_MotionFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Motion: {0}</value></data>
 <data name="Warning_MotionFileSettingMissing" xml:space="preserve"><value>Motion إعداد الملف مفقود: {0}</value></data>
-<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>تم العثور على ملفات .model3.json متعددة في المجلد</value></data>
+<data name="Warning_MultipleModel3Json" xml:space="preserve"><value>تم العثور على عدة ملفات .model3.json في المجلد لذلك سيتم استخدام أول ملف حسب ترتيب الاسم.</value></data>
 <data name="Warning_NameUnset" xml:space="preserve"><value>(غير مسمى)</value></data>
 <data name="Warning_PhysicsFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف الفيزياء: {0}</value></data>
 <data name="Warning_TextureFileMissing" xml:space="preserve"><value>لم يتم العثور على ملف Texture: {0}</value></data>

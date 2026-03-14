@@ -276,7 +276,7 @@ namespace VTuberKitForYMM4.Plugin
         {
             if (string.IsNullOrWhiteSpace(selection))
             {
-                return new ModelSelectionResolution(string.Empty, true, false, false);
+                return new ModelSelectionResolution(string.Empty, false, false, false);
             }
 
             try

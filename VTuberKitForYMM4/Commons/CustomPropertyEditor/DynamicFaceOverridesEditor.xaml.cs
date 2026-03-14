@@ -526,7 +526,6 @@ namespace VTuberKitForYMM4.Commons.CustomPropertyEditor
             DetachSliderValueWatchers(slider);
             ApplySliderConfiguration(slider);
             sliderConfigurationStates[slider] = state;
-            AttachSliderValueWatchers(slider);
         }
 
         private SliderConfigurationState CreateSliderConfigurationState(AnimationSlider slider)

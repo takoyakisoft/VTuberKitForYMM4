@@ -73,10 +73,19 @@ public sealed class ModelMetadataCatalogTests : IDisposable
 
         var warnings = ModelMetadataCatalog.GetModelWarnings(modelPath);
 
-        Assert.Contains(warnings, x => x.Contains("Moc ファイル", StringComparison.Ordinal));
-        Assert.Contains(warnings, x => x.Contains("Texture ファイル", StringComparison.Ordinal));
-        Assert.Contains(warnings, x => x.Contains("Physics ファイル", StringComparison.Ordinal));
-        Assert.Contains(warnings, x => x.Contains("DisplayInfo ファイル", StringComparison.Ordinal));
+        Assert.Contains(warnings, x => x.Contains("Warn.moc3", StringComparison.Ordinal));
+        Assert.Contains(warnings, x => x.Contains("texture_00.png", StringComparison.Ordinal));
+        Assert.Contains(warnings, x => x.Contains("Warn.physics3.json", StringComparison.Ordinal));
+        Assert.Contains(warnings, x => x.Contains("Warn.cdi3.json", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ResolveModelSelection_ReturnsInvalidForEmptySelection()
+    {
+        var resolution = ModelMetadataCatalog.ResolveModelSelection(" ");
+
+        Assert.False(resolution.IsValid);
+        Assert.Equal(string.Empty, resolution.ResolvedModelPath);
     }
 
     public void Dispose()
@@ -90,6 +99,7 @@ public sealed class ModelMetadataCatalogTests : IDisposable
         }
         catch
         {
+            // Test teardown should not hide the original assertion failure when temp cleanup fails.
         }
     }
 }

@@ -683,13 +683,17 @@ void NativeModel::ValidateHitAreaBindings() {
     const csmInt32 count = _modelSetting->GetHitAreasCount();
     for (csmInt32 i = 0; i < count; i++) {
         const char* currentName = _modelSetting->GetHitAreaName(i);
-        const char* currentId = _modelSetting->GetHitAreaId(i)->GetString().GetRawString();
+        const auto* hitAreaId = _modelSetting->GetHitAreaId(i);
+        const char* currentId = hitAreaId ? hitAreaId->GetString().GetRawString() : nullptr;
+        const char* lookupId = (currentId && currentId[0] != '\0') ? currentId : currentName;
         float centerX = 0.0f;
         float centerY = 0.0f;
         float width = 0.0f;
         float height = 0.0f;
-        if (!TryGetHitAreaBounds(currentId, centerX, centerY, width, height)) {
-            const std::string label = (currentName && currentName[0] != '\0') ? currentName : currentId;
+        if (!lookupId || !TryGetHitAreaBounds(lookupId, centerX, centerY, width, height)) {
+            const std::string label =
+                (currentName && currentName[0] != '\0') ? currentName :
+                (currentId && currentId[0] != '\0') ? currentId : "<unknown>";
             AddLoadWarning(std::string("HitArea '") + label + "' の drawable / ID 解決に失敗しました。");
         }
     }
